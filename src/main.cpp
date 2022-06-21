@@ -8,6 +8,9 @@
 #include <string>
 #include <vector>
 #include <iostream>
+
+#define _USE_MATH_DEFINES
+
 #include <math.h>
 
 using std::cout;
