@@ -212,7 +212,7 @@ void podtally3b(double *eatom, double *fatom, double *uij, double *uik, double *
     double eijk, uj, uk, ujk, wij0, wij1, wij2, wik0, wik1, wik2;
             
     int nelements2 = nelements*(nelements+1)/2;
-    int M = nrbf*(1+nabf);
+    //int M = nrbf*(1+nabf);
 
     int K = -1;
     for (int m =0; m<nrbf; m++) {                    

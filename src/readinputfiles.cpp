@@ -427,7 +427,9 @@ void get_exyz_files(std::vector<std::string>& files, std::string datapath, std::
 {
     int m = extension.length();
     for (const auto & entry : std::filesystem::directory_iterator(datapath.c_str())) {
-        std::string filename = entry.path();        
+        //std::string filename = (string) entry.path();        
+        //std::string filename(entry.path());
+        std::string filename{entry.path().u8string()};
         int n = filename.length();           
         std::string ext = filename.substr(n-m,n);   
         if (ext == extension) files.push_back(filename.c_str());                                        
