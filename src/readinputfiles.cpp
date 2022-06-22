@@ -443,17 +443,30 @@ void read_coeff_file(podstruct &pod, std::string coeff_file)
     std::cout<<"**************** End of Coefficient File ****************"<<std::endl<<std::endl;
 }
 
+std::vector<std::string> globVector(const std::string& pattern, std::vector<std::string> & files){
+    glob_t glob_result;
+    glob(pattern.c_str(),GLOB_TILDE,NULL,&glob_result);
+    for(unsigned int i=0;i<glob_result.gl_pathc;++i){
+      std::string s = string(glob_result.gl_pathv[i]);
+      std::cout << s << "\n";
+      files.push_back(s);
+    }
+    globfree(&glob_result);
+    return files;
+}
+
 void get_exyz_files(std::vector<std::string>& files, std::string datapath, std::string extension)  
 {
-    int m = extension.length();
-    for (const auto & entry : std::filesystem::directory_iterator(datapath.c_str())) {
-        //std::string filename = (string) entry.path();        
-        //std::string filename(entry.path());
-        std::string filename{entry.path().u8string()};
-        int n = filename.length();           
-        std::string ext = filename.substr(n-m,n);   
-        if (ext == extension) files.push_back(filename.c_str());                                        
-    }        
+  //    int m = extension.length();
+    std::vector<std::string> res = globVector(datapath + "/*." + extension, files);
+    // for (const auto & entry : std::filesystem::directory_iterator(datapath.c_str())) {
+    //     //std::string filename = (string) entry.path();        
+    //     //std::string filename(entry.path());
+    //     std::string filename{entry.path().u8string()};
+    //     int n = filename.length();           
+    //     std::string ext = filename.substr(n-m,n);   
+    //     if (ext == extension) files.push_back(filename.c_str());                                        
+    // }        
 }
 
 int get_number_atom_exyz(std::vector<int>& num_atom, int& num_atom_sum, std::string file)  
