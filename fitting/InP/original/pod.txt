@@ -1,5 +1,5 @@
 # chemical element symbols
-species Hf B
+species In P
 
 # periodic boundary conditions
 pbc 1 1 1

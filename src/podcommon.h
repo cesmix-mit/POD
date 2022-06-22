@@ -332,7 +332,12 @@ struct datastruct {
     
     int training = 1;
     int normalizeenergy = 1;
-    double fitting_weights[3] = {0.0, 0.0, 0.0};
+    int training_analysis = 1;
+    int test_analysis = 1;
+    int training_calculation = 0;
+    int test_calculation = 0;
+    
+    double fitting_weights[10] = {0.0, 0.0, 0.0, 1, 1, 0, 0, 0, 0, 0};
     
     void freememory(int backend)
     {

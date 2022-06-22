@@ -343,6 +343,22 @@ void read_data_file(double *fitting_weights, std::string &file_format, std::stri
                 ss_line >> d;           
                 fitting_weights[2] = d;               
             }
+            else if (s == "error_analysis_for_training_data_set") {
+                ss_line >> d;           
+                fitting_weights[3] = d;               
+            }
+            else if (s == "error_analysis_for_test_data_set") {
+                ss_line >> d;           
+                fitting_weights[4] = d;               
+            }
+            else if (s == "energy_force_calculation_for_training_data_set") {
+                ss_line >> d;           
+                fitting_weights[5] = d;               
+            }
+            else if (s == "energy_force_calculation_for_test_data_set") {
+                ss_line >> d;           
+                fitting_weights[6] = d;               
+            }
             else if (s != "#") {
                 ss_line >> s2;                
                 if (s == "file_format") file_format = s2;
@@ -352,14 +368,18 @@ void read_data_file(double *fitting_weights, std::string &file_format, std::stri
                     while(ss_line >> s2){    
                         training_path = training_path + " " + s2;   
                     }                        
-                    training_path.erase(remove(training_path.begin(), training_path.end(), '"'), training_path.end());                    
+                    //training_path.erase(std::remove(training_path.begin(), training_path.end(), '"'), training_path.end());                                        
+                    training_path.erase(training_path.begin());                    
+                    training_path.erase(training_path.end()-1);                                        
                 }                
                 if (s == "path_to_test_data_set") {
                     test_path = s2;    
                     while (ss_line >> s2) {             
                         test_path = test_path + " " + s2;
                     }
-                    test_path.erase(remove(test_path.begin(), test_path.end(), '"'), test_path.end());
+                    //test_path.erase(remove(test_path.begin(), test_path.end(), '"'), test_path.end());
+                    test_path.erase(test_path.begin());                    
+                    test_path.erase(test_path.end()-1);                                        
                 }
             }
         }
@@ -471,7 +491,7 @@ int get_number_atoms(std::vector<int>& num_atom, std::vector<int> &num_atom_sum,
     }
         
     int num_atom_all = 0;
-    for (int i=0; i<num_atom.size(); i++)
+    for (int i=0; i< (int) num_atom.size(); i++)
         num_atom_all += num_atom[i];
     
     return num_atom_all;
@@ -559,7 +579,7 @@ void get_data(datastruct &data, std::vector<std::string> species)
     data.num_config_sum = data.num_atom.size();
     
     std::cout<<"data file     |    number of configurations     |     number of atoms "<<std::endl;
-    for (int i=0; i<data.data_files.size(); i++) {
+    for (int i=0; i< (int) data.data_files.size(); i++) {
         string filename = data.data_files[i].substr(data.data_path.size()+1,data.data_files[i].size());
         data.filenames.push_back(filename.c_str());                                        
         std::cout<<data.filenames[i]<<"   |   "<<data.num_config[i]<<"   |   "<<data.num_atom_each_file[i]<< std::endl;  
@@ -615,15 +635,25 @@ void read_input_files(podstruct &pod, datastruct &traindata, datastruct &testdat
     // read data input file to datastruct
     read_data_file(traindata.fitting_weights, traindata.file_format, traindata.file_extension, 
             testdata.data_path, traindata.data_path, data_file);
+        
+    traindata.training_analysis = (int) traindata.fitting_weights[3];
+    traindata.test_analysis = (int) traindata.fitting_weights[4];
+    traindata.training_calculation = (int) traindata.fitting_weights[5];
+    traindata.test_calculation = (int) traindata.fitting_weights[6];
     
     std::cout<<"**************** Begin of Training Data Set ****************"<<std::endl;
-    get_data(traindata, pod.species);
+    if ((int) traindata.data_path.size() > 1) 
+        get_data(traindata, pod.species);
     std::cout<<"**************** End of Training Data Set ****************"<<std::endl<<std::endl;
                 
-    if ((testdata.data_path != "") && (testdata.data_path != traindata.data_path)) {
+    if (((int) testdata.data_path.size() > 1) && (testdata.data_path != traindata.data_path)) {
         testdata.training = 0;
         testdata.file_format = traindata.file_format;
-        testdata.file_extension = traindata.file_extension;         
+        testdata.file_extension = traindata.file_extension;      
+        testdata.training_analysis = traindata.training_analysis;
+        testdata.test_analysis = traindata.test_analysis;
+        testdata.training_calculation = traindata.training_calculation;
+        testdata.test_calculation = traindata.test_calculation;
         std::cout<<"**************** Begin of Test Data Set ****************"<<std::endl;
         get_data(testdata, pod.species);
         std::cout<<"**************** End of Test Data Set ****************"<<std::endl<<std::endl;    

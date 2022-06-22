@@ -1,17 +1,115 @@
 #ifndef __POD
 #define __POD
 
-void podhybrid23(double* d23, double *dd23, double* d2, double *d3, double* dd2, double *dd3, 
-        int M2, int M3, int N)
-{
-    for (int m3 = 0; m3<M3; m3++)
-        for (int m2 = 0; m2<M2; m2++)
-        {
-            int m = m2 + M2*m3;
-            d23[m] = d2[m2]*d3[m3];                
-            for (int n=0; n<N; n++)
-                dd23[n + N*m] = d2[m2]*dd3[n + N*m3] + dd2[n + N*m2]*d3[m3];
-        }
+double calculate_energyforce(double *force, double *gd, double *gdd, double *coeff, int nd, int natom)
+{        
+    int dim = 3;    
+    int nforce = dim*natom;
+
+    // calculate energy = gd * coeff
+    double energy = 0.0;
+    for (int i=0; i< nd; i++)
+        energy += coeff[i]*gd[i];    
+    
+    // calculate force = gdd * coeff
+    DGEMV(&chn, &nforce, &nd, &one, gdd, &nforce, coeff, &inc1, &zero, force, &inc1);        
+    
+    return energy;
+}
+
+double quadratic_energyforce(double *force, double *d2, double *d3, double *dd2, 
+        double *dd3, double *coeff23, double *tmp, int *quadratic, int nc2, int nc3, int natom)
+{        
+    int dim = 3;    
+    int nforce = dim*natom;
+    int nd2 = quadratic[0]*nc2;
+    int nd3 = quadratic[1]*nc3;
+    
+    double *c2 = &tmp[0];  
+    double *c3 = &tmp[nd2];
+    
+    // calculate c2 = coeff23 * d3
+    DGEMV(&chn, &nd2, &nd3, &one, coeff23, &nd2, d3, &inc1, &zero, c2, &inc1);            
+    
+    // calculate c3 = coeff23^T * d2
+    DGEMV(&cht, &nd2, &nd3, &one, coeff23, &nd2, d2, &inc1, &zero, c3, &inc1);            
+    
+    // calculate energy = c2 * d2 
+    double energy = 0.0;
+    for (int i=0; i< nd2; i++)
+        energy += c2[i]*d2[i];    
+    
+    // calculate force = force + dd2 * c2
+    DGEMV(&chn, &nforce, &nd2, &one, dd2, &nforce, c2, &inc1, &one, force, &inc1);        
+
+    // calculate force = force + dd3 * c3
+    DGEMV(&chn, &nforce, &nd3, &one, dd3, &nforce, c3, &inc1, &one, force, &inc1);        
+    
+    return energy;
+}
+
+double calculate_energyforce(double *force, double *gd, double *gdd, double *coeff, double *tmp, 
+        int *quadratic22, int *quadratic23, int *quadratic24, int *quadratic33, int *quadratic34,
+        int *quadratic44, int nd1, int nd2, int nd3, int nd4, int nc1, int nc2, int nc3, int nc4, 
+        int natom)
+{        
+    int dim = 3;    
+    int nforce = dim*natom;
+    int nd1234 = nd1+nd2+nd3+nd4;
+    
+    int nd22 = quadratic22[0]*quadratic22[1]*nc2*nc2;
+    int nd23 = quadratic23[0]*quadratic23[1]*nc2*nc3;
+    int nd24 = quadratic24[0]*quadratic24[1]*nc2*nc4;
+    int nd33 = quadratic33[0]*quadratic33[1]*nc3*nc3;
+    int nd34 = quadratic34[0]*quadratic34[1]*nc3*nc4;
+    int nd44 = quadratic44[0]*quadratic44[1]*nc4*nc4;
+
+    // two-body, three-body, and four-body descriptors
+    double *d2 = &gd[nd1];
+    double *d3 = &gd[nd1+nd2];
+    double *d4 = &gd[nd1+nd2+nd3];
+    
+    // two-body, three-body, and four-body descriptors derivatives
+    double *dd2 = &gdd[nforce*nd1];
+    double *dd3 = &gdd[nforce*(nd1+nd2)];
+    double *dd4 = &gdd[nforce*(nd1+nd2+nd3)];
+    
+    // quadratic POD coefficients
+    double *coeff22 = &coeff[nd1234];
+    double *coeff23 = &coeff[nd1234+nd22];
+    double *coeff24 = &coeff[nd1234+nd22+nd23];
+    double *coeff33 = &coeff[nd1234+nd22+nd23+nd24];
+    double *coeff34 = &coeff[nd1234+nd22+nd23+nd24+nd33];
+    double *coeff44 = &coeff[nd1234+nd22+nd23+nd24+nd33+nd34];    
+        
+    // calculate energy and force for linear potentials
+    double energy = calculate_energyforce(force, gd, gdd, coeff, nd1234, natom);    
+
+    // calculate energy and force for quadratic22 potential
+    if (nd22>0) energy += quadratic_energyforce(force, d2, d2, dd2, dd2, 
+                            coeff22, tmp, quadratic22, nc2, nc2, natom);
+
+    // calculate energy and force for quadratic23 potential
+    if (nd23>0) energy += quadratic_energyforce(force, d2, d3, dd2, dd3, 
+                            coeff23, tmp, quadratic23, nc2, nc3, natom);
+
+    // calculate energy and force for quadratic24 potential
+    if (nd24>0) energy += quadratic_energyforce(force, d2, d4, dd2, dd4, 
+                            coeff24, tmp, quadratic24, nc2, nc4, natom);
+    
+    // calculate energy and force for quadratic33 potential
+    if (nd33>0) energy += quadratic_energyforce(force, d3, d3, dd3, dd3, 
+                            coeff33, tmp, quadratic33, nc3, nc3, natom);    
+    
+    // calculate energy and force for quadratic34 potential
+    if (nd34>0) energy += quadratic_energyforce(force, d3, d4, dd3, dd4, 
+                            coeff34, tmp, quadratic34, nc3, nc4, natom);    
+    
+    // calculate energy and force for quadratic44 potential
+    if (nd44>0) energy += quadratic_energyforce(force, d4, d4, dd4, dd4, 
+                            coeff44, tmp, quadratic44, nc4, nc4, natom);    
+    
+    return energy;
 }
 
 void makeindjk(int *indj, int *indk, int n)
@@ -515,6 +613,120 @@ void poddesc(double *eatom1, double *fatom1, double *eatom2, double *fatom2, dou
 //     
 //     error("here");
 }
+
+void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct pod, 
+        double *lattice, double *position, int *atomtype, int natom)
+{
+    int dim = 3;    
+    int nelements = pod.nelements;
+    int nbesselpars = pod.nbesselpars;
+    int nrbf2 = pod.nbf2;
+    int nabf3 = pod.nabf3;
+    int nrbf3 = pod.nrbf3;
+    int nd1 = pod.nd1;
+    int nd2 = pod.nd2;
+    int nd3 = pod.nd3;
+    int nd4 = pod.nd4;
+    int *pdegree2 = pod.twobody;
+    int *pdegree3 = pod.threebody;
+    int *pbc = pod.pbc;
+    double rin = pod.rin;
+    double rcut = pod.rcut;
+    double *Phi2 = pod.Phi2;
+    double *Phi3 = pod.Phi3;
+    double *besselparams = pod.besselparams;        
+    double *a1 = &lattice[0];
+    double *a2 = &lattice[3];
+    double *a3 = &lattice[6];
+                
+    // neighbor list
+    int Nij = podfullneighborlist(nb.y, nb.alist, nb.pairlist, nb.pairnum, nb.pairnum_cumsum, 
+                position, a1, a2, a3, rcut, pbc, natom);
+    
+    double *fatom1 = &desc.gdd[0];
+    double *fatom2 = &desc.gdd[dim*natom*(nd1)];
+    double *fatom3 = &desc.gdd[dim*natom*(nd1+nd2)];    
+    double *eatom1 = &desc.gdd[dim*natom*(nd1+nd2+nd3)];
+    double *eatom2 = &desc.gdd[dim*natom*(nd1+nd2+nd3)+natom*nd1];
+    double *eatom3 = &desc.gdd[dim*natom*(nd1+nd2+nd3)+natom*(nd1+nd2)];
+    double *tmpmem = &desc.gdd[dim*natom*(nd1+nd2+nd3+nd4)+natom*(nd1+nd2+nd3+nd4)];
+    int *tmpint = &desc.tmpint[0];   
+    
+    cpuArraySetValue(eatom1, 0.0, natom*(nd1+nd2+nd3+nd4));
+    cpuArraySetValue(fatom1, 0.0, dim*natom*(nd1+nd2+nd3+nd4));    
+    
+    // peratom descriptors for one-body, two-body, and three-body linear potentials
+    poddesc(eatom1, fatom1, eatom2, fatom2, eatom3, fatom3, nb.y, Phi2, Phi3, besselparams, 
+            tmpmem, rin, rcut, atomtype, nb.alist, nb.pairlist, nb.pairnum, nb.pairnum_cumsum, 
+            nb.elemindex, pdegree2, pdegree3, tmpint, nbesselpars, nrbf2, nrbf3, nabf3, 
+            nelements, Nij, natom);            
+        
+    // global descriptors for one-body, two-body, and three-body linear potentials
+    int nd123 = nd1+nd2+nd3;    
+    cpuArraySetValue(tmpmem, 1.0, natom);
+    DGEMV(&cht, &natom, &nd123, &one, eatom1, &natom, tmpmem, &inc1, &zero, desc.gd, &inc1);            
+}
+
+void quadratic_descriptors(double* d23, double *dd23, double* d2, double *d3, double* dd2, double *dd3, 
+        int M2, int M3, int N)
+{
+    for (int m3 = 0; m3<M3; m3++)
+        for (int m2 = 0; m2<M2; m2++)
+        {
+            int m = m2 + M2*m3;
+            d23[m] = d2[m2]*d3[m3];                
+            for (int n=0; n<N; n++)
+                dd23[n + N*m] = d2[m2]*dd3[n + N*m3] + dd2[n + N*m2]*d3[m3];
+        }
+}
+
+void energyforce_calculation(descriptorstruct &desc, neighborstruct &nb, podstruct pod, datastruct data, double *coeff)
+{                
+    int dim = 3;
+    double energy;
+    double force[1+dim*data.num_atom_max];
+    
+    int nfiles = data.data_files.size();    // number of files    
+    int nd1234 = pod.nd1 + pod.nd2 + pod.nd3 + pod.nd4; 
+                                
+    std::cout<<"**************** Begin of Energy/Force Calculation ****************"<<std::endl;
+    
+    int ci = 0; // configuration counter    
+    for (int file = 0; file < nfiles; file++) { // loop over each file in the data set
+        
+        int nconfigs = data.num_config[file];
+        for (int ii=0; ii < nconfigs; ii++) { // loop over each configuration in a file
+            if ((ci % 100)==0) std::cout<<"Configuration: # "<<ci+1<<std::endl;
+            
+            int natom = data.num_atom[ci];
+            int nforce = dim*natom;
+            int natom_cumsum = data.num_atom_cumsum[ci];    
+            int *atomtype = &data.atomtype[natom_cumsum];
+            double *position = &data.position[dim*natom_cumsum];
+            double *lattice = &data.lattice[9*ci];
+                        
+            // compute linear POD descriptors
+            linear_descriptors(desc, nb, pod, lattice, position, atomtype, natom);
+                    
+            // calculate energy and force
+            energy = calculate_energyforce(&force[1], desc.gd, desc.gdd, coeff, &desc.gdd[nforce*nd1234], 
+                        pod.quadratic22, pod.quadratic23, pod.quadratic24, pod.quadratic33, 
+                        pod.quadratic34, pod.quadratic44, pod.nd1, pod.nd2, pod.nd3, pod.nd4, 
+                        pod.nelements, pod.nc2, pod.nc3, pod.nc4, natom);
+                        
+            ci += 1;             
+            
+            // save energy and force into a binary file
+            force[0] = energy;
+            string filename = "energyforce_config" + std::to_string(ci) + ".bin";
+            writearray2file(filename.c_str(), force, 1 + dim*natom, 1);
+        }
+    }       
+    std::cout<<"**************** End of Energy/Force Calculation ****************"<<std::endl<<std::endl;    
+}
+
+
+
 
 // void poddesc(double *eatom1, double *fatom1, double *eatom2, double *fatom2, double *eatom3, 
 //             double *fatom3, double *x, double *y, double *a1, double *a2, double *a3, double *Phi2, 

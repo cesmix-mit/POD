@@ -1,14 +1,14 @@
 # chemical element symbols
-species Hf B
+species Mo
 
 # periodic boundary conditions
 pbc 1 1 1
 
 # inner cut-off radius
-rin 0.5
+rin 1.0
 
 # outer cut-off radius
-rcut 5.0
+rcut 4.275
 
 # Bessel scaling parameters
 bessel_scaling_parameter1 0.0 

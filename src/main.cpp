@@ -1,5 +1,6 @@
 /***************************************************************************
   Compile code: clang++ -std=c++17 -O3 -Wall -llapack -lblas main.cpp -o pod
+  /home/linuxbrew/.linuxbrew/opt/llvm@11/bin/clang++ -std=c++17 -stdlib=libc++ -O3 -Wall -llapack -lblas -Wl,-rpath=/home/linuxbrew/.linuxbrew/lib main.cpp -o pod
   Run code: ./../../src/pod pod.txt data.txt  
 ****************************************************************************/
 
@@ -38,33 +39,51 @@ int main(int argc, char** argv)
       return 1;
     }                
 
-    std::string pod_file = std::string(argv[1]); // pod input file
+    std::string pod_file = std::string(argv[1]);  // pod input file
     std::string data_file = std::string(argv[2]); // data input file           
-    std::string coeff_file = "";
-//     if (argc >= 3)
-//         coeff_file = std::string(argv[3]); // coefficient input file           
+    std::string coeff_file;                       // coefficient input file           
     
+    if (argc > 3)
+        coeff_file = std::string(argv[3]); // coefficient input file           
+    else
+        coeff_file = "";
+        
+    // data structures defined in podcommon.h
     podstruct pod;        
     datastruct traindata;    
     datastruct testdata;    
     descriptorstruct desc;            
     neighborstruct nb;
     
-    read_input_files(pod, traindata, testdata, pod_file, data_file, coeff_file);        
-                
-    allocate_memory(desc, nb, pod, traindata);
+    read_input_files(pod, traindata, testdata, pod_file, data_file, coeff_file);                            
         
-    //error_analsysis(desc, nb, pod, traindata, pod.coeff);    
-    
-    least_squares_fit(desc, nb, pod, traindata);
+    // allocate memory for data structures
+    if ((int) traindata.data_path.size() > 1) 
+        allocate_memory(desc, nb, pod, traindata);    
+    else if ((int) testdata.data_path.size() > 1)
+        allocate_memory(desc, nb, pod, testdata);
         
-    error_analsysis(desc, nb, pod, traindata, desc.c);    
+    if (coeff_file != "") // get POD coefficients from an input file           
+        cpuArrayCopy(desc.c, pod.coeff, pod.nd);
+    else // compute POD coefficients using least-squares method
+        least_squares_fit(desc, nb, pod, traindata);
     
-    if ((testdata.data_path != "") && (testdata.data_path != traindata.data_path)) {
-        error_analsysis(desc, nb, pod, testdata, desc.c);
-    }    
+    // calculate errors for the training data set
+    if ((traindata.training_analysis) && ((int) traindata.data_path.size() > 1) )
+        error_analsysis(desc, nb, pod, traindata, desc.c);    
+            
+    // calculate errors for the test data set
+    if ((testdata.test_analysis) && ((int) testdata.data_path.size() > 1) && (testdata.data_path != traindata.data_path)) 
+        error_analsysis(desc, nb, pod, testdata, desc.c);    
+    
+    // calculate energy and force for the training data set
+    if ((traindata.training_calculation) && ((int) traindata.data_path.size() > 1) )
+        energyforce_calculation(desc, nb, pod, traindata, desc.c);   
+    
+    // calculate energy and force for the test data set
+    if ((testdata.test_calculation) && ((int) testdata.data_path.size() > 1) && (testdata.data_path != traindata.data_path) )
+        energyforce_calculation(desc, nb, pod, testdata, desc.c);   
 }
-
 
 
 
