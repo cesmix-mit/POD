@@ -27,7 +27,7 @@ if(LAPACK_FOUND AND BLAS_FOUND)
 endif()
 
 add_executable(pod ${MAIN_SOURCES})
-target_compile_options(pod PRIVATE -std=c++17 -Wall -ffast-math -O3 -DNDEBUG) 
+target_compile_options(pod PRIVATE -std=c++11 -Wall -ffast-math -O3 -DNDEBUG) 
 target_link_libraries(pod PRIVATE  ${lapackblas_libraries})        
 
 

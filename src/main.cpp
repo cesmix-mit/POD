@@ -1,6 +1,6 @@
 /***************************************************************************
-  Compile code: clang++ -std=c++17 -O3 -Wall -llapack -lblas main.cpp -o pod
-  /home/linuxbrew/.linuxbrew/opt/llvm@11/bin/clang++ -std=c++17 -stdlib=libc++ -O3 -Wall -llapack -lblas -Wl,-rpath=/home/linuxbrew/.linuxbrew/lib main.cpp -o pod
+  Compile code: clang++ -std=c++11 -O3 -Wall -llapack -lblas main.cpp -o pod
+  /home/linuxbrew/.linuxbrew/opt/llvm@11/bin/clang++ -std=c++11 -stdlib=libc++ -O3 -Wall -llapack -lblas -Wl,-rpath=/home/linuxbrew/.linuxbrew/lib main.cpp -o pod
   Run code: ./../../src/pod pod.txt data.txt  
 ****************************************************************************/
 
@@ -12,7 +12,6 @@
 #include <iomanip>
 #include <limits>
 #include <glob.h>
-
 
 #define _USE_MATH_DEFINES
 
@@ -31,6 +30,7 @@ using std::ostringstream;
 #include "readinputfiles.cpp"
 #include "podneighborlist.cpp"
 #include "pod.cpp"
+#include "snap.cpp"
 #include "podfitting.cpp"
 
 int main(int argc, char** argv) 
@@ -51,6 +51,7 @@ int main(int argc, char** argv)
         
     // data structures defined in podcommon.h
     podstruct pod;        
+    snastruct sna;        
     datastruct traindata;    
     datastruct testdata;    
     descriptorstruct desc;            
@@ -58,6 +59,12 @@ int main(int argc, char** argv)
     
     read_input_files(pod, traindata, testdata, pod_file, data_file, coeff_file);                            
         
+    if (pod.snaptwojmax > 0) {
+        InitSnap(sna, pod.snapelementradius, pod.snapelementweight, pod.rcut, 
+            0.0, pod.snaprfac0, pod.snaptwojmax, pod.nelements, pod.snapchemflag);
+        //sna.printout();
+    }
+    
     // allocate memory for data structures
     if ((int) traindata.data_path.size() > 1) 
         allocate_memory(desc, nb, pod, traindata);    
@@ -67,23 +74,23 @@ int main(int argc, char** argv)
     if (coeff_file != "") // get POD coefficients from an input file           
         cpuArrayCopy(desc.c, pod.coeff, pod.nd);
     else // compute POD coefficients using least-squares method
-        least_squares_fit(desc, nb, pod, traindata);
+        least_squares_fit(desc, nb, pod, sna, traindata);
     
     // calculate errors for the training data set
     if ((traindata.training_analysis) && ((int) traindata.data_path.size() > 1) )
-        error_analsysis(desc, nb, pod, traindata, desc.c);    
+        error_analsysis(desc, nb, pod, sna, traindata, desc.c);    
             
     // calculate errors for the test data set
     if ((testdata.test_analysis) && ((int) testdata.data_path.size() > 1) && (testdata.data_path != traindata.data_path)) 
-        error_analsysis(desc, nb, pod, testdata, desc.c);    
+        error_analsysis(desc, nb, pod, sna, testdata, desc.c);    
     
     // calculate energy and force for the training data set
     if ((traindata.training_calculation) && ((int) traindata.data_path.size() > 1) )
-        energyforce_calculation(desc, nb, pod, traindata, desc.c);   
+        energyforce_calculation(desc, nb, pod, sna, traindata, desc.c);   
     
     // calculate energy and force for the test data set
     if ((testdata.test_calculation) && ((int) testdata.data_path.size() > 1) && (testdata.data_path != traindata.data_path) )
-        energyforce_calculation(desc, nb, pod, testdata, desc.c);   
+        energyforce_calculation(desc, nb, pod, sna, testdata, desc.c);   
 }
 
 

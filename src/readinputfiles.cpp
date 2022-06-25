@@ -158,7 +158,15 @@ void read_pod(podstruct &pod, std::string pod_file)
                 if (s == "fourbody_bessel_polynomial_degree") pod.fourbody[0] = (int) d;
                 if (s == "fourbody_inverse_polynomial_degree") pod.fourbody[1] = (int) d;
                 if (s == "fourbody_number_radial_basis_functions") pod.fourbody[2] = (int) d;
-                if (s == "fourbody_number_spherical_harmonic_basis_functions") pod.fourbody[3] = (int) d;
+                if (s == "fourbody_snap_twojmax") pod.snaptwojmax = (int) d;
+                if (s == "fourbody_snap_chemflag") pod.snapchemflag = (int) d;
+                if (s == "fourbody_snap_rfac0") pod.snaprfac0 = d;
+                if (s == "fourbody_snap_neighbor_weight1") pod.snapelementweight[0] = d;
+                if (s == "fourbody_snap_neighbor_weight2") pod.snapelementweight[1] = d;
+                if (s == "fourbody_snap_neighbor_weight3") pod.snapelementweight[2] = d;
+                if (s == "fourbody_snap_neighbor_weight4") pod.snapelementweight[3] = d;
+                if (s == "fourbody_snap_neighbor_weight5") pod.snapelementweight[4] = d;
+                //if (s == "fourbody_number_spherical_harmonic_basis_functions") pod.fourbody[3] = (int) d;
                 if (s == "quadratic22_number_twobody_basis_functions") pod.quadratic22[0] = (int) d;
                 if (s == "quadratic22_number_twobody_basis_functions") pod.quadratic22[1] = (int) d;
                 if (s == "quadratic23_number_twobody_basis_functions") pod.quadratic23[0] = (int) d;
@@ -171,6 +179,8 @@ void read_pod(podstruct &pod, std::string pod_file)
                 if (s == "quadratic34_number_fourbody_basis_functions") pod.quadratic34[1] = (int) d;
                 if (s == "quadratic44_number_fourbody_basis_functions") pod.quadratic44[0] = (int) d;
                 if (s == "quadratic44_number_fourbody_basis_functions") pod.quadratic44[1] = (int) d;
+                if (s == "cubic333_number_threebody_basis_functions") pod.cubic333[0] = (int) d;
+                if (s == "cubic444_number_fourbody_basis_functions") pod.cubic444[0] = (int) d;
             }
         }        
     }          
@@ -221,8 +231,8 @@ void read_pod(podstruct &pod, std::string pod_file)
     
     // number of chemical combinations
     pod.nc2 = pod.nelements*(pod.nelements+1)/2;
-    pod.nc3 = pod.nelements*pod.nelements*(pod.nelements+1)/2;
-    pod.nc4 = pod.nelements*(pod.nelements+1)/2;
+    pod.nc3 = pod.nelements*pod.nelements*(pod.nelements+1)/2;            
+    pod.nc4 = pod.snapchemflag ? pod.nelements : pod.nelements*pod.nelements*pod.nelements*pod.nelements;
         
     // number of basis functions and descriptors for one-body potential
     if (pod.onebody==1) {
@@ -245,13 +255,27 @@ void read_pod(podstruct &pod, std::string pod_file)
     pod.nd3 = pod.nbf3*pod.nc3;
 
     // number of basis functions and descriptors for four-body potential
-    pod.nrbf4 = pod.fourbody[2];
-    pod.nabf4 = pod.fourbody[3];
-    pod.nbf4 = pod.nrbf4*(1 + pod.nabf4);
+//     pod.nrbf4 = pod.fourbody[2];
+//     pod.nabf4 = pod.fourbody[3];
+//     pod.nbf4 = pod.nrbf4*(1 + pod.nabf4);
+//     pod.nd4 = pod.nbf4*pod.nc4;        
+    int twojmax = pod.snaptwojmax;    
+    int idxb_count = 0;    
+    if (twojmax > 0) {
+        for(int j1 = 0; j1 <= twojmax; j1++)
+            for(int j2 = 0; j2 <= j1; j2++)
+                for(int j = j1 - j2; j <= PODMIN(twojmax, j1 + j2); j += 2)
+                    if (j >= j1) idxb_count++;
+    }
+    pod.nbf4 = idxb_count;
     pod.nd4 = pod.nbf4*pod.nc4;
         
+    pod.quadratic22[0] = PODMIN(pod.quadratic22[0], pod.nbf2);
+    pod.quadratic22[1] = PODMIN(pod.quadratic22[1], pod.nbf2);
     pod.quadratic23[0] = PODMIN(pod.quadratic23[0], pod.nbf2);
     pod.quadratic23[1] = PODMIN(pod.quadratic23[1], pod.nbf3);
+    pod.quadratic24[0] = PODMIN(pod.quadratic24[0], pod.nbf2);
+    pod.quadratic24[1] = PODMIN(pod.quadratic24[1], pod.nbf4);
     pod.quadratic33[0] = PODMIN(pod.quadratic33[0], pod.nbf3);
     pod.quadratic33[1] = PODMIN(pod.quadratic33[1], pod.nbf3);
     pod.quadratic34[0] = PODMIN(pod.quadratic34[0], pod.nbf3);
@@ -259,16 +283,33 @@ void read_pod(podstruct &pod, std::string pod_file)
     pod.quadratic44[0] = PODMIN(pod.quadratic44[0], pod.nbf4);
     pod.quadratic44[1] = PODMIN(pod.quadratic44[1], pod.nbf4);
     
-    // number of descriptors for quadratic potentials
+    pod.cubic333[0] = PODMIN(pod.cubic333[0], pod.nbf3);
+    pod.cubic333[1] = PODMIN(pod.cubic333[0], pod.nbf3);
+    pod.cubic333[2] = PODMIN(pod.cubic333[0], pod.nbf3);
+    pod.cubic444[0] = PODMIN(pod.cubic444[0], pod.nbf4);
+    pod.cubic444[1] = PODMIN(pod.cubic444[0], pod.nbf4);
+    pod.cubic444[2] = PODMIN(pod.cubic444[0], pod.nbf4);
+    
+    // number of descriptors for quadratic POD potentials        
     pod.nd22 = pod.quadratic22[0]*pod.quadratic22[1]*pod.nc2*pod.nc2;
     pod.nd23 = pod.quadratic23[0]*pod.quadratic23[1]*pod.nc2*pod.nc3;
-    pod.nd24 = pod.quadratic24[0]*pod.quadratic24[1]*pod.nc2*pod.nc4;
+    pod.nd24 = pod.quadratic24[0]*pod.quadratic24[1]*pod.nc2*pod.nc4;    
     pod.nd33 = pod.quadratic33[0]*pod.quadratic33[1]*pod.nc3*pod.nc3;
     pod.nd34 = pod.quadratic34[0]*pod.quadratic34[1]*pod.nc3*pod.nc4;
     pod.nd44 = pod.quadratic44[0]*pod.quadratic44[1]*pod.nc4*pod.nc4;
-        
+    
+    int nq;
+    nq = pod.quadratic22[0]*pod.nc2; pod.nd22 = nq*(nq+1)/2;
+    nq = pod.quadratic33[0]*pod.nc3; pod.nd33 = nq*(nq+1)/2;
+    nq = pod.quadratic44[0]*pod.nc4; pod.nd44 = nq*(nq+1)/2;
+    
+    // number of descriptors for cubic POD potentials        
+    nq = pod.cubic333[0]*pod.nc3; pod.nd333 = nq*(nq+1)*(nq+2)/6;    
+    nq = pod.cubic444[0]*pod.nc4; pod.nd444 = nq*(nq+1)*(nq+2)/6;    
+    
     // total number of descriptors for all POD potentials
-    pod.nd = pod.nd1 + pod.nd2 + pod.nd3 + pod.nd4 + pod.nd22 + pod.nd23 + pod.nd24 + pod.nd33 + pod.nd34 + pod.nd44; 
+    pod.nd = pod.nd1 + pod.nd2 + pod.nd3 + pod.nd4 + pod.nd22 + pod.nd23 + pod.nd24 + 
+             pod.nd33 + pod.nd34 + pod.nd44 + pod.nd333 + pod.nd444; 
             
     std::cout<<"**************** Begin of POD Potentials ****************"<<std::endl;
     std::cout<<"species: ";
@@ -282,13 +323,15 @@ void read_pod(podstruct &pod, std::string pod_file)
     std::cout<<"one-body potential: "<<pod.onebody<<std::endl;
     std::cout<<"two-body potential: "<<pod.twobody[0]<<"  "<<pod.twobody[1]<<"  "<<pod.twobody[2]<<std::endl;
     std::cout<<"three-body potential: "<<pod.threebody[0]<<"  "<<pod.threebody[1]<<"  "<<pod.threebody[2]<<"  "<<pod.threebody[3]<<std::endl;
-    std::cout<<"four-body potential: "<<pod.fourbody[0]<<"  "<<pod.fourbody[1]<<"  "<<pod.fourbody[2]<<"  "<<pod.fourbody[3]<<std::endl;
+    std::cout<<"four-body SNAP potential: "<<pod.snaptwojmax<<"  "<<pod.snapchemflag<<std::endl;
     std::cout<<"three-body quadratic22 potential: "<<pod.quadratic22[0]<<"  "<<pod.quadratic22[1]<<std::endl;
     std::cout<<"four-body quadratic23 potential: "<<pod.quadratic23[0]<<"  "<<pod.quadratic23[1]<<std::endl;
     std::cout<<"five-body quadratic24 potential: "<<pod.quadratic24[0]<<"  "<<pod.quadratic24[1]<<std::endl;
     std::cout<<"five-body quadratic33 potential: "<<pod.quadratic33[0]<<"  "<<pod.quadratic33[1]<<std::endl;
     std::cout<<"six-body quadratic34 potential: "<<pod.quadratic34[0]<<"  "<<pod.quadratic34[1]<<std::endl;
     std::cout<<"seven-body quadratic44 potential: "<<pod.quadratic44[0]<<"  "<<pod.quadratic44[1]<<std::endl;    
+    std::cout<<"seven-body cubic333 potential: "<<pod.cubic333[0]<<std::endl;    
+    std::cout<<"ten-body cubic444 potential: "<<pod.cubic444[0]<<std::endl;    
     std::cout<<"number of snapshots for two-body potential: "<<pod.ns2<<std::endl;
     std::cout<<"number of snapshots for three-body potential: "<<pod.ns3<<std::endl;
     std::cout<<"number of snapshots for four-body potential: "<<pod.ns4<<std::endl;    
@@ -306,6 +349,8 @@ void read_pod(podstruct &pod, std::string pod_file)
     std::cout<<"number of descriptors for five-body quadratic33 potential: "<<pod.nd33<<std::endl;
     std::cout<<"number of descriptors for six-body quadratic34 potential: "<<pod.nd34<<std::endl;
     std::cout<<"number of descriptors for seven-body quadratic44 potential: "<<pod.nd44<<std::endl;
+    std::cout<<"number of descriptors for seven-body cubic333 potential: "<<pod.nd333<<std::endl;
+    std::cout<<"number of descriptors for ten-body cubic444 potential: "<<pod.nd444<<std::endl;
     std::cout<<"total number of descriptors for all POD potentials: "<<pod.nd<<std::endl;    
     std::cout<<"**************** End of POD Potentials ****************"<<std::endl<<std::endl;
 }
@@ -448,7 +493,7 @@ std::vector<std::string> globVector(const std::string& pattern, std::vector<std:
     glob(pattern.c_str(),GLOB_TILDE,NULL,&glob_result);
     for(unsigned int i=0;i<glob_result.gl_pathc;++i){
       std::string s = string(glob_result.gl_pathv[i]);
-      std::cout << s << "\n";
+      //std::cout << s << "\n";
       files.push_back(s);
     }
     globfree(&glob_result);
@@ -457,18 +502,22 @@ std::vector<std::string> globVector(const std::string& pattern, std::vector<std:
 
 void get_exyz_files(std::vector<std::string>& files, std::string datapath, std::string extension)  
 {
-  //    int m = extension.length();
     std::vector<std::string> res = globVector(datapath + "/*." + extension, files);
-    // for (const auto & entry : std::filesystem::directory_iterator(datapath.c_str())) {
-    //     //std::string filename = (string) entry.path();        
-    //     //std::string filename(entry.path());
-    //     std::string filename{entry.path().u8string()};
-    //     int n = filename.length();           
-    //     std::string ext = filename.substr(n-m,n);   
-    //     if (ext == extension) files.push_back(filename.c_str());                                        
-    // }        
 }
 
+// void get_exyz_files(std::vector<std::string>& files, std::string datapath, std::string extension)  
+// {
+//     int m = extension.length();
+//     for (const auto & entry : std::filesystem::directory_iterator(datapath.c_str())) {
+//         //std::string filename = (string) entry.path();        
+//         //std::string filename(entry.path());
+//         std::string filename{entry.path().u8string()};
+//         int n = filename.length();           
+//         std::string ext = filename.substr(n-m,n);   
+//         if (ext == extension) files.push_back(filename.c_str());                                        
+//     }        
+// }
+ 
 int get_number_atom_exyz(std::vector<int>& num_atom, int& num_atom_sum, std::string file)  
 {
     std::ifstream datafile(file);

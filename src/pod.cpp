@@ -48,6 +48,70 @@ double quadratic_energyforce(double *force, double *d2, double *d3, double *dd2,
     return energy;
 }
 
+double quadratic_energyforce(double *force, double *d3, double *dd3, double *coeff33, 
+        double *tmp, int *quadratic, int nc3, int natom)
+{        
+    int dim = 3;    
+    int nforce = dim*natom;
+    int nd3 = quadratic[0]*nc3;
+        
+    // calculate energy 
+    double energy = 0.0;
+    double *c33 = &tmp[0];  
+    double *c3 = &tmp[nd3*nd3];  
+    
+    int m = 0;
+    for (int i=0; i< nd3; i++)
+        for (int j=i; j< nd3; j++) {
+            energy += coeff33[m]*d3[i]*d3[j];  
+            double cij = coeff33[m];
+            if (i==j) c33[i + nd3*j] = 2*cij;
+            else {
+                c33[i + nd3*j] = cij;
+                c33[j + nd3*i] = cij;
+            }                
+            m += 1;        
+        }
+                    
+    // calculate c3 = c33 * d3
+    DGEMV(&chn, &nd3, &nd3, &one, c33, &nd3, d3, &inc1, &zero, c3, &inc1);            
+    
+    // calculate force = force + dd3 * c3
+    DGEMV(&chn, &nforce, &nd3, &one, dd3, &nforce, c3, &inc1, &one, force, &inc1);        
+    
+    return energy;
+}
+
+double cubic_energyforce(double *force, double *d3, double *dd3, double *coeff333, 
+        double *tmp, int *cubic, int nc3, int natom)
+{        
+    int dim = 3;    
+    int nforce = dim*natom;
+    int nd3 = cubic[0]*nc3;
+        
+    // calculate energy 
+    double energy = 0.0;
+    double *c3 = &tmp[0];  
+    for (int i=0; i< nd3; i++)
+        c3[i] = 0.0;
+    
+    int m = 0;
+    for (int i=0; i< nd3; i++)
+        for (int j=i; j< nd3; j++)
+            for (int k=j; k< nd3; k++) {
+                energy += coeff333[m]*d3[i]*d3[j]*d3[k];  
+                c3[k] += coeff333[m]*d3[i]*d3[j];
+                c3[j] += coeff333[m]*d3[i]*d3[k];
+                c3[i] += coeff333[m]*d3[j]*d3[k];                
+                m += 1;        
+            }
+                            
+    // calculate force = force + dd3 * c3
+    DGEMV(&chn, &nforce, &nd3, &one, dd3, &nforce, c3, &inc1, &one, force, &inc1);        
+    
+    return energy;
+}
+
 double calculate_energyforce(double *force, double *gd, double *gdd, double *coeff, double *tmp, 
         int *quadratic22, int *quadratic23, int *quadratic24, int *quadratic33, int *quadratic34,
         int *quadratic44, int nd1, int nd2, int nd3, int nd4, int nc1, int nc2, int nc3, int nc4, 
@@ -64,6 +128,11 @@ double calculate_energyforce(double *force, double *gd, double *gdd, double *coe
     int nd34 = quadratic34[0]*quadratic34[1]*nc3*nc4;
     int nd44 = quadratic44[0]*quadratic44[1]*nc4*nc4;
 
+    int nq;
+    nq = quadratic22[0]*nc2; nd22 = nq*(nq+1)/2;
+    nq = quadratic33[0]*nc3; nd33 = nq*(nq+1)/2;
+    nq = quadratic44[0]*nc4; nd44 = nq*(nq+1)/2;
+    
     // two-body, three-body, and four-body descriptors
     double *d2 = &gd[nd1];
     double *d3 = &gd[nd1+nd2];
@@ -86,9 +155,11 @@ double calculate_energyforce(double *force, double *gd, double *gdd, double *coe
     double energy = calculate_energyforce(force, gd, gdd, coeff, nd1234, natom);    
 
     // calculate energy and force for quadratic22 potential
-    if (nd22>0) energy += quadratic_energyforce(force, d2, d2, dd2, dd2, 
-                            coeff22, tmp, quadratic22, nc2, nc2, natom);
-
+//     if (nd22>0) energy += quadratic_energyforce(force, d2, d2, dd2, dd2, 
+//                             coeff22, tmp, quadratic22, nc2, nc2, natom);
+    if (nd22>0) energy += quadratic_energyforce(force, d2, dd2, 
+                            coeff22, tmp, quadratic22, nc2, natom);
+    
     // calculate energy and force for quadratic23 potential
     if (nd23>0) energy += quadratic_energyforce(force, d2, d3, dd2, dd3, 
                             coeff23, tmp, quadratic23, nc2, nc3, natom);
@@ -98,16 +169,20 @@ double calculate_energyforce(double *force, double *gd, double *gdd, double *coe
                             coeff24, tmp, quadratic24, nc2, nc4, natom);
     
     // calculate energy and force for quadratic33 potential
-    if (nd33>0) energy += quadratic_energyforce(force, d3, d3, dd3, dd3, 
-                            coeff33, tmp, quadratic33, nc3, nc3, natom);    
+//     if (nd33>0) energy += quadratic_energyforce(force, d3, d3, dd3, dd3, 
+//                             coeff33, tmp, quadratic33, nc3, nc3, natom);    
+    if (nd33>0) energy += quadratic_energyforce(force, d3, dd3, 
+                            coeff33, tmp, quadratic33, nc3, natom);    
     
     // calculate energy and force for quadratic34 potential
     if (nd34>0) energy += quadratic_energyforce(force, d3, d4, dd3, dd4, 
                             coeff34, tmp, quadratic34, nc3, nc4, natom);    
     
     // calculate energy and force for quadratic44 potential
-    if (nd44>0) energy += quadratic_energyforce(force, d4, d4, dd4, dd4, 
-                            coeff44, tmp, quadratic44, nc4, nc4, natom);    
+//     if (nd44>0) energy += quadratic_energyforce(force, d4, d4, dd4, dd4, 
+//                             coeff44, tmp, quadratic44, nc4, nc4, natom);    
+    if (nd44>0) energy += quadratic_energyforce(force, d4, dd4, 
+                            coeff44, tmp, quadratic44, nc4, natom);    
     
     return energy;
 }
@@ -214,7 +289,9 @@ void radialbasis(double *rbf, double *drbf, double *xij, double *besselparams, d
             drbf[1 + 3*nij] = drbfdr*dr2;
             drbf[2 + 3*nij] = drbfdr*dr3;
         }
-    }
+    }       
+    //&rbf[0]
+    //&rbf[N*besseldegree*nbesselpars]
 }
 
 void cosinbasis(double *abf, double *dabf, double *xij, double *xik, int nabf, int N)
@@ -615,7 +692,7 @@ void poddesc(double *eatom1, double *fatom1, double *eatom2, double *fatom2, dou
 }
 
 void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct pod, 
-        double *lattice, double *position, int *atomtype, int natom)
+        snastruct sna, double *lattice, double *position, int *atomtype, int natom)
 {
     int dim = 3;    
     int nelements = pod.nelements;
@@ -661,10 +738,13 @@ void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct po
             nb.elemindex, pdegree2, pdegree3, tmpint, nbesselpars, nrbf2, nrbf3, nabf3, 
             nelements, Nij, natom);            
         
-    // global descriptors for one-body, two-body, and three-body linear potentials
-    int nd123 = nd1+nd2+nd3;    
+//     snapCompute(double *bi, double *bd, snastruct &sna, neighborstruct &nb, 
+//         double *y, double *tmpmem, int *atomtype, int *tmpint, int natom, int Nij)            
+
+    // global descriptors for one-body, two-body, three-body, and four-bodt linear potentials
+    int nd1234 = nd1+nd2+nd3+nd4;    
     cpuArraySetValue(tmpmem, 1.0, natom);
-    DGEMV(&cht, &natom, &nd123, &one, eatom1, &natom, tmpmem, &inc1, &zero, desc.gd, &inc1);            
+    DGEMV(&cht, &natom, &nd1234, &one, eatom1, &natom, tmpmem, &inc1, &zero, desc.gd, &inc1);            
 }
 
 void quadratic_descriptors(double* d23, double *dd23, double* d2, double *d3, double* dd2, double *dd3, 
@@ -680,7 +760,35 @@ void quadratic_descriptors(double* d23, double *dd23, double* d2, double *d3, do
         }
 }
 
-void energyforce_calculation(descriptorstruct &desc, neighborstruct &nb, podstruct pod, datastruct data, double *coeff)
+void quadratic_descriptors(double* d33, double *dd33, double *d3, double *dd3, int M3, int N)
+{
+    int m = 0;
+    for (int m3 = 0; m3<M3; m3++)
+        for (int m2 = m3; m2<M3; m2++)
+        {            
+            d33[m] = d3[m2]*d3[m3];                
+            for (int n=0; n<N; n++)
+                dd33[n + N*m] = d3[m2]*dd3[n + N*m3] + dd3[n + N*m2]*d3[m3];
+            m += 1;
+        }
+}
+
+void cubic_descriptors(double* d333, double *Dd333, double *d3, double *Dd3, int M3, int N)
+{
+    int m = 0;
+    for (int m3 = 0; m3<M3; m3++)
+        for (int m2 = m3; m2<M3; m2++)
+            for (int m1 = m2; m1<M3; m1++)
+            {            
+                d333[m] = d3[m1]*d3[m2]*d3[m3];                
+                for (int n=0; n<N; n++)
+                    Dd333[n + N*m] = d3[m1]*d3[m2]*Dd3[n + N*m3] + d3[m1]*Dd3[n + N*m2]*d3[m3] + Dd3[n + N*m1]*d3[m2]*d3[m3];
+                m += 1;
+            }
+}
+
+void energyforce_calculation(descriptorstruct &desc, neighborstruct &nb, podstruct pod, 
+        snastruct sna, datastruct data, double *coeff)
 {                
     int dim = 3;
     double energy;
@@ -706,7 +814,7 @@ void energyforce_calculation(descriptorstruct &desc, neighborstruct &nb, podstru
             double *lattice = &data.lattice[9*ci];
                         
             // compute linear POD descriptors
-            linear_descriptors(desc, nb, pod, lattice, position, atomtype, natom);
+            linear_descriptors(desc, nb, pod, sna, lattice, position, atomtype, natom);
                     
             // calculate energy and force
             energy = calculate_energyforce(&force[1], desc.gd, desc.gdd, coeff, &desc.gdd[nforce*nd1234], 
@@ -714,6 +822,18 @@ void energyforce_calculation(descriptorstruct &desc, neighborstruct &nb, podstru
                         pod.quadratic34, pod.quadratic44, pod.nd1, pod.nd2, pod.nd3, pod.nd4, 
                         pod.nelements, pod.nc2, pod.nc3, pod.nc4, natom);
                         
+            if (pod.nd333>0) {
+                energy += cubic_energyforce(force, &desc.gd[pod.nd1+pod.nd2], &desc.gdd[nforce*(pod.nd1+pod.nd2)], 
+                            &coeff[nd1234+pod.nd22+pod.nd23+pod.nd24+pod.nd33+pod.nd34+pod.nd44],
+                            &desc.gdd[nforce*nd1234], pod.cubic333, pod.nc3, natom);    
+            }
+            
+            if (pod.nd444>0) {
+                energy += cubic_energyforce(force, &desc.gd[pod.nd1+pod.nd2+pod.nd3], &desc.gdd[nforce*(pod.nd1+pod.nd2+pod.nd3)], 
+                            &coeff[nd1234+pod.nd22+pod.nd23+pod.nd24+pod.nd33+pod.nd34+pod.nd44+pod.nd333],
+                            &desc.gdd[nforce*nd1234], pod.cubic444, pod.nc4, natom);    
+            }
+            
             ci += 1;             
             
             // save energy and force into a binary file

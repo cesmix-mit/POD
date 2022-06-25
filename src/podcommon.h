@@ -269,22 +269,31 @@ struct podstruct {
     int quadratic24[2] = {0,0};
     int quadratic33[2] = {0,0};
     int quadratic34[2] = {0,0};
-    int quadratic44[2] = {0,0};    
+    int quadratic44[2] = {0,0};        
+    int cubic333[3] = {0,0,0};
+    int cubic444[3] = {0,0,0};
     
     double rin = 0.5;
     double rcut = 4.6;
     double *besselparams; //[3] = {0.0, 2.0, 4.0};        
     double *Phi2, *Phi3, *Phi4, *Lambda2, *Lambda3, *Lambda4;    
     double *coeff;
-    
+        
     int nbesselpars = 3;    
     int ns2, ns3, ns4;       // number of snapshots for radial basis functions for linear POD potentials      
     int nc2, nc3, nc4;       // number of chemical  combinations for linear POD potentials      
     int nbf1, nbf2, nbf3, nbf4; // number of basis functions for linear POD potentials      
     int nd1, nd2, nd3, nd4;     // number of descriptors for linear POD potentials 
     int nd22, nd23, nd24, nd33, nd34, nd44; // number of descriptors for quadratic POD potentials    
+    int nd333, nd444; // number of descriptors for cubic POD potentials    
     int nrbf3, nabf3, nrbf4, nabf4;    
     int nd;
+    
+    int snaptwojmax = 0;
+    int snapchemflag = 0;
+    double snaprfac0 = 0.99363;
+    double snapelementradius[10] = {0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5};
+    double snapelementweight[10] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
     
     void allocatememory(int backend)
     {
@@ -404,5 +413,98 @@ struct descriptorstruct {
         TemplateFree(tmpint, backend);        
     }                
 };
+
+struct snastruct {        
+    int twojmax;
+    int ncoeff;
+    int idxb_max;
+    int idxu_max;
+    int idxz_max;
+    int idxcg_max;
+    int ntypes;
+    int nelements;    
+    int ndoubles;   // number of multi-element pairs
+    int ntriples;   // number of multi-element triplets      
+    int bnormflag;
+    int chemflag;    
+    int switchflag;
+    int bzeroflag;
+    int wselfallflag;
+    
+    double wself;
+    double rmin0;
+    double rfac0;
+    double rcutfac;
+    double rcutmax;    
+        
+    int *map=NULL;  // map types to [0,nelements)    
+    int *idx_max=NULL; 
+    int *idxz=NULL;
+    int *idxz_block=NULL;
+    int *idxb=NULL;
+    int *idxb_block=NULL;
+    int *idxu_block=NULL;
+    int *idxcg_block=NULL;
+    
+    double *rcutsq=NULL;    
+    double *radelem=NULL;
+    double *wjelem=NULL; 
+    double *bzero=NULL;
+    double *fac=NULL;
+    double *rootpqarray=NULL; 
+    double *cglist=NULL;
+    
+    void printout()
+    {
+        printf("twojmax %d \n", twojmax); 
+        printf("ncoeff %d \n", ncoeff);         
+        printf("idxb_max %d \n", idxb_max);         
+        printf("idxu_max %d \n", idxu_max);         
+        printf("idxz_max %d \n", idxz_max); 
+        printf("idxcg_max %d \n", idxcg_max);
+        printf("ntypes %d \n", ntypes);
+        printf("nelements %d \n", nelements);
+        printf("ndoubles %d \n", ndoubles);
+        printf("ntriples %d \n", ntriples);
+        printf("bnormflag %d \n", bnormflag);
+        printf("chemflag %d \n", chemflag);
+        printf("switchflag %d \n", switchflag);
+        printf("bzeroflag %d \n", bzeroflag);
+        printf("wselfallflag %d \n", wselfallflag);        
+        printf("rfac0 %g \n", rfac0);
+        printf("rmin0 %g \n", rmin0);
+        printf("rcutfac %g \n", rcutfac);
+        printf("rcutmax %g \n", rcutmax);    
+        print_matrix( "map:", 1, ntypes+1, map, 1); 
+        print_matrix( "radelem:", 1, ntypes+1, radelem, 1); 
+        print_matrix( "wjelem:", 1, ntypes+1, wjelem, 1); 
+        print_matrix( "rcutsq:", ntypes+1, ntypes+1, rcutsq, ntypes+1); 
+        print_matrix( "bzero:", 1, twojmax+1, bzero, 1);
+        print_matrix( "fac:", 1, 20, fac, 1);
+        print_matrix( "rootpqarray:", twojmax+1, twojmax+1, rootpqarray, (twojmax+1));
+        print_matrix( "cglist:", 1, idxcg_max, cglist, 1);            
+    }
+    
+    void freememory(int backend)
+    {   
+        TemplateFree(map, backend);
+        TemplateFree(idx_max, backend);
+        TemplateFree(idxz, backend);
+        TemplateFree(idxb, backend);
+        TemplateFree(idxb_block, backend);
+        TemplateFree(idxu_block, backend);
+        TemplateFree(idxz_block, backend);
+        TemplateFree(idxcg_block, backend);
+        
+        TemplateFree(rootpqarray, backend);
+        TemplateFree(cglist, backend);
+        TemplateFree(fac, backend);
+        TemplateFree(bzero, backend);
+        TemplateFree(wjelem, backend);
+        TemplateFree(radelem, backend);
+        TemplateFree(rcutsq, backend);
+    }                         
+};
+
 
 #endif  
