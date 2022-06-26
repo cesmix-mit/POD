@@ -178,7 +178,10 @@ void read_pod(podstruct &pod, std::string pod_file)
                 if (s == "quadratic34_number_threebody_basis_functions") pod.quadratic34[0] = (int) d;
                 if (s == "quadratic34_number_fourbody_basis_functions") pod.quadratic34[1] = (int) d;
                 if (s == "quadratic44_number_fourbody_basis_functions") pod.quadratic44[0] = (int) d;
-                if (s == "quadratic44_number_fourbody_basis_functions") pod.quadratic44[1] = (int) d;
+                if (s == "quadratic44_number_fourbody_basis_functions") pod.quadratic44[1] = (int) d;     
+                if (s == "cubic234_number_twobody_basis_functions") pod.cubic234[0] = (int) d;
+                if (s == "cubic234_number_threebody_basis_functions") pod.cubic234[1] = (int) d;
+                if (s == "cubic234_number_fourbody_basis_functions") pod.cubic234[2] = (int) d;
                 if (s == "cubic333_number_threebody_basis_functions") pod.cubic333[0] = (int) d;
                 if (s == "cubic444_number_fourbody_basis_functions") pod.cubic444[0] = (int) d;
             }
@@ -232,8 +235,8 @@ void read_pod(podstruct &pod, std::string pod_file)
     // number of chemical combinations
     pod.nc2 = pod.nelements*(pod.nelements+1)/2;
     pod.nc3 = pod.nelements*pod.nelements*(pod.nelements+1)/2;            
-    pod.nc4 = pod.snapchemflag ? pod.nelements : pod.nelements*pod.nelements*pod.nelements*pod.nelements;
-        
+    pod.nc4 = pod.snapchemflag ? pod.nelements*pod.nelements*pod.nelements*pod.nelements : pod.nelements;
+            
     // number of basis functions and descriptors for one-body potential
     if (pod.onebody==1) {
         pod.nbf1 = 1;
@@ -283,6 +286,9 @@ void read_pod(podstruct &pod, std::string pod_file)
     pod.quadratic44[0] = PODMIN(pod.quadratic44[0], pod.nbf4);
     pod.quadratic44[1] = PODMIN(pod.quadratic44[1], pod.nbf4);
     
+    pod.cubic234[0] = PODMIN(pod.cubic234[0], pod.nbf2);
+    pod.cubic234[1] = PODMIN(pod.cubic234[1], pod.nbf3);
+    pod.cubic234[2] = PODMIN(pod.cubic234[2], pod.nbf4);    
     pod.cubic333[0] = PODMIN(pod.cubic333[0], pod.nbf3);
     pod.cubic333[1] = PODMIN(pod.cubic333[0], pod.nbf3);
     pod.cubic333[2] = PODMIN(pod.cubic333[0], pod.nbf3);
@@ -304,12 +310,13 @@ void read_pod(podstruct &pod, std::string pod_file)
     nq = pod.quadratic44[0]*pod.nc4; pod.nd44 = nq*(nq+1)/2;
     
     // number of descriptors for cubic POD potentials        
+    pod.nd234 = pod.cubic234[0]*pod.cubic234[1]*pod.cubic234[2]*pod.nc2*pod.nc3*pod.nc4;
     nq = pod.cubic333[0]*pod.nc3; pod.nd333 = nq*(nq+1)*(nq+2)/6;    
     nq = pod.cubic444[0]*pod.nc4; pod.nd444 = nq*(nq+1)*(nq+2)/6;    
     
     // total number of descriptors for all POD potentials
     pod.nd = pod.nd1 + pod.nd2 + pod.nd3 + pod.nd4 + pod.nd22 + pod.nd23 + pod.nd24 + 
-             pod.nd33 + pod.nd34 + pod.nd44 + pod.nd333 + pod.nd444; 
+             pod.nd33 + pod.nd34 + pod.nd44 + pod.nd234 + pod.nd333 + pod.nd444; 
             
     std::cout<<"**************** Begin of POD Potentials ****************"<<std::endl;
     std::cout<<"species: ";
@@ -330,8 +337,9 @@ void read_pod(podstruct &pod, std::string pod_file)
     std::cout<<"five-body quadratic33 potential: "<<pod.quadratic33[0]<<"  "<<pod.quadratic33[1]<<std::endl;
     std::cout<<"six-body quadratic34 potential: "<<pod.quadratic34[0]<<"  "<<pod.quadratic34[1]<<std::endl;
     std::cout<<"seven-body quadratic44 potential: "<<pod.quadratic44[0]<<"  "<<pod.quadratic44[1]<<std::endl;    
-    std::cout<<"seven-body cubic333 potential: "<<pod.cubic333[0]<<std::endl;    
-    std::cout<<"ten-body cubic444 potential: "<<pod.cubic444[0]<<std::endl;    
+    std::cout<<"seven-body cubic234 potential: "<<pod.cubic234[0]<<"  "<<pod.cubic234[1]<<"  "<<pod.cubic234[2]<<std::endl;
+    std::cout<<"seven-body cubic333 potential: "<<pod.cubic333[0]<<"  "<<pod.cubic333[1]<<"  "<<pod.cubic333[2]<<std::endl;    
+    std::cout<<"ten-body cubic444 potential: "<<pod.cubic444[0]<<"  "<<pod.cubic444[1]<<"  "<<pod.cubic444[2]<<std::endl;    
     std::cout<<"number of snapshots for two-body potential: "<<pod.ns2<<std::endl;
     std::cout<<"number of snapshots for three-body potential: "<<pod.ns3<<std::endl;
     std::cout<<"number of snapshots for four-body potential: "<<pod.ns4<<std::endl;    
@@ -349,7 +357,8 @@ void read_pod(podstruct &pod, std::string pod_file)
     std::cout<<"number of descriptors for five-body quadratic33 potential: "<<pod.nd33<<std::endl;
     std::cout<<"number of descriptors for six-body quadratic34 potential: "<<pod.nd34<<std::endl;
     std::cout<<"number of descriptors for seven-body quadratic44 potential: "<<pod.nd44<<std::endl;
-    std::cout<<"number of descriptors for seven-body cubic333 potential: "<<pod.nd333<<std::endl;
+    std::cout<<"number of descriptors for seven-body cubic234 potential: "<<pod.nd333<<std::endl;
+    std::cout<<"number of descriptors for seven-body cubic333 potential: "<<pod.nd234<<std::endl;
     std::cout<<"number of descriptors for ten-body cubic444 potential: "<<pod.nd444<<std::endl;
     std::cout<<"total number of descriptors for all POD potentials: "<<pod.nd<<std::endl;    
     std::cout<<"**************** End of POD Potentials ****************"<<std::endl<<std::endl;

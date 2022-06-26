@@ -270,6 +270,7 @@ struct podstruct {
     int quadratic33[2] = {0,0};
     int quadratic34[2] = {0,0};
     int quadratic44[2] = {0,0};        
+    int cubic234[3] = {0,0,0};
     int cubic333[3] = {0,0,0};
     int cubic444[3] = {0,0,0};
     
@@ -285,7 +286,7 @@ struct podstruct {
     int nbf1, nbf2, nbf3, nbf4; // number of basis functions for linear POD potentials      
     int nd1, nd2, nd3, nd4;     // number of descriptors for linear POD potentials 
     int nd22, nd23, nd24, nd33, nd34, nd44; // number of descriptors for quadratic POD potentials    
-    int nd333, nd444; // number of descriptors for cubic POD potentials    
+    int nd234, nd333, nd444; // number of descriptors for cubic POD potentials    
     int nrbf3, nabf3, nrbf4, nabf4;    
     int nd;
     

@@ -8,7 +8,7 @@ pbc 1 1 1
 rin 1.0
 
 # outer cut-off radius
-rcut 4.9
+rcut 5.0
 
 # Bessel scaling parameters
 bessel_scaling_parameter1 0.0 
@@ -36,12 +36,12 @@ fourbody_snap_twojmax 6
 quadratic22_number_twobody_basis_functions 0 
 
 # make four-body quadratic potential by combining two-body linear potential and three-body linear potential
-quadratic23_number_twobody_basis_functions 0 
-quadratic23_number_threebody_basis_functions 0
+quadratic23_number_twobody_basis_functions 6 
+quadratic23_number_threebody_basis_functions 25
 
 # make five-body quadratic potential by combining two-body linear potential and four-body linear potential
-quadratic24_number_twobody_basis_functions 0
-quadratic24_number_fourbody_basis_functions 0 
+quadratic24_number_twobody_basis_functions 6
+quadratic24_number_fourbody_basis_functions 30 
 
 # make five-body quadratic potential by combining three-body linear potential and three-body linear potential
 quadratic33_number_threebody_basis_functions 0
@@ -52,6 +52,11 @@ quadratic34_number_fourbody_basis_functions 30
 
 # make seven-body quadratic potential by combining four-body linear potential and four-body linear potential
 quadratic44_number_fourbody_basis_functions 0 
+
+# make seven-body cubic potential by combining two-body, three-body, four-body linear potentials
+cubic234_number_twobody_basis_functions 0 
+cubic234_number_threebody_basis_functions 0 
+cubic234_number_fourbody_basis_functions 0 
 
 # make seven-body cubic potential by combining three-body linear potentials
 cubic333_number_threebody_basis_functions 0 

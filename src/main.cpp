@@ -29,8 +29,8 @@ using std::ostringstream;
 #include "cpuArrayOperations.cpp"
 #include "readinputfiles.cpp"
 #include "podneighborlist.cpp"
-#include "pod.cpp"
 #include "snap.cpp"
+#include "pod.cpp"
 #include "podfitting.cpp"
 
 int main(int argc, char** argv) 
@@ -67,9 +67,9 @@ int main(int argc, char** argv)
     
     // allocate memory for data structures
     if ((int) traindata.data_path.size() > 1) 
-        allocate_memory(desc, nb, pod, traindata);    
+        allocate_memory(desc, nb, pod, sna, traindata);    
     else if ((int) testdata.data_path.size() > 1)
-        allocate_memory(desc, nb, pod, testdata);
+        allocate_memory(desc, nb, pod, sna, testdata);
         
     if (coeff_file != "") // get POD coefficients from an input file           
         cpuArrayCopy(desc.c, pod.coeff, pod.nd);

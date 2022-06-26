@@ -1,7 +1,7 @@
 #ifndef __PODFITTING
 #define __PODFITTING
         
-void allocate_memory(descriptorstruct &desc, neighborstruct &nb, podstruct pod, snastruct sna, datastruct data)
+void allocate_memory(descriptorstruct &desc, neighborstruct &nb, podstruct pod, datastruct data)
 {
     int nd = pod.nd;
     desc.gd = (double *) malloc(nd*sizeof(double));
@@ -56,7 +56,7 @@ void allocate_memory(descriptorstruct &desc, neighborstruct &nb, podstruct pod, 
         
     int k = 1;
     for (int i=0; i < nelements; i++) 
-        for (int j=i; j < nelements; j++) {
+        for (int j=0; j < nelements; j++) {
             nb.elemindex[i + nelements*j] = k;
             nb.elemindex[j + nelements*i] = k;
             k += 1;
@@ -97,19 +97,21 @@ void allocate_memory(descriptorstruct &desc, neighborstruct &nb, podstruct pod, 
         szd = PODMAX(szd, szd1);   
         szi = PODMAX(szi, szi1);   
         
-        if (sna.twojmax>0) {
+        if (sna.snaptwojmax>0) {
             szd1 = 0;
             szd1 += Nij*dim; // rij
-            szd1 += PODMAX(2*sna.idxu_max*Nij, 2*sna.idxz_max*sna.ndoubles*natom); // (Ur, Ui) and (Zr, Zi)             
+            szd1 += PODMAX(2*sna.idxu_max*Nij, 2*sna.idxz_max*sna.ndoubles*natom); // (Ur, Ui) and (Zr, i)             
             szd1 += 2*sna.idxu_max*dim*Nij; // dUr, dUi            
-            szd1 += PODMAX(sna.idxb_max*sna.ntriples*dim*Nij, 2*sna.idxu_max*sna.nelements*natom); // dblist and (Utotr, Utoti)                                  
+            szd1 += PODMAX(sna.idxb_max*ntriples*dim*Nij, 2*idxu_max*sna.nelements*natom); // dblist and (Utotr, Utoti)                                  
             szsnap = PODMAX(szsnap, szd1);   
         }        
         //std::cout<<"Ni, Nj, Nij, Nijk: "<<natom<<", "<<Nj<<", "<<Nij<<", "<<Nijk<<std::endl;
     }        
-    szd = PODMAX(szsnap, szd);   
+    szd =
     szd = PODMAX(natom_max*(nd1+nd2+nd3+nd4) + szd, dim*natom_max*(nd-nd1-nd2-nd3-nd4));
-    szd = dim*natom_max*(nd1+nd2+nd3+nd4) + szd;                 
+    szd = dim*natom_max*(nd1+nd2+nd3+nd4) + szd;         
+        
+    //szd = 8*szd;
     
     // gdd includes linear descriptors derivatives, quadratic descriptors derivatives and temporary memory
     desc.gdd = (double*) malloc (sizeof (double)*(szd)); // [ldd qdd]
