@@ -1,6 +1,6 @@
 # To compile code: 
    1. go to src folder
-   2. clang++ -std=c++17 -O3 -Wall -llapack -lblas main.cpp -o pod
+   2. clang++ -std=c++11 -O3 -Wall -llapack -lblas main.cpp -o pod
 
 # To run code:
    1. go to fitting/Ta folder 
