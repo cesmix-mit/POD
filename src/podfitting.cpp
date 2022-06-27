@@ -20,13 +20,15 @@ void allocate_memory(descriptorstruct &desc, neighborstruct &nb, podstruct pod, 
     int nd4 = pod.nd4;
     int nelements = pod.nelements;
     int nbesselpars = pod.nbesselpars;
+    int nrbf2 = pod.nbf2;
     int nabf3 = pod.nabf3;
     int nrbf3 = pod.nrbf3;
+    int *pdegree2 = pod.twobody;
     int *pdegree3 = pod.threebody;
     int *pbc = pod.pbc;
     double rcut = pod.rcut;
                 
-    int Nj=0, Nij=0, Nijk=0;
+    int Nj=0, Nij=0;
     int m=0, n=0, p=0, nl=0, ny=0, na=0, np=0;
     
     for (int ci=0; ci<(int) data.num_atom.size(); ci++)
@@ -84,16 +86,19 @@ void allocate_memory(descriptorstruct &desc, neighborstruct &nb, podstruct pod, 
         // neighbor list
         Nij = podfullneighborlist(nb.y, nb.alist, nb.pairlist, nb.pairnum, nb.pairnum_cumsum, x, a1, a2, a3, rcut, pbc, natom);
     
+        int ns2 = pdegree2[0]*nbesselpars + pdegree2[1];
         int ns3 = pdegree3[0]*nbesselpars + pdegree3[1];
 
-        Nj=0, Nijk=0;
-        for (int i=0; i < natom; i++) {
-            Nj = (Nj > nb.pairnum[i]) ? Nj : nb.pairnum[i];
-            Nijk +=  (nb.pairnum[i]-1)*nb.pairnum[i]/2;
-        }
+//         Nj=0, Nijk=0;
+//         for (int i=0; i < natom; i++) {
+//             Nj = (Nj > nb.pairnum[i]) ? Nj : nb.pairnum[i];
+//             Nijk +=  (nb.pairnum[i]-1)*nb.pairnum[i]/2;
+//         }
 
-        int szd1 = 3*Nij+ (1+dim)*Nij*(nrbf3+ns3) + 2*(1+dim)*Nijk*nrbf3 + 4*Nj*nrbf3 + 2*dim*Nijk + 7*Nijk*nabf3;
-        int szi1 = 4*Nij + 2*natom+1 + 2*Nijk + (Nj-1)*Nj + 6*Nijk;                
+        //int szd1 = 3*Nij+ (1+dim)*Nij*(nrbf3+ns3) + 2*(1+dim)*Nijk*nrbf3 + 4*Nj*nrbf3 + 2*dim*Nijk + 7*Nijk*nabf3;
+        //int szi1 = 4*Nij + 2*natom+1 + 2*Nijk + (Nj-1)*Nj + 6*Nijk;                
+        int szd1 = 3*Nij+ (1+dim)*Nij*PODMAX(nrbf2+ns2,nrbf3+ns3) + (nabf3+1)*7;
+        int szi1 = 4*Nij + 2*natom+1 + (Nj-1)*Nj;                
         szd = PODMAX(szd, szd1);   
         szi = PODMAX(szi, szi1);   
         
@@ -139,12 +144,12 @@ void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct po
     int nd3 = pod.nd3;
     int nd4 = pod.nd4;
     int *pdegree2 = pod.twobody;
-    int *pdegree3 = pod.threebody;
+    //int *pdegree3 = pod.threebody;
     int *pbc = pod.pbc;
     double rin = pod.rin;
     double rcut = pod.rcut;
     double *Phi2 = pod.Phi2;
-    double *Phi3 = pod.Phi3;
+    //double *Phi3 = pod.Phi3;
     double *besselparams = pod.besselparams;
         
     int natom = data.num_atom[ci];    
@@ -180,10 +185,14 @@ void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct po
     cpuArraySetValue(fatom1, 0.0, dim*natom*(nd1+nd2+nd3+nd4));    
     
     // peratom descriptors for one-body, two-body, and three-body linear potentials
-    poddesc(eatom1, fatom1, eatom2, fatom2, eatom3, fatom3, nb.y, Phi2, Phi3, besselparams, 
+//     poddesc(eatom1, fatom1, eatom2, fatom2, eatom3, fatom3, nb.y, Phi2, Phi3, besselparams, 
+//             tmpmem, rin, rcut, atomtype, nb.alist, nb.pairlist, nb.pairnum, nb.pairnum_cumsum, 
+//             nb.elemindex, pdegree2, pdegree3, tmpint, nbesselpars, nrbf2, nrbf3, nabf3, 
+//             nelements, Nij, natom);            
+    poddesc(eatom1, fatom1, eatom2, fatom2, eatom3, fatom3, nb.y, Phi2, besselparams, 
             tmpmem, rin, rcut, atomtype, nb.alist, nb.pairlist, nb.pairnum, nb.pairnum_cumsum, 
-            nb.elemindex, pdegree2, pdegree3, tmpint, nbesselpars, nrbf2, nrbf3, nabf3, 
-            nelements, Nij, natom);            
+            nb.elemindex, pdegree2, tmpint, nbesselpars, nrbf2, nrbf3, nabf3, 
+            nelements, Nij, natom);                    
         
     // peratom descriptors for four-body snap potential
     if (pod.snaptwojmax>0) {
@@ -201,6 +210,9 @@ void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct po
     // global descriptors for one-body, two-body, and three-body linear potentials
     int nd1234 = nd1+nd2+nd3+nd4;    
     cpuArraySetValue(tmpmem, 1.0, natom);
+    char cht = 'T';
+    double one = 1.0, zero = 0.0;    
+    int inc1 = 1;
     DGEMV(&cht, &natom, &nd1234, &one, eatom1, &natom, tmpmem, &inc1, &zero, desc.gd, &inc1);    
     
 //     writearray2file("Phi2.bin", Phi2, pod.ns2*pod.ns2, 1);
@@ -401,6 +413,10 @@ void least_squares_matrix(descriptorstruct &desc, podstruct pod, datastruct data
     cpuKron(desc.A, desc.gd, desc.gd, we2, nd, nd);
                 
     // least-square matrix for all descriptors derivatives: A =  A + (wf*wf) * (gdd^T * gdd)
+    char cht = 'T';
+    char chn = 'N';
+    double one = 1.0;    
+    int inc1 = 1;
     DGEMM(&cht, &chn, &nd, &nd, &nforce, &wf2, desc.gdd, &nforce, desc.gdd, &nforce, &one, desc.A, &nd);    
         
     // least-square vector for all descriptors: b = b + (we*we*energy)*gd    
@@ -458,6 +474,7 @@ void least_squares_fit(descriptorstruct &desc, neighborstruct &nb, podstruct pod
     
     // solving the linear system A * c = b
     int nrhs=1, info;    
+    char chu = 'U';
     DPOSV(&chu, &nd, &nrhs, desc.A, &nd, desc.c, &nd, &info);
     
 //     double *work = &desc.gdd[0];  

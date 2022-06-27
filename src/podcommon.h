@@ -76,21 +76,21 @@ extern "C" {
 }
 
 // // global variables for BLAS  
-double one = 1.0;
-double minusone = -1.0;
-double zero = 0.0;
-char chn = 'N';
-char cht = 'T';
-char chl = 'L';
-char chu = 'U';
-char chv = 'V';
-char chr = 'R';
-int inc1 = 1;
-
-// global variables for CUBLAS  
-double cublasOne[1] = {one};
-double cublasMinusone[1] = {minusone};
-double cublasZero[1] = {zero};
+// double one = 1.0;
+// double minusone = -1.0;
+// double zero = 0.0;
+// char chn = 'N';
+// char cht = 'T';
+// char chl = 'L';
+// char chu = 'U';
+// char chv = 'V';
+// char chr = 'R';
+// int inc1 = 1;
+// 
+// // global variables for CUBLAS  
+// double cublasOne[1] = {one};
+// double cublasMinusone[1] = {minusone};
+// double cublasZero[1] = {zero};
                 
 template <typename T> static void TemplateMalloc(T **data, int n, int backend)
 {
@@ -260,6 +260,8 @@ struct podstruct {
     
     int nelements = 0;
     int onebody = 1;
+    int besseldegree = 3;
+    int inversedegree = 6;
     int twobody[3] = {5,10,10};
     int threebody[4] = {4,8,8,5}; 
     int fourbody[4] = {0,0,0,0};    
@@ -346,8 +348,28 @@ struct datastruct {
     int test_analysis = 1;
     int training_calculation = 0;
     int test_calculation = 0;
+    int randomize = 1;    
+    double percentage = 1.0;    
+        
+    double fitting_weights[12] = {0.0, 0.0, 0.0, 1, 1, 0, 0, 1, 1, 1, 1, 0};
     
-    double fitting_weights[10] = {0.0, 0.0, 0.0, 1, 1, 0, 0, 0, 0, 0};
+    void copydatainfo(datastruct &data) {
+        data.data_path = data_path;        
+        data.file_format = file_format;
+        data.file_extension = file_extension;              
+        data.data_files = data_files;
+        data.filenames = filenames;
+        data.training_analysis = training_analysis;
+        data.test_analysis = test_analysis;
+        data.training_calculation = training_calculation;
+        data.test_calculation = test_calculation;
+        data.percentage = percentage;
+        data.randomize = randomize;
+        data.training = training;        
+        data.normalizeenergy = normalizeenergy;
+        for (int i = 0; i < 12; i++)
+            data.fitting_weights[i] = fitting_weights[i];
+    }                
     
     void freememory(int backend)
     {

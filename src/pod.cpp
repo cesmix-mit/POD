@@ -248,13 +248,13 @@ void pod3body(double *eatom, double *fatom, double *x, double *e2ij, double *f2i
     }
 }
 
-void pod3body(double *eatom, double *fatom, double *y, double *Phi, double *besselparams, double *tmpmem, 
-             double rin, double rcut, int *tmpint, int *elemindex, int *pairlist, int *pairnum, 
-             int *pairnumsum, int *atomtype, int *alist, int *pdegree, int nbesselpars, int ns, 
-             int nrbf, int nabf, int nelements, int natom, int Nj, int Nij, int Nijk)
-{
+void poddesc(double *eatom1, double *fatom1, double *eatom2, double *fatom2, double *eatom3, 
+            double *fatom3, double *y, double *Phi, double *besselparams, double *tmpmem, 
+            double rin, double rcut, int *atomtype, int *alist, int *pairlist, int *pairnum, 
+            int *pairnumsum, int *elemindex, int *pdegree, int *tmpint, int nbesselpars, 
+            int nrbf2, int nrbf3, int nabf, int nelements, int Nij, int natom)
+{   
     int dim = 3;
-    //int Nf = dim*Nij;
     
     double *rij = &tmpmem[0]; // 3*Nij
     int *ai = &tmpint[0];     // Nij
@@ -264,59 +264,28 @@ void pod3body(double *eatom, double *fatom, double *y, double *Phi, double *bess
     podNeighPairs(rij, y, ai, aj, ti, tj, pairlist, pairnumsum, atomtype, 
                 alist, natom, dim);
 
+    int nrbf = PODMAX(nrbf2, nrbf3);
+    int ns = pdegree[0]*nbesselpars + pdegree[1];
+    
     double *e2ij = &tmpmem[3*Nij]; // Nij*nrbf
     double *f2ij = &tmpmem[3*Nij+Nij*nrbf]; // dim*Nij*nrbf
     double *e2ijt = &tmpmem[3*Nij+4*Nij*nrbf]; // Nij*ns
     double *f2ijt = &tmpmem[3*Nij+4*Nij*nrbf+Nij*ns]; // dim*Nij*ns    
 
+    // orthogonal radial basis functions
     radialbasis(e2ijt, f2ijt, rij, besselparams, rin, rcut-rin, pdegree[0], pdegree[1], nbesselpars, Nij);
     matmul(e2ij, e2ijt, Phi, Nij, ns, nrbf);
     matmul(f2ij, f2ijt, Phi, 3*Nij, ns, nrbf);
-//     DGEMM(&chn, &chn, &Nij, &ns, &nrbf, &one, e2ijt, &Nij, Phi, &ns, &zero, e2ij, &Nij);                
-//     DGEMM(&chn, &chn, &Nf, &ns, &nrbf, &one, f2ijt, &Nf, Phi, &ns, &zero, f2ij, &Nf);            
-    
-    pod3body(eatom, fatom, y, e2ij, f2ij, tmpmem, elemindex, pairlist, pairnum, pairnumsum, 
-             atomtype, alist, nrbf, nabf, nelements, natom, Nij);            
-}
 
-void poddesc(double *eatom1, double *fatom1, double *eatom2, double *fatom2, double *eatom3, 
-            double *fatom3, double *y, double *Phi2, double *Phi3, double *besselparams, 
-            double *tmpmem, double rin, double rcut, int *atomtype, int *alist, int *pairlist, 
-            int *pairnum, int *pairnumsum, int *elemindex, int *pdegree2, int *pdegree3, int *tmpint, 
-            int nbesselpars, int nrbf2, int nrbf3, int nabf, int nelements, int Nij, int natom)
-{    
-    int Nj=0, Nijk=0;
-    
     // one-body descriptors
     pod1body(eatom1, fatom1, atomtype, nelements, natom);
-        
-    //print_matrix( "One-body descriptors:", natom, nelements, eatom1, natom); 
-    //print_matrix( "One-body descriptors derivarives:", 3*natom, nelements, fatom1, 3*natom); 
-    
-    int ns2 = pdegree2[0]*nbesselpars + pdegree2[1];
-    int ns3 = pdegree3[0]*nbesselpars + pdegree3[1];
-
-    for (int i=0; i < natom; i++) {
-        Nj = (Nj > pairnum[i]) ? Nj : pairnum[i];
-        Nijk +=  (pairnum[i]-1)*pairnum[i]/2;
-    }
 
     // two-body descriptors
-    pod2body(eatom2, fatom2, y, Phi2, besselparams, tmpmem, rin, rcut, tmpint, 
-             elemindex, pairlist, pairnumsum, atomtype, alist, pdegree2, 
-             nbesselpars, ns2, nrbf2, nelements, natom, Nij); 
-    
-    // three-body descriptors
-    pod3body(eatom3, fatom3, y, Phi3, besselparams, tmpmem, rin, rcut, tmpint, 
-             elemindex, pairlist, pairnum, pairnumsum, atomtype, alist, pdegree3, 
-             nbesselpars, ns3, nrbf3, nabf, nelements, natom, Nj, Nij, Nijk);    
+    podtally2b(eatom2, fatom2, e2ij, f2ij, ai, aj, ti, tj, elemindex, nelements, nrbf2, natom, Nij);   
         
-//     print_matrix( "One-body descriptors:", natom, nelements, eatom1, natom); 
-//     print_matrix( "Two-body descriptors:", natom, nrbf2*3, eatom2, natom); 
-//     
-//     print_matrix( "element indices:", nelements, nelements, elemindex, nelements); 
-//     
-//     error("here");
+    // three-body descriptors
+    pod3body(eatom3, fatom3, y, e2ij, f2ij, tmpmem, elemindex, pairlist, pairnum, pairnumsum, 
+             atomtype, alist, nrbf3, nabf, nelements, natom, Nij);                
 }
 
 void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct pod, 
@@ -333,12 +302,10 @@ void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct po
     int nd3 = pod.nd3;
     int nd4 = pod.nd4;
     int *pdegree2 = pod.twobody;
-    int *pdegree3 = pod.threebody;
     int *pbc = pod.pbc;
     double rin = pod.rin;
     double rcut = pod.rcut;
     double *Phi2 = pod.Phi2;
-    double *Phi3 = pod.Phi3;
     double *besselparams = pod.besselparams;        
     double *a1 = &lattice[0];
     double *a2 = &lattice[3];
@@ -363,17 +330,21 @@ void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct po
     cpuArraySetValue(fatom1, 0.0, dim*natom*(nd1+nd2+nd3+nd4));    
     
     // peratom descriptors for one-body, two-body, and three-body linear potentials
-    poddesc(eatom1, fatom1, eatom2, fatom2, eatom3, fatom3, nb.y, Phi2, Phi3, besselparams, 
+    poddesc(eatom1, fatom1, eatom2, fatom2, eatom3, fatom3, nb.y, Phi2, besselparams, 
             tmpmem, rin, rcut, atomtype, nb.alist, nb.pairlist, nb.pairnum, nb.pairnum_cumsum, 
-            nb.elemindex, pdegree2, pdegree3, tmpint, nbesselpars, nrbf2, nrbf3, nabf3, 
-            nelements, Nij, natom);            
-        
+            nb.elemindex, pdegree2, tmpint, nbesselpars, nrbf2, nrbf3, nabf3, 
+            nelements, Nij, natom);                    
+    
     if (pod.snaptwojmax>0) 
         snapCompute(eatom4, fatom4, sna, nb, nb.y, tmpmem, atomtype, tmpint, natom, Nij);            
 
     // global descriptors for one-body, two-body, three-body, and four-bodt linear potentials
     int nd1234 = nd1+nd2+nd3+nd4;    
     cpuArraySetValue(tmpmem, 1.0, natom);
+    
+    char cht = 'T';
+    double one = 1.0, zero = 0.0;    
+    int inc1 = 1;
     DGEMV(&cht, &natom, &nd1234, &one, eatom1, &natom, tmpmem, &inc1, &zero, desc.gd, &inc1);            
 }
  
@@ -595,6 +566,9 @@ double calculate_energy_force(double *force, podstruct pod, double *gd, double *
     for (int i=0; i< nd1234; i++) c1[i] += coeff[i];    
     
     // calculate force = gdd * c1
+    char chn = 'N';
+    double one = 1.0, zero = 0.0;    
+    int inc1 = 1;
     DGEMV(&chn, &nforce, &nd1234, &one, gdd, &nforce, c1, &inc1, &zero, force, &inc1);        
             
     return energy;
@@ -643,6 +617,77 @@ void energyforce_calculation(descriptorstruct &desc, neighborstruct &nb, podstru
     std::cout<<"**************** End of Energy/Force Calculation ****************"<<std::endl<<std::endl;    
 }
 
+
+// void pod3body(double *eatom, double *fatom, double *y, double *Phi, double *besselparams, double *tmpmem, 
+//              double rin, double rcut, int *tmpint, int *elemindex, int *pairlist, int *pairnum, 
+//              int *pairnumsum, int *atomtype, int *alist, int *pdegree, int nbesselpars, int ns, 
+//              int nrbf, int nabf, int nelements, int natom, int Nj, int Nij)
+// {
+//     int dim = 3;
+//     //int Nf = dim*Nij;
+//     
+//     double *rij = &tmpmem[0]; // 3*Nij
+//     int *ai = &tmpint[0];     // Nij
+//     int *aj = &tmpint[Nij];   // Nij 
+//     int *ti = &tmpint[2*Nij]; // Nij
+//     int *tj = &tmpint[3*Nij]; // Nij
+//     podNeighPairs(rij, y, ai, aj, ti, tj, pairlist, pairnumsum, atomtype, 
+//                 alist, natom, dim);
+// 
+//     double *e2ij = &tmpmem[3*Nij]; // Nij*nrbf
+//     double *f2ij = &tmpmem[3*Nij+Nij*nrbf]; // dim*Nij*nrbf
+//     double *e2ijt = &tmpmem[3*Nij+4*Nij*nrbf]; // Nij*ns
+//     double *f2ijt = &tmpmem[3*Nij+4*Nij*nrbf+Nij*ns]; // dim*Nij*ns    
+// 
+//     radialbasis(e2ijt, f2ijt, rij, besselparams, rin, rcut-rin, pdegree[0], pdegree[1], nbesselpars, Nij);
+//     matmul(e2ij, e2ijt, Phi, Nij, ns, nrbf);
+//     matmul(f2ij, f2ijt, Phi, 3*Nij, ns, nrbf);
+// //     DGEMM(&chn, &chn, &Nij, &ns, &nrbf, &one, e2ijt, &Nij, Phi, &ns, &zero, e2ij, &Nij);                
+// //     DGEMM(&chn, &chn, &Nf, &ns, &nrbf, &one, f2ijt, &Nf, Phi, &ns, &zero, f2ij, &Nf);            
+//     
+//     pod3body(eatom, fatom, y, e2ij, f2ij, tmpmem, elemindex, pairlist, pairnum, pairnumsum, 
+//              atomtype, alist, nrbf, nabf, nelements, natom, Nij);            
+// }
+// 
+// void poddesc(double *eatom1, double *fatom1, double *eatom2, double *fatom2, double *eatom3, 
+//             double *fatom3, double *y, double *Phi2, double *Phi3, double *besselparams, 
+//             double *tmpmem, double rin, double rcut, int *atomtype, int *alist, int *pairlist, 
+//             int *pairnum, int *pairnumsum, int *elemindex, int *pdegree2, int *pdegree3, int *tmpint, 
+//             int nbesselpars, int nrbf2, int nrbf3, int nabf, int nelements, int Nij, int natom)
+// {    
+//     int Nj=0, Nijk=0;
+//     
+//     // one-body descriptors
+//     pod1body(eatom1, fatom1, atomtype, nelements, natom);
+//         
+//     //print_matrix( "One-body descriptors:", natom, nelements, eatom1, natom); 
+//     //print_matrix( "One-body descriptors derivarives:", 3*natom, nelements, fatom1, 3*natom); 
+//     
+//     int ns2 = pdegree2[0]*nbesselpars + pdegree2[1];
+//     int ns3 = pdegree3[0]*nbesselpars + pdegree3[1];
+// 
+//     for (int i=0; i < natom; i++) {
+//         Nj = (Nj > pairnum[i]) ? Nj : pairnum[i];
+//         Nijk +=  (pairnum[i]-1)*pairnum[i]/2;
+//     }
+// 
+//     // two-body descriptors
+//     pod2body(eatom2, fatom2, y, Phi2, besselparams, tmpmem, rin, rcut, tmpint, 
+//              elemindex, pairlist, pairnumsum, atomtype, alist, pdegree2, 
+//              nbesselpars, ns2, nrbf2, nelements, natom, Nij); 
+//     
+//     // three-body descriptors
+//     pod3body(eatom3, fatom3, y, Phi3, besselparams, tmpmem, rin, rcut, tmpint, 
+//              elemindex, pairlist, pairnum, pairnumsum, atomtype, alist, pdegree3, 
+//              nbesselpars, ns3, nrbf3, nabf, nelements, natom, Nj, Nij);    
+//         
+// //     print_matrix( "One-body descriptors:", natom, nelements, eatom1, natom); 
+// //     print_matrix( "Two-body descriptors:", natom, nrbf2*3, eatom2, natom); 
+// //     
+// //     print_matrix( "element indices:", nelements, nelements, elemindex, nelements); 
+// //     
+// //     error("here");
+// }
 
 // void makeindjk(int *indj, int *indk, int n)
 // {    

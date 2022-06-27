@@ -12,6 +12,8 @@
 #include <iomanip>
 #include <limits>
 #include <glob.h>
+#include <random>
+#include <algorithm>
 
 #define _USE_MATH_DEFINES
 
