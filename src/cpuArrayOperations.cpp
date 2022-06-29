@@ -1,6 +1,20 @@
 #ifndef __CPUARRAYOPERATIONS
 #define __CPUARRAYOPERATIONS
 
+void matmul(double *c, double *a, double *b, int r1, int c1, int c2) 
+{
+    int i, j, k;
+
+    for(j = 0; j < c2; j++)        
+        for(i = 0; i < r1; i++)
+            c[i + r1*j] = 0.0;        
+    
+    for(j = 0; j < c2; j++)
+        for(i = 0; i < r1; i++)        
+            for(k = 0; k < c1; k++)            
+                c[i + r1*j] += a[i + r1*k] * b[k + c1*j];            
+}
+
 template <typename T> void cpuKron(T *C, T *A, T *B, T alpha, int M1, int M2)
 {            
     int M = M1*M2;        

@@ -1,7 +1,7 @@
 #ifndef __PODFITTING
 #define __PODFITTING
         
-void allocate_memory(descriptorstruct &desc, neighborstruct &nb, podstruct pod, datastruct data)
+void allocate_memory(descriptorstruct &desc, neighborstruct &nb, podstruct pod, snastruct sna, datastruct data)
 {
     int nd = pod.nd;
     desc.gd = (double *) malloc(nd*sizeof(double));
@@ -20,13 +20,15 @@ void allocate_memory(descriptorstruct &desc, neighborstruct &nb, podstruct pod, 
     int nd4 = pod.nd4;
     int nelements = pod.nelements;
     int nbesselpars = pod.nbesselpars;
+    int nrbf2 = pod.nbf2;
     int nabf3 = pod.nabf3;
     int nrbf3 = pod.nrbf3;
+    int *pdegree2 = pod.twobody;
     int *pdegree3 = pod.threebody;
     int *pbc = pod.pbc;
     double rcut = pod.rcut;
                 
-    int Nj=0, Nij=0, Nijk=0;
+    int Nj=0, Nij=0;
     int m=0, n=0, p=0, nl=0, ny=0, na=0, np=0;
     
     for (int ci=0; ci<(int) data.num_atom.size(); ci++)
@@ -56,7 +58,7 @@ void allocate_memory(descriptorstruct &desc, neighborstruct &nb, podstruct pod, 
         
     int k = 1;
     for (int i=0; i < nelements; i++) 
-        for (int j=0; j < nelements; j++) {
+        for (int j=i; j < nelements; j++) {
             nb.elemindex[i + nelements*j] = k;
             nb.elemindex[j + nelements*i] = k;
             k += 1;
@@ -70,7 +72,7 @@ void allocate_memory(descriptorstruct &desc, neighborstruct &nb, podstruct pod, 
     
     std::cout<<"**************** Begin of Memory Allocation ****************"<<std::endl;
     
-    int szd = 0, szi=0;
+    int szd = 0, szi=0, szsnap=0;
     for (int ci=0; ci<(int) data.num_atom.size(); ci++)
     {
         int natom = data.num_atom[ci];    
@@ -84,23 +86,35 @@ void allocate_memory(descriptorstruct &desc, neighborstruct &nb, podstruct pod, 
         // neighbor list
         Nij = podfullneighborlist(nb.y, nb.alist, nb.pairlist, nb.pairnum, nb.pairnum_cumsum, x, a1, a2, a3, rcut, pbc, natom);
     
+        int ns2 = pdegree2[0]*nbesselpars + pdegree2[1];
         int ns3 = pdegree3[0]*nbesselpars + pdegree3[1];
 
-        Nj=0, Nijk=0;
-        for (int i=0; i < natom; i++) {
-            Nj = (Nj > nb.pairnum[i]) ? Nj : nb.pairnum[i];
-            Nijk +=  (nb.pairnum[i]-1)*nb.pairnum[i]/2;
-        }
+//         Nj=0, Nijk=0;
+//         for (int i=0; i < natom; i++) {
+//             Nj = (Nj > nb.pairnum[i]) ? Nj : nb.pairnum[i];
+//             Nijk +=  (nb.pairnum[i]-1)*nb.pairnum[i]/2;
+//         }
 
-        int szd1 = 3*Nij+ (1+dim)*Nij*(nrbf3+ns3) + 2*(1+dim)*Nijk*nrbf3 + 4*Nj*nrbf3 + 2*dim*Nijk + 7*Nijk*nabf3;
-        int szi1 = 4*Nij + 2*natom+1 + 2*Nijk + (Nj-1)*Nj + 6*Nijk;                
+        //int szd1 = 3*Nij+ (1+dim)*Nij*(nrbf3+ns3) + 2*(1+dim)*Nijk*nrbf3 + 4*Nj*nrbf3 + 2*dim*Nijk + 7*Nijk*nabf3;
+        //int szi1 = 4*Nij + 2*natom+1 + 2*Nijk + (Nj-1)*Nj + 6*Nijk;                
+        int szd1 = 3*Nij+ (1+dim)*Nij*PODMAX(nrbf2+ns2,nrbf3+ns3) + (nabf3+1)*7;
+        int szi1 = 4*Nij + 2*natom+1 + (Nj-1)*Nj;                
         szd = PODMAX(szd, szd1);   
         szi = PODMAX(szi, szi1);   
+        
+        if (sna.twojmax>0) {
+            szd1 = 0;
+            szd1 += Nij*dim; // rij
+            szd1 += PODMAX(2*sna.idxu_max*Nij, 2*sna.idxz_max*sna.ndoubles*natom); // (Ur, Ui) and (Zr, Zi)             
+            szd1 += 2*sna.idxu_max*dim*Nij; // dUr, dUi            
+            szd1 += PODMAX(sna.idxb_max*sna.ntriples*dim*Nij, 2*sna.idxu_max*sna.nelements*natom); // dblist and (Utotr, Utoti)                                  
+            szsnap = PODMAX(szsnap, szd1);   
+        }        
         //std::cout<<"Ni, Nj, Nij, Nijk: "<<natom<<", "<<Nj<<", "<<Nij<<", "<<Nijk<<std::endl;
     }        
-    
+    szd = PODMAX(szsnap, szd);   
     szd = PODMAX(natom_max*(nd1+nd2+nd3+nd4) + szd, dim*natom_max*(nd-nd1-nd2-nd3-nd4));
-    szd = dim*natom_max*(nd1+nd2+nd3+nd4) + szd;        
+    szd = dim*natom_max*(nd1+nd2+nd3+nd4) + szd;                 
     
     // gdd includes linear descriptors derivatives, quadratic descriptors derivatives and temporary memory
     desc.gdd = (double*) malloc (sizeof (double)*(szd)); // [ldd qdd]
@@ -117,7 +131,7 @@ void allocate_memory(descriptorstruct &desc, neighborstruct &nb, podstruct pod, 
     std::cout<<"**************** End of Memory Allocation ****************"<<std::endl<<std::endl;
 }
 
-void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct pod, datastruct data, int ci)
+void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct pod, snastruct sna, datastruct data, int ci)
 {
     int dim = 3;    
     int nelements = pod.nelements;
@@ -130,12 +144,12 @@ void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct po
     int nd3 = pod.nd3;
     int nd4 = pod.nd4;
     int *pdegree2 = pod.twobody;
-    int *pdegree3 = pod.threebody;
+    //int *pdegree3 = pod.threebody;
     int *pbc = pod.pbc;
     double rin = pod.rin;
     double rcut = pod.rcut;
     double *Phi2 = pod.Phi2;
-    double *Phi3 = pod.Phi3;
+    //double *Phi3 = pod.Phi3;
     double *besselparams = pod.besselparams;
         
     int natom = data.num_atom[ci];    
@@ -154,9 +168,11 @@ void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct po
     double *fatom1 = &desc.gdd[0];
     double *fatom2 = &desc.gdd[dim*natom*(nd1)];
     double *fatom3 = &desc.gdd[dim*natom*(nd1+nd2)];    
-    double *eatom1 = &desc.gdd[dim*natom*(nd1+nd2+nd3)];
-    double *eatom2 = &desc.gdd[dim*natom*(nd1+nd2+nd3)+natom*nd1];
-    double *eatom3 = &desc.gdd[dim*natom*(nd1+nd2+nd3)+natom*(nd1+nd2)];
+    double *fatom4 = &desc.gdd[dim*natom*(nd1+nd2+nd3)];    
+    double *eatom1 = &desc.gdd[dim*natom*(nd1+nd2+nd3+nd4)];
+    double *eatom2 = &desc.gdd[dim*natom*(nd1+nd2+nd3+nd4)+natom*nd1];
+    double *eatom3 = &desc.gdd[dim*natom*(nd1+nd2+nd3+nd4)+natom*(nd1+nd2)];
+    double *eatom4 = &desc.gdd[dim*natom*(nd1+nd2+nd3+nd4)+natom*(nd1+nd2+nd3)];
     double *tmpmem = &desc.gdd[dim*natom*(nd1+nd2+nd3+nd4)+natom*(nd1+nd2+nd3+nd4)];
     int *tmpint = &desc.tmpint[0];   
     
@@ -169,15 +185,35 @@ void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct po
     cpuArraySetValue(fatom1, 0.0, dim*natom*(nd1+nd2+nd3+nd4));    
     
     // peratom descriptors for one-body, two-body, and three-body linear potentials
-    poddesc(eatom1, fatom1, eatom2, fatom2, eatom3, fatom3, nb.y, Phi2, Phi3, besselparams, 
+//     poddesc(eatom1, fatom1, eatom2, fatom2, eatom3, fatom3, nb.y, Phi2, Phi3, besselparams, 
+//             tmpmem, rin, rcut, atomtype, nb.alist, nb.pairlist, nb.pairnum, nb.pairnum_cumsum, 
+//             nb.elemindex, pdegree2, pdegree3, tmpint, nbesselpars, nrbf2, nrbf3, nabf3, 
+//             nelements, Nij, natom);            
+    poddesc(eatom1, fatom1, eatom2, fatom2, eatom3, fatom3, nb.y, Phi2, besselparams, 
             tmpmem, rin, rcut, atomtype, nb.alist, nb.pairlist, nb.pairnum, nb.pairnum_cumsum, 
-            nb.elemindex, pdegree2, pdegree3, tmpint, nbesselpars, nrbf2, nrbf3, nabf3, 
-            nelements, Nij, natom);            
+            nb.elemindex, pdegree2, tmpint, nbesselpars, nrbf2, nrbf3, nabf3, 
+            nelements, Nij, natom);                    
         
+    // peratom descriptors for four-body snap potential
+    if (pod.snaptwojmax>0) {
+        snapCompute(eatom4, fatom4, sna, nb, nb.y, tmpmem, atomtype, tmpint, natom, Nij);            
+//         print_matrix( "Lattice vector 1:", 1, 3, a1, 1);        
+//         print_matrix( "Lattice vector 2:", 1, 3, a2, 1);        
+//         print_matrix( "Lattice vector 3:", 1, 3, a3, 1); 
+//         print_matrix( "Atom positions:", 3, natom, position, 3);        
+//         print_matrix( "Atom types:", 1, natom, atomtype, 1);                   
+//         print_matrix( "SNAP descriptors:", natom, nd4, eatom4, natom); 
+//         print_matrix( "SNAP descriptors derivatives:", 3*natom, nd4, fatom4, 3*natom); 
+//         error("here");
+    }
+    
     // global descriptors for one-body, two-body, and three-body linear potentials
-    int nd123 = nd1+nd2+nd3;    
+    int nd1234 = nd1+nd2+nd3+nd4;    
     cpuArraySetValue(tmpmem, 1.0, natom);
-    DGEMV(&cht, &natom, &nd123, &one, eatom1, &natom, tmpmem, &inc1, &zero, desc.gd, &inc1);    
+    char cht = 'T';
+    double one = 1.0, zero = 0.0;    
+    int inc1 = 1;
+    DGEMV(&cht, &natom, &nd1234, &one, eatom1, &natom, tmpmem, &inc1, &zero, desc.gd, &inc1);    
     
 //     writearray2file("Phi2.bin", Phi2, pod.ns2*pod.ns2, 1);
 //     writearray2file("Phi3.bin", Phi3, pod.ns3*pod.ns3, 1);
@@ -241,8 +277,10 @@ void quadratic_descriptors(descriptorstruct &desc, podstruct pod, datastruct dat
     // global descriptors for four-body quadratic22 potential
     if (nd22>0) {
         int nq2 = pod.quadratic22[0]*pod.nc2;        
+//         quadratic_descriptors(&desc.gd[nd1234], &desc.gdd[dim*natom*nd1234], 
+//                 &desc.gd[nd1], &desc.gd[nd1], fatom2, fatom2, nq2, nq2, dim*natom);
         quadratic_descriptors(&desc.gd[nd1234], &desc.gdd[dim*natom*nd1234], 
-                &desc.gd[nd1], &desc.gd[nd1], fatom2, fatom2, nq2, nq2, dim*natom);
+                &desc.gd[nd1], fatom2, nq2, dim*natom);
     }
     
     // global descriptors for four-body quadratic23 potential
@@ -264,8 +302,10 @@ void quadratic_descriptors(descriptorstruct &desc, podstruct pod, datastruct dat
     // global descriptors for five-body quadratic33 potential
     if (nd33>0) {
         int nq3 = pod.quadratic33[0]*pod.nc3;        
+//         quadratic_descriptors(&desc.gd[nd1234+nd22+nd23+nd24], &desc.gdd[dim*natom*(nd1234+nd22+nd23+nd24)], 
+//                 &desc.gd[nd1+nd2], &desc.gd[nd1+nd2], fatom3, fatom3, nq3, nq3, dim*natom);        
         quadratic_descriptors(&desc.gd[nd1234+nd22+nd23+nd24], &desc.gdd[dim*natom*(nd1234+nd22+nd23+nd24)], 
-                &desc.gd[nd1+nd2], &desc.gd[nd1+nd2], fatom3, fatom3, nq3, nq3, dim*natom);        
+                &desc.gd[nd1+nd2], fatom3, nq3, dim*natom);                
     }
 
     // global descriptors for six-body quadratic34 potential
@@ -276,17 +316,77 @@ void quadratic_descriptors(descriptorstruct &desc, podstruct pod, datastruct dat
                 &desc.gd[nd1+nd2], &desc.gd[nd1+nd2+nd3], fatom3, fatom4, nq3, nq4, dim*natom);        
     }
 
+    //cout<<nd44<<" "<<pod.quadratic44[0]<<" "<<pod.nc4<<endl;         
     // global descriptors for seven-body quadratic44 potential
     if (nd44>0) {
-        int nq4 = pod.quadratic44[1]*pod.nc4; 
+        int nq4 = pod.quadratic44[0]*pod.nc4;         
         quadratic_descriptors(&desc.gd[nd1234+nd22+nd23+nd24+nd33+nd34], &desc.gdd[dim*natom*(nd1234+nd22+nd23+nd24+nd33+nd34)], 
-                &desc.gd[nd1+nd2+nd3], &desc.gd[nd1+nd2+nd3], fatom4, fatom4, nq4, nq4, dim*natom);        
-    }        
-    
+                &desc.gd[nd1+nd2+nd3], fatom4, nq4, dim*natom);                                
+//         int nq4 = pod.quadratic44[0]*pod.nc4;         
+//         quadratic_descriptors(&desc.gd[nd1234+nd22+nd23+nd24+nd33+nd34], &desc.gdd[dim*natom*(nd1234+nd22+nd23+nd24+nd33+nd34)], 
+//                 &desc.gd[nd1+nd2+nd3], &desc.gd[nd1+nd2+nd3], fatom4, fatom4, nq4, nq4, dim*natom);                
+    }            
 //     writearray2file("fatom2.bin", fatom2, dim*natom*nd2, 1);
 //     writearray2file("fatom3.bin", fatom3, dim*natom*nd3, 1);
 //     writearray2file("gdesc.bin", desc.gd, pod.nd, 1);
 //     writearray2file("gddesc.bin", desc.gdd, dim*natom*pod.nd, 1);
+}
+
+void cubic_descriptors(descriptorstruct &desc, podstruct pod, datastruct data, int ci)
+{    
+    int dim = 3;
+    int natom = data.num_atom[ci];    
+    int nd1 = pod.nd1;
+    int nd2 = pod.nd2;
+    int nd3 = pod.nd3;
+    int nd4 = pod.nd4;
+    int nd22 = pod.nd22;
+    int nd23 = pod.nd23;
+    int nd24 = pod.nd24;
+    int nd33 = pod.nd33;
+    int nd34 = pod.nd34;
+    int nd44 = pod.nd44;    
+    int nd234 = pod.nd234;
+    int nd333 = pod.nd333;
+    int nd444 = pod.nd444;
+    int nd123 = nd1+nd2+nd3;        
+    int nd1234 = nd1+nd2+nd3+nd4;    
+
+    // global descriptors for seven-body cubic234 potential
+    if (nd234>0) {
+        int nq2 = pod.cubic234[0]*pod.nc2;        
+        int nq3 = pod.cubic234[1]*pod.nc3;        
+        int nq4 = pod.cubic234[2]*pod.nc4;        
+        int np3 = nd1234+nd22+nd23+nd24+nd33+nd34+nd44;
+        double *eatom2 = &desc.gd[nd1];
+        double *eatom3 = &desc.gd[nd1+nd2];
+        double *eatom4 = &desc.gd[nd123];
+        double *fatom2 = &desc.gdd[dim*natom*(nd1)];           
+        double *fatom3 = &desc.gdd[dim*natom*(nd1+nd2)];            
+        double *fatom4 = &desc.gdd[dim*natom*(nd123)];            
+        cubic_descriptors(&desc.gd[np3], &desc.gdd[dim*natom*np3], 
+                eatom2, eatom3, eatom4, fatom2, fatom3, fatom4, nq2, nq3, nq4, dim*natom);                  
+    }
+    
+    // global descriptors for seven-body cubic333 potential
+    if (nd333>0) {
+        int nq3 = pod.cubic333[0]*pod.nc3;        
+        int np3 = nd1234+nd22+nd23+nd24+nd33+nd34+nd44+nd234;
+        double *eatom3 = &desc.gd[nd1+nd2];
+        double *fatom3 = &desc.gdd[dim*natom*(nd1+nd2)];    
+        cubic_descriptors(&desc.gd[np3], &desc.gdd[dim*natom*np3], 
+                eatom3, fatom3, nq3, dim*natom);                
+    }
+
+    // global descriptors for ten-body cubic444 potential
+    if (nd444>0) {
+        int nq4 = pod.cubic444[0]*pod.nc4; 
+        int np4 = nd1234+nd22+nd23+nd24+nd33+nd34+nd44+nd234+nd333;
+        double *eatom4 = &desc.gd[nd123];
+        double *fatom4 = &desc.gdd[dim*natom*(nd123)];            
+        cubic_descriptors(&desc.gd[np4], &desc.gdd[dim*natom*(np4)], 
+                eatom4, fatom4, nq4, dim*natom);                
+    }            
 }
 
 void least_squares_matrix(descriptorstruct &desc, podstruct pod, datastruct data, int ci)
@@ -313,6 +413,10 @@ void least_squares_matrix(descriptorstruct &desc, podstruct pod, datastruct data
     cpuKron(desc.A, desc.gd, desc.gd, we2, nd, nd);
                 
     // least-square matrix for all descriptors derivatives: A =  A + (wf*wf) * (gdd^T * gdd)
+    char cht = 'T';
+    char chn = 'N';
+    double one = 1.0;    
+    int inc1 = 1;
     DGEMM(&cht, &chn, &nd, &nd, &nforce, &wf2, desc.gdd, &nforce, desc.gdd, &nforce, &one, desc.A, &nd);    
         
     // least-square vector for all descriptors: b = b + (we*we*energy)*gd    
@@ -337,7 +441,7 @@ void InverseMatrix(double* A, double* work, int* ipiv, int n)
     DGETRI(&n,A,&n,ipiv,work,&lwork,&info);
 }
 
-void least_squares_fit(descriptorstruct &desc, neighborstruct &nb, podstruct pod, datastruct data)
+void least_squares_fit(descriptorstruct &desc, neighborstruct &nb, podstruct pod, snastruct sna, datastruct data)
 {        
     std::cout<<"**************** Begin of Least-Squares Fitting ****************"<<std::endl;
     
@@ -346,10 +450,13 @@ void least_squares_fit(descriptorstruct &desc, neighborstruct &nb, podstruct pod
         if ((ci % 100)==0) std::cout<<"Configuration: # "<<ci+1<<std::endl;
         
         // compute linear POD descriptors
-        linear_descriptors(desc, nb, pod, data, ci);
+        linear_descriptors(desc, nb, pod, sna, data, ci);
         
         // compute quadratic POD descriptors
         quadratic_descriptors(desc, pod, data, ci);        
+        
+        // compute cubic POD descriptors
+        cubic_descriptors(desc, pod, data, ci);    
         
         // assemble the least-squares linear system
         least_squares_matrix(desc, pod, data, ci);          
@@ -367,6 +474,7 @@ void least_squares_fit(descriptorstruct &desc, neighborstruct &nb, podstruct pod
     
     // solving the linear system A * c = b
     int nrhs=1, info;    
+    char chu = 'U';
     DPOSV(&chu, &nd, &nrhs, desc.A, &nd, desc.c, &nd, &info);
     
 //     double *work = &desc.gdd[0];  
@@ -502,7 +610,7 @@ void print_analysis(datastruct data, double *outarray, double *errors)
     mfile.close();    
 }
 
-void error_analsysis(descriptorstruct &desc, neighborstruct &nb, podstruct pod, datastruct data, double *coeff)
+void error_analsysis(descriptorstruct &desc, neighborstruct &nb, podstruct pod, snastruct sna, datastruct data, double *coeff)
 {                
     int dim = 3;
     double energy;
@@ -510,6 +618,8 @@ void error_analsysis(descriptorstruct &desc, neighborstruct &nb, podstruct pod, 
     
     int nfiles = data.data_files.size();    // number of files    
     int num_configs = data.num_atom.size(); // number of configurations in all files    
+    //int nd12 = pod.nd1 + pod.nd2; 
+    //int nd123 = pod.nd1 + pod.nd2 + pod.nd3;
     int nd1234 = pod.nd1 + pod.nd2 + pod.nd3 + pod.nd4; 
             
     int m = 8; 
@@ -535,19 +645,44 @@ void error_analsysis(descriptorstruct &desc, neighborstruct &nb, podstruct pod, 
             int nforce = dim*natom;
 
             // compute linear POD descriptors
-            linear_descriptors(desc, nb, pod, data, ci);
+            linear_descriptors(desc, nb, pod, sna, data, ci);
 
 //             // compute quadratic POD descriptors
 //             quadratic_descriptors(desc, pod, data, ci);        
+//             
+//             // compute cubic POD descriptors
+//             cubic_descriptors(desc, pod, data, ci);    
 //             
 //             // calculate energy and force
 //             energy = calculate_energyforce(force, desc.gd, desc.gdd, coeff, pod.nd, natom);
             
             // calculate energy and force
-            energy = calculate_energyforce(force, desc.gd, desc.gdd, coeff, &desc.gdd[nforce*nd1234], 
-                        pod.quadratic22, pod.quadratic23, pod.quadratic24, pod.quadratic33, 
-                        pod.quadratic34, pod.quadratic44, pod.nd1, pod.nd2, pod.nd3, pod.nd4, 
-                        pod.nelements, pod.nc2, pod.nc3, pod.nc4, natom);
+            energy = calculate_energy_force(force, pod, desc.gd, desc.gdd, coeff, &desc.gdd[nforce*nd1234], natom);
+        
+            // calculate energy and force
+//             energy = calculate_energyforce(force, desc.gd, desc.gdd, coeff, &desc.gdd[nforce*nd1234], 
+//                         pod.quadratic22, pod.quadratic23, pod.quadratic24, pod.quadratic33, 
+//                         pod.quadratic34, pod.quadratic44, pod.nd1, pod.nd2, pod.nd3, pod.nd4, 
+//                         pod.nelements, pod.nc2, pod.nc3, pod.nc4, natom);
+// 
+//             if (pod.nd234>0) {
+//                 energy += cubic_energyforce(force, &desc.gd[pod.nd1], &desc.gd[nd12], &desc.gd[nd123], 
+//                             &desc.gdd[nforce*pod.nd1], &desc.gdd[nforce*nd12], &desc.gdd[nforce*nd123], 
+//                             &coeff[nd1234+pod.nd22+pod.nd23+pod.nd24+pod.nd33+pod.nd34+pod.nd44],
+//                             &desc.gdd[nforce*nd1234], pod.cubic234, pod.nc2, pod.nc3, pod.nc4, natom);    
+//             }
+//             
+//             if (pod.nd333>0) {
+//                 energy += cubic_energyforce(force, &desc.gd[pod.nd1+pod.nd2], &desc.gdd[nforce*(pod.nd1+pod.nd2)], 
+//                             &coeff[nd1234+pod.nd22+pod.nd23+pod.nd24+pod.nd33+pod.nd34+pod.nd44+pod.nd234],
+//                             &desc.gdd[nforce*nd1234], pod.cubic333, pod.nc3, natom);    
+//             }
+//             
+//             if (pod.nd444>0) {
+//                 energy += cubic_energyforce(force, &desc.gd[pod.nd1+pod.nd2+pod.nd3], &desc.gdd[nforce*(pod.nd1+pod.nd2+pod.nd3)], 
+//                             &coeff[nd1234+pod.nd22+pod.nd23+pod.nd24+pod.nd33+pod.nd34+pod.nd44+pod.nd234+pod.nd333],
+//                             &desc.gdd[nforce*nd1234], pod.cubic444, pod.nc4, natom);    
+//             }
             
 //            print_matrix( "global descriptors:", pod.nd, 1, desc.gd, pod.nd); 
             

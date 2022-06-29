@@ -61,8 +61,10 @@ void eigenvaluedecomposition(double *Phi, double *Lambda, double *besselparams, 
     //print_matrix( "xij", 1, 20, xij, 1);
     //print_matrix( "Snapshot", 10, ns, S, N);
     
-//     char chn = 'N';
-//     char cht = 'T';
+    char chn = 'N';
+    char cht = 'T';
+    char chv = 'V';
+    char chu = 'U';
     double alpha = 1.0, beta = 0.0;    
     DGEMM(&cht, &chn, &ns, &ns, &N, &alpha, S, &N, S, &N, &beta, A, &ns);    
         
@@ -147,6 +149,8 @@ void read_pod(podstruct &pod, std::string pod_file)
                 if (s == "bessel_scaling_parameter1") pod.besselparams[0] = d;
                 if (s == "bessel_scaling_parameter2") pod.besselparams[1] = d;
                 if (s == "bessel_scaling_parameter3") pod.besselparams[2] = d;                
+                if (s == "bessel_polynomial_degree") pod.besseldegree = (int) d;
+                if (s == "inverse_polynomial_degree") pod.inversedegree = (int) d;
                 if (s == "onebody") pod.onebody = (int) d;
                 if (s == "twobody_bessel_polynomial_degree") pod.twobody[0] = (int) d;
                 if (s == "twobody_inverse_polynomial_degree") pod.twobody[1] = (int) d;
@@ -154,11 +158,19 @@ void read_pod(podstruct &pod, std::string pod_file)
                 if (s == "threebody_bessel_polynomial_degree") pod.threebody[0] = (int) d;
                 if (s == "threebody_inverse_polynomial_degree") pod.threebody[1] = (int) d;
                 if (s == "threebody_number_radial_basis_functions") pod.threebody[2] = (int) d;
-                if (s == "threebody_number_angular_basis_functions") pod.threebody[3] = (int) d;
+                if (s == "threebody_number_angular_basis_functions") pod.threebody[3] = (int) (d-1);
                 if (s == "fourbody_bessel_polynomial_degree") pod.fourbody[0] = (int) d;
                 if (s == "fourbody_inverse_polynomial_degree") pod.fourbody[1] = (int) d;
                 if (s == "fourbody_number_radial_basis_functions") pod.fourbody[2] = (int) d;
-                if (s == "fourbody_number_spherical_harmonic_basis_functions") pod.fourbody[3] = (int) d;
+                if (s == "fourbody_snap_twojmax") pod.snaptwojmax = (int) d;
+                if (s == "fourbody_snap_chemflag") pod.snapchemflag = (int) d;
+                if (s == "fourbody_snap_rfac0") pod.snaprfac0 = d;
+                if (s == "fourbody_snap_neighbor_weight1") pod.snapelementweight[0] = d;
+                if (s == "fourbody_snap_neighbor_weight2") pod.snapelementweight[1] = d;
+                if (s == "fourbody_snap_neighbor_weight3") pod.snapelementweight[2] = d;
+                if (s == "fourbody_snap_neighbor_weight4") pod.snapelementweight[3] = d;
+                if (s == "fourbody_snap_neighbor_weight5") pod.snapelementweight[4] = d;
+                //if (s == "fourbody_number_spherical_harmonic_basis_functions") pod.fourbody[3] = (int) d;
                 if (s == "quadratic22_number_twobody_basis_functions") pod.quadratic22[0] = (int) d;
                 if (s == "quadratic22_number_twobody_basis_functions") pod.quadratic22[1] = (int) d;
                 if (s == "quadratic23_number_twobody_basis_functions") pod.quadratic23[0] = (int) d;
@@ -170,17 +182,30 @@ void read_pod(podstruct &pod, std::string pod_file)
                 if (s == "quadratic34_number_threebody_basis_functions") pod.quadratic34[0] = (int) d;
                 if (s == "quadratic34_number_fourbody_basis_functions") pod.quadratic34[1] = (int) d;
                 if (s == "quadratic44_number_fourbody_basis_functions") pod.quadratic44[0] = (int) d;
-                if (s == "quadratic44_number_fourbody_basis_functions") pod.quadratic44[1] = (int) d;
+                if (s == "quadratic44_number_fourbody_basis_functions") pod.quadratic44[1] = (int) d;     
+                if (s == "cubic234_number_twobody_basis_functions") pod.cubic234[0] = (int) d;
+                if (s == "cubic234_number_threebody_basis_functions") pod.cubic234[1] = (int) d;
+                if (s == "cubic234_number_fourbody_basis_functions") pod.cubic234[2] = (int) d;
+                if (s == "cubic333_number_threebody_basis_functions") pod.cubic333[0] = (int) d;
+                if (s == "cubic444_number_fourbody_basis_functions") pod.cubic444[0] = (int) d;
             }
         }        
     }          
     file_in.close();
+        
+    pod.twobody[0] = pod.besseldegree;
+    pod.twobody[1] = pod.inversedegree;
+    pod.threebody[0] = pod.besseldegree;
+    pod.threebody[1] = pod.inversedegree;
     
     // number of snapshots
     pod.ns2 = pod.nbesselpars*pod.twobody[0] + pod.twobody[1];
     pod.ns3 = pod.nbesselpars*pod.threebody[0] + pod.threebody[1];
     pod.ns4 = pod.nbesselpars*pod.fourbody[0] + pod.fourbody[1];
     
+    for (int i = 0; i < pod.nbesselpars; i++)
+        if (fabs(pod.besselparams[i]) < 1e-3) pod.besselparams[i] = 1e-3;
+            
     // allocate memory for eigenvectors and eigenvalues
     pod.Phi2 = (double *) malloc(pod.ns2*pod.ns2*sizeof(double));
     pod.Lambda2 = (double *) malloc(pod.ns2*sizeof(double));
@@ -221,9 +246,9 @@ void read_pod(podstruct &pod, std::string pod_file)
     
     // number of chemical combinations
     pod.nc2 = pod.nelements*(pod.nelements+1)/2;
-    pod.nc3 = pod.nelements*pod.nelements*(pod.nelements+1)/2;
-    pod.nc4 = pod.nelements*(pod.nelements+1)/2;
-        
+    pod.nc3 = pod.nelements*pod.nelements*(pod.nelements+1)/2;            
+    pod.nc4 = pod.snapchemflag ? pod.nelements*pod.nelements*pod.nelements*pod.nelements : pod.nelements;
+            
     // number of basis functions and descriptors for one-body potential
     if (pod.onebody==1) {
         pod.nbf1 = 1;
@@ -245,13 +270,27 @@ void read_pod(podstruct &pod, std::string pod_file)
     pod.nd3 = pod.nbf3*pod.nc3;
 
     // number of basis functions and descriptors for four-body potential
-    pod.nrbf4 = pod.fourbody[2];
-    pod.nabf4 = pod.fourbody[3];
-    pod.nbf4 = pod.nrbf4*(1 + pod.nabf4);
+//     pod.nrbf4 = pod.fourbody[2];
+//     pod.nabf4 = pod.fourbody[3];
+//     pod.nbf4 = pod.nrbf4*(1 + pod.nabf4);
+//     pod.nd4 = pod.nbf4*pod.nc4;        
+    int twojmax = pod.snaptwojmax;    
+    int idxb_count = 0;    
+    if (twojmax > 0) {
+        for(int j1 = 0; j1 <= twojmax; j1++)
+            for(int j2 = 0; j2 <= j1; j2++)
+                for(int j = j1 - j2; j <= PODMIN(twojmax, j1 + j2); j += 2)
+                    if (j >= j1) idxb_count++;
+    }
+    pod.nbf4 = idxb_count;
     pod.nd4 = pod.nbf4*pod.nc4;
         
+    pod.quadratic22[0] = PODMIN(pod.quadratic22[0], pod.nbf2);
+    pod.quadratic22[1] = PODMIN(pod.quadratic22[1], pod.nbf2);
     pod.quadratic23[0] = PODMIN(pod.quadratic23[0], pod.nbf2);
     pod.quadratic23[1] = PODMIN(pod.quadratic23[1], pod.nbf3);
+    pod.quadratic24[0] = PODMIN(pod.quadratic24[0], pod.nbf2);
+    pod.quadratic24[1] = PODMIN(pod.quadratic24[1], pod.nbf4);
     pod.quadratic33[0] = PODMIN(pod.quadratic33[0], pod.nbf3);
     pod.quadratic33[1] = PODMIN(pod.quadratic33[1], pod.nbf3);
     pod.quadratic34[0] = PODMIN(pod.quadratic34[0], pod.nbf3);
@@ -259,16 +298,37 @@ void read_pod(podstruct &pod, std::string pod_file)
     pod.quadratic44[0] = PODMIN(pod.quadratic44[0], pod.nbf4);
     pod.quadratic44[1] = PODMIN(pod.quadratic44[1], pod.nbf4);
     
-    // number of descriptors for quadratic potentials
+    pod.cubic234[0] = PODMIN(pod.cubic234[0], pod.nbf2);
+    pod.cubic234[1] = PODMIN(pod.cubic234[1], pod.nbf3);
+    pod.cubic234[2] = PODMIN(pod.cubic234[2], pod.nbf4);    
+    pod.cubic333[0] = PODMIN(pod.cubic333[0], pod.nbf3);
+    pod.cubic333[1] = PODMIN(pod.cubic333[0], pod.nbf3);
+    pod.cubic333[2] = PODMIN(pod.cubic333[0], pod.nbf3);
+    pod.cubic444[0] = PODMIN(pod.cubic444[0], pod.nbf4);
+    pod.cubic444[1] = PODMIN(pod.cubic444[0], pod.nbf4);
+    pod.cubic444[2] = PODMIN(pod.cubic444[0], pod.nbf4);
+    
+    // number of descriptors for quadratic POD potentials        
     pod.nd22 = pod.quadratic22[0]*pod.quadratic22[1]*pod.nc2*pod.nc2;
     pod.nd23 = pod.quadratic23[0]*pod.quadratic23[1]*pod.nc2*pod.nc3;
-    pod.nd24 = pod.quadratic24[0]*pod.quadratic24[1]*pod.nc2*pod.nc4;
+    pod.nd24 = pod.quadratic24[0]*pod.quadratic24[1]*pod.nc2*pod.nc4;    
     pod.nd33 = pod.quadratic33[0]*pod.quadratic33[1]*pod.nc3*pod.nc3;
     pod.nd34 = pod.quadratic34[0]*pod.quadratic34[1]*pod.nc3*pod.nc4;
     pod.nd44 = pod.quadratic44[0]*pod.quadratic44[1]*pod.nc4*pod.nc4;
-        
+    
+    int nq;
+    nq = pod.quadratic22[0]*pod.nc2; pod.nd22 = nq*(nq+1)/2;
+    nq = pod.quadratic33[0]*pod.nc3; pod.nd33 = nq*(nq+1)/2;
+    nq = pod.quadratic44[0]*pod.nc4; pod.nd44 = nq*(nq+1)/2;
+    
+    // number of descriptors for cubic POD potentials        
+    pod.nd234 = pod.cubic234[0]*pod.cubic234[1]*pod.cubic234[2]*pod.nc2*pod.nc3*pod.nc4;
+    nq = pod.cubic333[0]*pod.nc3; pod.nd333 = nq*(nq+1)*(nq+2)/6;    
+    nq = pod.cubic444[0]*pod.nc4; pod.nd444 = nq*(nq+1)*(nq+2)/6;    
+    
     // total number of descriptors for all POD potentials
-    pod.nd = pod.nd1 + pod.nd2 + pod.nd3 + pod.nd4 + pod.nd22 + pod.nd23 + pod.nd24 + pod.nd33 + pod.nd34 + pod.nd44; 
+    pod.nd = pod.nd1 + pod.nd2 + pod.nd3 + pod.nd4 + pod.nd22 + pod.nd23 + pod.nd24 + 
+             pod.nd33 + pod.nd34 + pod.nd44 + pod.nd234 + pod.nd333 + pod.nd444; 
             
     std::cout<<"**************** Begin of POD Potentials ****************"<<std::endl;
     std::cout<<"species: ";
@@ -279,16 +339,21 @@ void read_pod(podstruct &pod, std::string pod_file)
     std::cout<<"inner cut-off radius: "<<pod.rin<<std::endl;
     std::cout<<"outer cut-off radius: "<<pod.rcut<<std::endl;
     std::cout<<"bessel parameters: "<<pod.besselparams[0]<<"  "<<pod.besselparams[1]<<"  "<<pod.besselparams[2]<<std::endl;
+    std::cout<<"bessel polynomial degree: "<<pod.besseldegree<<std::endl;
+    std::cout<<"inverse polynomial degree: "<<pod.inversedegree<<std::endl;
     std::cout<<"one-body potential: "<<pod.onebody<<std::endl;
     std::cout<<"two-body potential: "<<pod.twobody[0]<<"  "<<pod.twobody[1]<<"  "<<pod.twobody[2]<<std::endl;
-    std::cout<<"three-body potential: "<<pod.threebody[0]<<"  "<<pod.threebody[1]<<"  "<<pod.threebody[2]<<"  "<<pod.threebody[3]<<std::endl;
-    std::cout<<"four-body potential: "<<pod.fourbody[0]<<"  "<<pod.fourbody[1]<<"  "<<pod.fourbody[2]<<"  "<<pod.fourbody[3]<<std::endl;
+    std::cout<<"three-body potential: "<<pod.threebody[0]<<"  "<<pod.threebody[1]<<"  "<<pod.threebody[2]<<"  "<<pod.threebody[3]+1<<std::endl;
+    std::cout<<"four-body SNAP potential: "<<pod.snaptwojmax<<"  "<<pod.snapchemflag<<std::endl;
     std::cout<<"three-body quadratic22 potential: "<<pod.quadratic22[0]<<"  "<<pod.quadratic22[1]<<std::endl;
     std::cout<<"four-body quadratic23 potential: "<<pod.quadratic23[0]<<"  "<<pod.quadratic23[1]<<std::endl;
     std::cout<<"five-body quadratic24 potential: "<<pod.quadratic24[0]<<"  "<<pod.quadratic24[1]<<std::endl;
     std::cout<<"five-body quadratic33 potential: "<<pod.quadratic33[0]<<"  "<<pod.quadratic33[1]<<std::endl;
     std::cout<<"six-body quadratic34 potential: "<<pod.quadratic34[0]<<"  "<<pod.quadratic34[1]<<std::endl;
     std::cout<<"seven-body quadratic44 potential: "<<pod.quadratic44[0]<<"  "<<pod.quadratic44[1]<<std::endl;    
+    std::cout<<"seven-body cubic234 potential: "<<pod.cubic234[0]<<"  "<<pod.cubic234[1]<<"  "<<pod.cubic234[2]<<std::endl;
+    std::cout<<"seven-body cubic333 potential: "<<pod.cubic333[0]<<"  "<<pod.cubic333[1]<<"  "<<pod.cubic333[2]<<std::endl;    
+    std::cout<<"ten-body cubic444 potential: "<<pod.cubic444[0]<<"  "<<pod.cubic444[1]<<"  "<<pod.cubic444[2]<<std::endl;    
     std::cout<<"number of snapshots for two-body potential: "<<pod.ns2<<std::endl;
     std::cout<<"number of snapshots for three-body potential: "<<pod.ns3<<std::endl;
     std::cout<<"number of snapshots for four-body potential: "<<pod.ns4<<std::endl;    
@@ -306,6 +371,9 @@ void read_pod(podstruct &pod, std::string pod_file)
     std::cout<<"number of descriptors for five-body quadratic33 potential: "<<pod.nd33<<std::endl;
     std::cout<<"number of descriptors for six-body quadratic34 potential: "<<pod.nd34<<std::endl;
     std::cout<<"number of descriptors for seven-body quadratic44 potential: "<<pod.nd44<<std::endl;
+    std::cout<<"number of descriptors for seven-body cubic234 potential: "<<pod.nd333<<std::endl;
+    std::cout<<"number of descriptors for seven-body cubic333 potential: "<<pod.nd234<<std::endl;
+    std::cout<<"number of descriptors for ten-body cubic444 potential: "<<pod.nd444<<std::endl;
     std::cout<<"total number of descriptors for all POD potentials: "<<pod.nd<<std::endl;    
     std::cout<<"**************** End of POD Potentials ****************"<<std::endl<<std::endl;
 }
@@ -331,6 +399,12 @@ void read_data_file(double *fitting_weights, std::string &file_format, std::stri
             std::istringstream ss_line(line);                                    
             ss_line >> s;
                         
+// percentage_training_data_set 0.25
+// percentage_test_data_set 0.25
+// 
+// randomize_training_data_set 1
+// randomize_test_data_set 1
+            
             if (s == "fitting_weight_energy") {
                 ss_line >> d;           
                 fitting_weights[0] = d;               
@@ -358,6 +432,22 @@ void read_data_file(double *fitting_weights, std::string &file_format, std::stri
             else if (s == "energy_force_calculation_for_test_data_set") {
                 ss_line >> d;           
                 fitting_weights[6] = d;               
+            }
+            else if (s == "percentage_training_data_set") {
+                ss_line >> d;           
+                fitting_weights[7] = d;               
+            }
+            else if (s == "percentage_test_data_set") {
+                ss_line >> d;           
+                fitting_weights[8] = d;               
+            }
+            else if (s == "randomize_training_data_set") {
+                ss_line >> d;           
+                fitting_weights[9] = d;               
+            }
+            else if (s == "randomize_test_data_set") {
+                ss_line >> d;           
+                fitting_weights[10] = d;               
             }
             else if (s != "#") {
                 ss_line >> s2;                
@@ -391,9 +481,17 @@ void read_data_file(double *fitting_weights, std::string &file_format, std::stri
     std::cout<<"file extension: "<<file_extension<<std::endl;
     std::cout<<"path to training data set: "<<training_path<<std::endl;
     std::cout<<"path to test data set: "<<test_path<<std::endl;    
+    std::cout<<"training percentage: "<<fitting_weights[7]<<std::endl;
+    std::cout<<"test percentage: "<<fitting_weights[8]<<std::endl;
+    std::cout<<"randomize training data set: "<<fitting_weights[9]<<std::endl;
+    std::cout<<"randomize test data set: "<<fitting_weights[10]<<std::endl;
+    std::cout<<"error analysis for training data set: "<<fitting_weights[3]<<std::endl;
+    std::cout<<"error analysis for test data set: "<<fitting_weights[4]<<std::endl;
+    std::cout<<"energy/force calculation for training data set: "<<fitting_weights[5]<<std::endl;
+    std::cout<<"energy/force calculation for test data set: "<<fitting_weights[6]<<std::endl;
     std::cout<<"fitting weight for energy: "<<fitting_weights[0]<<std::endl;
     std::cout<<"fitting weight for force: "<<fitting_weights[1]<<std::endl;
-    std::cout<<"fitting weight for stress: "<<fitting_weights[2]<<std::endl;
+    std::cout<<"fitting weight for stress: "<<fitting_weights[2]<<std::endl;    
     std::cout<<"**************** End of Data File ****************"<<std::endl<<std::endl;
 }
 
@@ -448,7 +546,7 @@ std::vector<std::string> globVector(const std::string& pattern, std::vector<std:
     glob(pattern.c_str(),GLOB_TILDE,NULL,&glob_result);
     for(unsigned int i=0;i<glob_result.gl_pathc;++i){
       std::string s = string(glob_result.gl_pathv[i]);
-      std::cout << s << "\n";
+      //std::cout << s << "\n";
       files.push_back(s);
     }
     globfree(&glob_result);
@@ -457,17 +555,22 @@ std::vector<std::string> globVector(const std::string& pattern, std::vector<std:
 
 void get_exyz_files(std::vector<std::string>& files, std::string datapath, std::string extension)  
 {
-  //    int m = extension.length();
     std::vector<std::string> res = globVector(datapath + "/*." + extension, files);
-    // for (const auto & entry : std::filesystem::directory_iterator(datapath.c_str())) {
-    //     //std::string filename = (string) entry.path();        
-    //     //std::string filename(entry.path());
-    //     std::string filename{entry.path().u8string()};
-    //     int n = filename.length();           
-    //     std::string ext = filename.substr(n-m,n);   
-    //     if (ext == extension) files.push_back(filename.c_str());                                        
-    // }        
 }
+
+// void get_exyz_files(std::vector<std::string>& files, std::string datapath, std::string extension)  
+// {
+//     int m = extension.length();
+//     for (const auto & entry : std::filesystem::directory_iterator(datapath.c_str())) {
+//         //std::string filename = (string) entry.path();        
+//         //std::string filename(entry.path());
+//         std::string filename{entry.path().u8string()};
+//         int n = filename.length();           
+//         std::string ext = filename.substr(n-m,n);   
+//         if (ext == extension) files.push_back(filename.c_str());                                        
+//     }        
+// }
+ 
 
 int get_number_atom_exyz(std::vector<int>& num_atom, int& num_atom_sum, std::string file)  
 {
@@ -635,6 +738,174 @@ void get_data(datastruct &data, std::vector<std::string> species)
     std::cout << "maximum number of atoms: " <<data.num_atom_max << std::endl;   
 }
 
+std::vector<int> linspace(int start_in, int end_in, int num_in)
+{
+
+  std::vector<int> linspaced;
+
+  double start = static_cast<double>(start_in);
+  double end = static_cast<double>(end_in);
+  double num = static_cast<double>(num_in);
+
+  int elm;
+  
+  if (num == 0) { return linspaced; }
+  if (num == 1) 
+    {
+      elm = (int) std::round(start);
+      linspaced.push_back(elm);
+      return linspaced;
+    }
+
+  double delta = (end - start) / (num - 1);
+
+  for(int i=0; i < num-1; ++i)
+    {
+      elm = (int) std::round(start + delta * i);
+      linspaced.push_back(elm);
+    }
+  
+  elm = (int) std::round(end);
+  linspaced.push_back(elm); 
+                            
+  return linspaced;
+}
+
+std::vector<int> shuffle(int start_in, int end_in, int num_in)
+{
+    int sz = end_in - start_in + 1;    
+    std::vector<int> myvector(sz);
+
+    for (int i = 0; i<sz; i++)
+        myvector[i] = start_in + i;
+
+//     auto rng = std::default_random_engine {};
+//     std::shuffle (myvector.begin(), myvector.end(), rng);    
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::shuffle (myvector.begin(), myvector.end(), std::default_random_engine(seed));
+    
+    std::vector<int> shuffle_vec(num_in);
+    for (int i = 0; i<num_in; i++)
+        shuffle_vec[i] = myvector[i];    
+    
+    return shuffle_vec;
+}    
+  
+std::vector<int> select(int n, double percentage, int randomize)
+{
+    std::vector<int> selected;
+        
+    int m = (int) std::round(n*percentage);    
+    m = PODMAX(m, 1);
+    
+    selected = (randomize==1) ? shuffle(1, n, m) : linspace(1, n, m);
+        
+    return selected;
+}
+
+void select_data(datastruct &newdata, datastruct data)
+{
+    double percentage = data.percentage;
+    int randomize = data.randomize;        
+        
+    if (randomize==1) 
+        std::cout << "Select " <<data.percentage*100 <<" percent of the data set at random using shuffle"<< std::endl;   
+    else 
+        std::cout << "Select " <<data.percentage*100 <<" percent of the data set deterministically using linspace"<< std::endl;   
+
+    int nfiles = data.data_files.size();    // number of files    
+    std::vector<std::vector<int>> selected(nfiles);
+
+    newdata.num_config.resize(nfiles);    
+    newdata.num_config_cumsum.resize(nfiles+1);
+    newdata.num_atom_each_file.resize(nfiles);  
+    
+    for (int file = 0; file < nfiles; file++) {   
+        //cout<<data.filenames[file]<<endl;
+        int nconfigs = data.num_config[file];
+        selected[file] = select(nconfigs, percentage, randomize);        
+        int ns = (int) selected[file].size(); // number of selected configurations     
+//         cout<<nconfigs<<"  "<<ns<<endl;
+//         for (int ii=0; ii < ns; ii++) 
+//             cout<<selected[file][ii]<<"  ";
+//         cout<<endl;
+        
+        newdata.num_config[file] = ns;     
+        int num_atom_sum = 0;
+        for (int ii=0; ii < ns; ii++) { // loop over each selected configuration in a file                                
+            int ci =  data.num_config_cumsum[file] + selected[file][ii] - 1;
+            int natom = data.num_atom[ci];    
+            newdata.num_atom.push_back(natom);                                        
+            num_atom_sum += natom; 
+        }            
+        newdata.num_atom_each_file[file] = num_atom_sum;  
+    }    
+    int len = newdata.num_atom.size();
+    newdata.num_atom_min = cpuArrayMin(&newdata.num_atom[0], len);    
+    newdata.num_atom_max = cpuArrayMax(&newdata.num_atom[0], len);    
+    newdata.num_atom_cumsum.resize(len+1);
+    cpuCumsum(&newdata.num_atom_cumsum[0], &newdata.num_atom[0], len+1); 
+    newdata.num_atom_sum = newdata.num_atom_cumsum[len];    
+    cpuCumsum(&newdata.num_config_cumsum[0], &newdata.num_config[0], nfiles+1);         
+    newdata.num_config_sum = newdata.num_atom.size();    
+    
+    int n = data.num_config_sum;
+    newdata.lattice = (double *) malloc(9*n*sizeof(double));
+    newdata.stress = (double *) malloc(9*n*sizeof(double));
+    newdata.energy = (double *) malloc(n*sizeof(double));    
+    n = data.num_atom_sum;
+    newdata.position = (double *) malloc(3*n*sizeof(double));
+    newdata.force = (double *) malloc(3*n*sizeof(double));
+    newdata.atomtype = (int *) malloc(n*sizeof(int));    
+        
+    int cn = 0, dim=3;
+    for (int file = 0; file < nfiles; file++) {           
+        int ns = (int) selected[file].size(); // number of selected configurations             
+        for (int ii=0; ii < ns; ii++) { // loop over each selected configuration in a file                                
+            int ci =  data.num_config_cumsum[file] + selected[file][ii] - 1;
+            int natom = data.num_atom[ci];    
+            int natom_cumsum = data.num_atom_cumsum[ci];    
+            
+            int natomnew = newdata.num_atom[cn];    
+            int natomnew_cumsum = newdata.num_atom_cumsum[cn];    
+            
+            if (natom != natomnew)
+                error("number of atoms in the new data set must be the same as that in the old data set.");
+                
+            int *atomtype = &data.atomtype[natom_cumsum];
+            double *position = &data.position[dim*natom_cumsum];
+            double *force = &data.force[dim*natom_cumsum];
+            
+            newdata.energy[cn] = data.energy[ci];
+            for (int j=0; j<9; j++) {
+                newdata.stress[j+9*cn] = data.stress[j+9*ci];
+                newdata.lattice[j+9*cn] = data.lattice[j+9*ci];
+            }
+                        
+            for (int na=0; na<natom; na++) {                
+                newdata.atomtype[na+natomnew_cumsum] = atomtype[na];
+                for (int j=0; j<dim; j++) {
+                    newdata.position[j + 3*na + dim*natomnew_cumsum] = position[j + 3*na];
+                    newdata.force[j + 3*na + dim*natomnew_cumsum] = force[j + 3*na];
+                }                                
+            }
+            cn += 1;
+        }                    
+    }        
+    
+    data.copydatainfo(newdata);    
+
+    std::cout<<"data file  | # configurations (selected) | # atoms (selected) | # configurations (original) | # atoms (original) "<<std::endl;
+    for (int i=0; i< (int) newdata.data_files.size(); i++) {
+        string filename = newdata.data_files[i].substr(newdata.data_path.size()+1,newdata.data_files[i].size());
+        newdata.filenames.push_back(filename.c_str());                                        
+        std::cout<<newdata.filenames[i]<<"   |   "<<newdata.num_config[i]<<"   |   "<<newdata.num_atom_each_file[i]<<"   |   "<<data.num_config[i]<<"   |   "<<data.num_atom_each_file[i]<< std::endl;  
+    }    
+    std::cout << "number of files: " <<newdata.data_files.size() << std::endl;   
+    std::cout << "number of configurations in all files (selected and original): " <<newdata.num_config_sum<<" and "<<data.num_config_sum << std::endl;   
+    std::cout << "number of atoms in all files (selected and original): "<<newdata.num_atom_sum <<" and "<< data.num_atom_sum << std::endl;          
+}
+
 void read_input_files(podstruct &pod, datastruct &traindata, datastruct &testdata, 
         std::string pod_file, std::string data_file, std::string coeff_file)
 {
@@ -645,20 +916,44 @@ void read_input_files(podstruct &pod, datastruct &traindata, datastruct &testdat
     if (coeff_file != "")
         read_coeff_file(pod, coeff_file);    
     
+    datastruct data;
+            
     // read data input file to datastruct
-    read_data_file(traindata.fitting_weights, traindata.file_format, traindata.file_extension, 
-            testdata.data_path, traindata.data_path, data_file);
+    read_data_file(data.fitting_weights, data.file_format, data.file_extension, 
+            testdata.data_path, data.data_path, data_file);
         
-    traindata.training_analysis = (int) traindata.fitting_weights[3];
-    traindata.test_analysis = (int) traindata.fitting_weights[4];
-    traindata.training_calculation = (int) traindata.fitting_weights[5];
-    traindata.test_calculation = (int) traindata.fitting_weights[6];
+    data.training_analysis = (int) data.fitting_weights[3];
+    data.test_analysis = (int) data.fitting_weights[4];
+    data.training_calculation = (int) data.fitting_weights[5];
+    data.test_calculation = (int) data.fitting_weights[6];    
+    data.percentage = data.fitting_weights[7];    
+    data.randomize = (int) data.fitting_weights[9];    
     
-    std::cout<<"**************** Begin of Training Data Set ****************"<<std::endl;
-    if ((int) traindata.data_path.size() > 1) 
-        get_data(traindata, pod.species);
-    std::cout<<"**************** End of Training Data Set ****************"<<std::endl<<std::endl;
-                
+    data.copydatainfo(traindata); 
+    
+    if (data.percentage >= 1.0) {               
+        std::cout<<"**************** Begin of Training Data Set ****************"<<std::endl;        
+        if ((int) traindata.data_path.size() > 1) 
+            get_data(traindata, pod.species);
+        else 
+            error("data set is not found");    
+        std::cout<<"**************** End of Training Data Set ****************"<<std::endl<<std::endl;                    
+    }
+    else {
+        std::cout<<"**************** Begin of Training Data Set ****************"<<std::endl;        
+        if ((int) data.data_path.size() > 1) 
+            get_data(data, pod.species);
+        else 
+            error("data set is not found");    
+        std::cout<<"**************** End of Training Data Set ****************"<<std::endl<<std::endl;                    
+        
+        std::cout<<"**************** Begin of Select Training Data Set ****************"<<std::endl;
+        select_data(traindata, data);        
+        std::cout<<"**************** End of Select Training Data Set ****************"<<std::endl<<std::endl;
+        
+        data.freememory(1);
+    }
+         
     if (((int) testdata.data_path.size() > 1) && (testdata.data_path != traindata.data_path)) {
         testdata.training = 0;
         testdata.file_format = traindata.file_format;
@@ -667,28 +962,83 @@ void read_input_files(podstruct &pod, datastruct &traindata, datastruct &testdat
         testdata.test_analysis = traindata.test_analysis;
         testdata.training_calculation = traindata.training_calculation;
         testdata.test_calculation = traindata.test_calculation;
+        testdata.percentage = traindata.fitting_weights[8];
+        testdata.randomize = (int) traindata.fitting_weights[10];        
         std::cout<<"**************** Begin of Test Data Set ****************"<<std::endl;
         get_data(testdata, pod.species);
         std::cout<<"**************** End of Test Data Set ****************"<<std::endl<<std::endl;    
     }
     else {
         testdata.data_path = traindata.data_path;
-    }        
+    }            
 }
 
-void get_position(double *x, datastruct &data, int ci)
-{
-    int inum = data.num_atom[ci];    
-    int start = data.num_atom_cumsum[ci];          
-    cpuArrayCopy(x, &data.position[3*start], 3*inum);        
-}
+// void read_input_files(podstruct &pod, datastruct &traindata, datastruct &testdata, 
+//         std::string pod_file, std::string data_file, std::string coeff_file)
+// {
+//     // read pod input file to podstruct
+//     read_pod(pod, pod_file);    
+//         
+//     // read pod coefficient file to podstruct
+//     if (coeff_file != "")
+//         read_coeff_file(pod, coeff_file);    
+//     
+//     // read data input file to datastruct
+//     read_data_file(traindata.fitting_weights, traindata.file_format, traindata.file_extension, 
+//             testdata.data_path, traindata.data_path, data_file);
+//         
+//     traindata.training_analysis = (int) traindata.fitting_weights[3];
+//     traindata.test_analysis = (int) traindata.fitting_weights[4];
+//     traindata.training_calculation = (int) traindata.fitting_weights[5];
+//     traindata.test_calculation = (int) traindata.fitting_weights[6];    
+//     traindata.percentage = traindata.fitting_weights[7];    
+//     traindata.randomize = (int) traindata.fitting_weights[9];    
+//     
+//     std::cout<<"**************** Begin of Training Data Set ****************"<<std::endl;
+//     if ((int) traindata.data_path.size() > 1) 
+//         get_data(traindata, pod.species);
+//     std::cout<<"**************** End of Training Data Set ****************"<<std::endl<<std::endl;
+//                     
+//     if (traindata.percentage < 1.0) {
+//         std::cout<<"**************** Begin of Select Training Data Set ****************"<<std::endl;
+//         datastruct newdata;
+//         select_data(newdata, traindata);        
+//         std::cout<<"**************** End of Select Training Data Set ****************"<<std::endl<<std::endl;
+//         error("here");
+//     }
+//     
+//     if (((int) testdata.data_path.size() > 1) && (testdata.data_path != traindata.data_path)) {
+//         testdata.training = 0;
+//         testdata.file_format = traindata.file_format;
+//         testdata.file_extension = traindata.file_extension;      
+//         testdata.training_analysis = traindata.training_analysis;
+//         testdata.test_analysis = traindata.test_analysis;
+//         testdata.training_calculation = traindata.training_calculation;
+//         testdata.test_calculation = traindata.test_calculation;
+//         testdata.percentage = traindata.fitting_weights[8];
+//         testdata.randomize = (int) traindata.fitting_weights[10];
+//         std::cout<<"**************** Begin of Test Data Set ****************"<<std::endl;
+//         get_data(testdata, pod.species);
+//         std::cout<<"**************** End of Test Data Set ****************"<<std::endl<<std::endl;    
+//     }
+//     else {
+//         testdata.data_path = traindata.data_path;
+//     }        
+// }
 
-void get_force(double *x, datastruct &data, int ci)
-{
-    int inum = data.num_atom[ci];    
-    int start = data.num_atom_cumsum[ci];          
-    cpuArrayCopy(x, &data.force[3*start], 3*inum);        
-}
+// void get_position(double *x, datastruct &data, int ci)
+// {
+//     int inum = data.num_atom[ci];    
+//     int start = data.num_atom_cumsum[ci];          
+//     cpuArrayCopy(x, &data.position[3*start], 3*inum);        
+// }
+// 
+// void get_force(double *x, datastruct &data, int ci)
+// {
+//     int inum = data.num_atom[ci];    
+//     int start = data.num_atom_cumsum[ci];          
+//     cpuArrayCopy(x, &data.force[3*start], 3*inum);        
+// }
 
 #endif
 
