@@ -14,7 +14,6 @@
 #include <glob.h>
 #include <random>
 #include <algorithm>
-#include <chrono>
 
 #define _USE_MATH_DEFINES
 
@@ -28,13 +27,23 @@ using std::ofstream;
 using std::ifstream;
 using std::ostringstream;
 
+void PrintErrorAndExit(const char* errmsg, const char *file, int line ) 
+{    
+    printf( "%s in %s at line %d\n", errmsg, file, line );
+    
+#ifdef  USE_MPI       
+    MPI_Finalize();    
+#endif
+    
+    exit( 1 );    
+}
+
+#define pod_error( errmsg ) (PrintErrorAndExit( errmsg, __FILE__, __LINE__ ))
+
 #include "podcommon.h"
-#include "cpuArrayOperations.cpp"
-#include "readinputfiles.cpp"
-#include "podneighborlist.cpp"
-#include "snap.cpp"
 #include "pod.cpp"
-#include "podfitting.cpp"
+#include "podfit.cpp"
+#include "pairpod.cpp"
 
 int main(int argc, char** argv) 
 {
@@ -51,49 +60,29 @@ int main(int argc, char** argv)
         coeff_file = std::string(argv[3]); // coefficient input file           
     else
         coeff_file = "";
-        
-    // data structures defined in podcommon.h
-    podstruct pod;        
-    snastruct sna;        
-    datastruct traindata;    
-    datastruct testdata;    
-    descriptorstruct desc;            
-    neighborstruct nb;
+            
+    // create podfit object
+    CPODFIT podfit(pod_file, data_file, coeff_file);
     
-    read_input_files(pod, traindata, testdata, pod_file, data_file, coeff_file);                            
-        
-    if (pod.snaptwojmax > 0) {
-        InitSnap(sna, pod.snapelementradius, pod.snapelementweight, pod.rcut, 
-            0.0, pod.snaprfac0, pod.snaptwojmax, pod.nelements, pod.snapchemflag);
-        //sna.printout();
-    }
-    
-    // allocate memory for data structures
-    if ((int) traindata.data_path.size() > 1) 
-        allocate_memory(desc, nb, pod, sna, traindata);    
-    else if ((int) testdata.data_path.size() > 1)
-        allocate_memory(desc, nb, pod, sna, testdata);
-        
-    if (coeff_file != "") // get POD coefficients from an input file           
-        cpuArrayCopy(desc.c, pod.coeff, pod.nd);
-    else // compute POD coefficients using least-squares method
-        least_squares_fit(desc, nb, pod, sna, traindata);
+    // compute POD coefficients using least-squares method
+    podfit.least_squares_fit(podfit.traindata);
     
     // calculate errors for the training data set
-    if ((traindata.training_analysis) && ((int) traindata.data_path.size() > 1) )
-        error_analsysis(desc, nb, pod, sna, traindata, desc.c);    
-            
+    if ((podfit.traindata.training_analysis) && ((int) podfit.traindata.data_path.size() > 1) )
+        podfit.error_analsysis(podfit.traindata, podfit.desc.c);    
+    
     // calculate errors for the test data set
-    if ((testdata.test_analysis) && ((int) testdata.data_path.size() > 1) && (testdata.data_path != traindata.data_path)) 
-        error_analsysis(desc, nb, pod, sna, testdata, desc.c);    
+    if ((podfit.testdata.test_analysis) && ((int) podfit.testdata.data_path.size() > 1) && (podfit.testdata.data_path != podfit.traindata.data_path)) 
+        podfit.error_analsysis(podfit.testdata, podfit.desc.c);    
     
     // calculate energy and force for the training data set
-    if ((traindata.training_calculation) && ((int) traindata.data_path.size() > 1) )
-        energyforce_calculation(desc, nb, pod, sna, traindata, desc.c);   
+    if ((podfit.traindata.training_calculation) && ((int) podfit.traindata.data_path.size() > 1) )
+        podfit.energyforce_calculation(podfit.traindata, podfit.desc.c);   
     
     // calculate energy and force for the test data set
-    if ((testdata.test_calculation) && ((int) testdata.data_path.size() > 1) && (testdata.data_path != traindata.data_path) )
-        energyforce_calculation(desc, nb, pod, sna, testdata, desc.c);   
+    if ((podfit.testdata.test_calculation) && ((int) podfit.testdata.data_path.size() > 1) && (podfit.testdata.data_path != podfit.traindata.data_path) )
+        podfit.energyforce_calculation(podfit.testdata, podfit.desc.c);   
+    
 }
 
 
