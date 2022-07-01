@@ -1,54 +1,67 @@
 #ifndef __READINPUTFILES
 #define __READINPUTFILES
+#include "HalideBuffer.h"
+#include "HalideRuntime.h"
+#include "snapshot.h"
 
+using Halide::Runtime::Buffer;
 void snapshots(double *rbf, double *xij, double *besselparams, double rin, double rcut, 
         int besseldegree, int inversedegree, int nbesselpars, int N)
 {
-    double rmax = rcut-rin;
-    for (int n=0; n<N; n++) {            
-        double dij = xij[n];    
 
-        double r = dij - rin;        
-        double y = r/rmax;            
-        double y2 = y*y;
-        double y3 = 1.0 - y2*y;
-        double y4 = y3*y3 + 1e-6;
-        double y5 = pow(y4, 0.5);
-        double y6 = exp(-1.0/y5);
-        double fcut = y6/exp(-1.0);
+  Halide::Runtime::Buffer<double> rbf_b(rbf, 1 + nbesselpars, std::max(besseldegree, inversedegree), N);
+  Halide::Runtime::Buffer<double> xij_b(xij, N);
+  Halide::Runtime::Buffer<double> bp_b(besselparams, nbesselpars);
+  snapshot(xij_b, bp_b, rin, rcut, inversedegree, besseldegree, nbesselpars, N, rbf_b);
+
+  
+  
+    // double rmax = rcut-rin;
+    // for (int n=0; n<N; n++) {            
+    //     double dij = xij[n];    
+
+    //     double r = dij - rin;        
+    //     double y = r/rmax;            
+    //     double y2 = y*y;
+    //     double y3 = 1.0 - y2*y;
+    //     double y4 = y3*y3 + 1e-6;
+    //     double y5 = pow(y4, 0.5);
+    //     double y6 = exp(-1.0/y5);
+    //     double fcut = y6/exp(-1.0);
         
-        for (int j=0; j<nbesselpars; j++) {            
-            double alpha = besselparams[j];    
-            if (fabs(alpha) <= 1.0e-6) alpha = 1e-3;                        
-            double x =  (1.0 - exp(-alpha*r/rmax))/(1.0-exp(-alpha));
-            //if (n==0) std::cout<<x<<" "<<r<<std::endl;
+    //     for (int j=0; j<nbesselpars; j++) {            
+    //         double alpha = besselparams[j];    
+    //         if (fabs(alpha) <= 1.0e-6) alpha = 1e-3;                        
+    //         double x =  (1.0 - exp(-alpha*r/rmax))/(1.0-exp(-alpha));
+    //         //if (n==0) std::cout<<x<<" "<<r<<std::endl;
             
-            for (int i=0; i<besseldegree; i++) {
-                double a = (i+1)*M_PI;
-                double b = (sqrt(2.0/(rmax))/(i+1));
-                int nij = n + N*i + N*besseldegree*j;            
-                rbf[nij] = b*fcut*sin(a*x)/r;
-            }
-        }
+    //         for (int i=0; i<besseldegree; i++) {
+    //             double a = (i+1)*M_PI;
+    //             double b = (sqrt(2.0/(rmax))/(i+1));
+    //             int nij = n + N*i + N*besseldegree*j;            
+    //             rbf[nij] = b*fcut*sin(a*x)/r;
+    //         }
+    //     }
 
-        for (int i=0; i<inversedegree; i++) {
-            int p = besseldegree*nbesselpars + i;
-            int nij = n + N*p;     
-            double a = pow(dij, (double) (i+1.0));
-            rbf[nij] = fcut/a;
-        }
+    //     for (int i=0; i<inversedegree; i++) {
+    //         int p = besseldegree*nbesselpars + i;
+    //         int nij = n + N*p;     
+    //         double a = pow(dij, (double) (i+1.0));
+    //         rbf[nij] = fcut/a;
+    //     }
         
-        //if (n==0) std::cout<<dij<<" "<<rin<<" "<<rcut<<" "<<fcut<<" "<<rbf[0]<<std::endl;
-    }
+    //     //if (n==0) std::cout<<dij<<" "<<rin<<" "<<rcut<<" "<<fcut<<" "<<rbf[0]<<std::endl;
+    // }
 }
 
 void eigenvaluedecomposition(double *Phi, double *Lambda, double *besselparams, double rin, double rcut, 
         int besseldegree, int inversedegree, int nbesselpars, int N)
 {
     int ns = besseldegree*nbesselpars + inversedegree;
-    
+    int overapprox = std::max(// besseldegree, inversedegree
+			      )*(nbesselpars + 1);
     double *xij = (double *) malloc(N*sizeof(double));
-    double *S = (double *) malloc(N*ns*sizeof(double));
+    double *S = (double *) malloc(N*overapprox*sizeof(double));
     double *Q = (double *) malloc(N*ns*sizeof(double));
     double *A = (double *) malloc(ns*ns*sizeof(double));
     double *b = (double *) malloc(ns*sizeof(double));

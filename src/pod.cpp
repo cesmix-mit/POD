@@ -29,7 +29,7 @@ void radialbasis(double *rbf, double *drbf, double *xij, double *besselparams, d
             double alpha = besselparams[j];    
             if (fabs(alpha) <= 1.0e-6) alpha = 1e-3;                        
             double x =  (1.0 - exp(-alpha*r/rmax))/(1.0-exp(-alpha));
-            double dx = (alpha/rmax)*exp(-(alpha*r/rmax))/(1.0 - exp(-alpha));        
+            double dx = (alpha/rmax)*exp(-(alpha*r/rmax))/(1.0 - exp(-alpha));     
 
             for (int i=0; i<besseldegree; i++) {
                 double a = (i+1)*M_PI;
@@ -106,7 +106,7 @@ void pod2body(double *eatom, double *fatom, double *y, double *Phi, double *bess
     int *ti = &tmpint[2*Nij]; // Nij
     int *tj = &tmpint[3*Nij]; // Nij
     podNeighPairs(rij, y, ai, aj, ti, tj, pairlist, pairnumsum, atomtype, 
-                alist, natom, dim);
+                 alist, natom, dim);
     
     double *e2ij = &tmpmem[3*Nij]; // Nij*nrbf
     double *f2ij = &tmpmem[3*Nij+Nij*nrbf]; // dim*Nij*nrbf
@@ -1497,7 +1497,7 @@ void energyforce_calculation(descriptorstruct &desc, neighborstruct &nb, podstru
 //                  nbesselpars, ns2, nrbf2, nelements, natom, Nij); 
 //                 
 //         // three-body descriptors
-//         pod3body(eatom3, fatom3, y, Phi3, besselparams, tmpmem, rin, rcut, tmpint, 
+//         pod3body(eatom3, fatom3, y, Phiz3, besselparams, tmpmem, rin, rcut, tmpint, 
 //                  elemindex, pairlist, pairnum, pairnumsum, atomtype, alist, pdegree3, 
 //                  nbesselpars, ns3, nrbf3, nabf, nelements, natom, Nj, Nij, Nijk); 
 //         
