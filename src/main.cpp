@@ -61,28 +61,33 @@ int main(int argc, char** argv)
     else
         coeff_file = "";
             
-    // create podfit object
-    CPODFIT podfit(pod_file, data_file, coeff_file);
-    
-    // compute POD coefficients using least-squares method
-    podfit.least_squares_fit(podfit.traindata);
-    
-    // calculate errors for the training data set
-    if ((podfit.traindata.training_analysis) && ((int) podfit.traindata.data_path.size() > 1) )
-        podfit.error_analsysis(podfit.traindata, podfit.desc.c);    
-    
-    // calculate errors for the test data set
-    if ((podfit.testdata.test_analysis) && ((int) podfit.testdata.data_path.size() > 1) && (podfit.testdata.data_path != podfit.traindata.data_path)) 
-        podfit.error_analsysis(podfit.testdata, podfit.desc.c);    
-    
-    // calculate energy and force for the training data set
-    if ((podfit.traindata.training_calculation) && ((int) podfit.traindata.data_path.size() > 1) )
-        podfit.energyforce_calculation(podfit.traindata, podfit.desc.c);   
-    
-    // calculate energy and force for the test data set
-    if ((podfit.testdata.test_calculation) && ((int) podfit.testdata.data_path.size() > 1) && (podfit.testdata.data_path != podfit.traindata.data_path) )
-        podfit.energyforce_calculation(podfit.testdata, podfit.desc.c);   
-    
+    if (argc == 3) {
+        // create podfit object
+        CPODFIT podfit(pod_file, data_file, coeff_file);
+
+        // compute POD coefficients using least-squares method
+        podfit.least_squares_fit(podfit.traindata);
+
+        // calculate errors for the training data set
+        if ((podfit.traindata.training_analysis) && ((int) podfit.traindata.data_path.size() > 1) )
+            podfit.error_analsysis(podfit.traindata, podfit.desc.c);    
+
+        // calculate errors for the test data set
+        if ((podfit.testdata.test_analysis) && ((int) podfit.testdata.data_path.size() > 1) && (podfit.testdata.data_path != podfit.traindata.data_path)) 
+            podfit.error_analsysis(podfit.testdata, podfit.desc.c);    
+
+        // calculate energy and force for the training data set
+        if ((podfit.traindata.training_calculation) && ((int) podfit.traindata.data_path.size() > 1) )
+            podfit.energyforce_calculation(podfit.traindata, podfit.desc.c);   
+
+        // calculate energy and force for the test data set
+        if ((podfit.testdata.test_calculation) && ((int) podfit.testdata.data_path.size() > 1) && (podfit.testdata.data_path != podfit.traindata.data_path) )
+            podfit.energyforce_calculation(podfit.testdata, podfit.desc.c);   
+    }
+    else {
+        CPairPOD pairpod(pod_file, coeff_file, data_file);        
+        pairpod.error_analsysis();  
+    }    
 }
 
 

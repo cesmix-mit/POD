@@ -12,6 +12,7 @@ private:
     
     int latticecoords(double *y, int *alist, double *x, double *a1, double *a2, double *a3, double rcut, int *pbc, int nx);
     
+    int podneighborcount(double *r, double rcutsq, int nx, int N, int dim);
     int podneighborlist(int *neighlist, int *numneigh, double *r, double rcutsq, int nx, int N, int dim);
     
     void read_data_file(double *inputs, std::string &file_format, std::string &file_extension, 
@@ -29,6 +30,7 @@ private:
     void get_data(std::vector<std::string> species);
 
     void read_data_files(std::string data_file, std::vector<std::string> species);    
+        
 public:
     struct datastruct {     
         std::string file_format;
@@ -55,20 +57,12 @@ public:
         double *force=NULL;
         int *atomtype=NULL;
 
-        int analysis = 0;
-        int runMD = 0;
-        int savecalculation = 0;
-        int savefrequency = 0;
-
         void copydatainfo(datastruct &data) {
             data.data_path = data_path;        
             data.file_format = file_format;
             data.file_extension = file_extension;              
             data.data_files = data_files;
             data.filenames = filenames;            
-            data.analysis = analysis;
-            data.runMD = runMD;
-            data.savecalculation = savecalculation;
         }                
 
         void freememory(int backend)
@@ -91,25 +85,46 @@ public:
     
     // constructor 
     CPairPOD(std::string pod_file, std::string coeff_file, std::string data_file); 
+    void InitPairPOD(std::string pod_file, std::string coeff_file, std::string data_file); 
     
     int backend=1;
     int dim = 3;
     int atommemory = 0;
     int podpairlist=0;
     int lammpspairlist=0;
+    int analysis = 0;
+    int runMD = 0;
+    int savecalculation = 0;
+    int savefrequency = 0;
+    int blocksize=8192;      // avereage size of computation blocks
+    int randomrotation = 0;
     
-    int *atomtype=NULL;
-    double *pos;
-    double *vel;
-    double energy;        
-    double *force;
-    double *stress;
+    double energy=0.0;    // potential energy    
+    double *force=NULL;   // atomic forces
+    double *stress=NULL;  // stress tensor
+    int *atomtype=NULL;   // atomic types for all atoms
+    double *pos=NULL;     // positions of atoms
+    double *vel=NULL;     // velocity of atoms
     
     double *gd=NULL;         // global linear descriptors 
     double *podcoeff=NULL;   // POD coefficients  
-    double *effcoeff=NULL;   // effective coefficients
-    int ncoeff;              // number of coefficients
-    int ndesc;               // number of linear descriptors 
+    double *energycoeff=NULL; // energy coefficients
+    double *forcecoeff=NULL; // force coefficients
+    
+    double *y=NULL;      // [dim * nmaxatom] positions of own and ghost atoms        
+    int *atomID=NULL;  // [nmaxatom]  IDs of owned and ghost atoms      
+    int *pairlist=NULL;  // [nmaxpairs] indices of neighbors for owned atoms    
+    int *pairnum=NULL;   // [nmaxatom] number of pairs for all atoms i 
+    int *pairnumsum=NULL;// [nmaxatom+1] cumulative sum of pairnum
+    
+    int numatoms=0;    // number of atom in the simulation box    
+    int nlocalatom=0;  // number of owned atoms    
+    int nghostatom=0;  // number of ghost atoms
+    int ntotalatom=0;  // number of owned + ghost atoms
+    int nlocalmax=0;   // maximum number of owned atoms
+    int nmaxatom=0;    // maximum number of atoms (nmaxatom >= ntotalatom)   
+    int natompairs=0;  // total number of atom pairs for owned atoms    
+    int nmaxpairs=0;   // maximum number of atom pairs for owned atoms    
     
     void compute(int, int);
     void settings(int, char **);
@@ -118,61 +133,98 @@ public:
     double init_one(int, int);
     double memory_usage();  
     void *extract(const char *, int &); 
+        
+    void check_tempmemory(int start, int end);       
+    void check_tempmemory(double **x, int **firstneigh, int *numneigh, int *ilist, int start, int end);
+    void estimate_tempmemory();    
+    void free_tempmemory();
+    void allocate_tempmemory();
+        
+    void check_pairmemory(double *x, double *a1, double *a2, double *a3, int natom);    
+    void free_pairmemory();
+    void allocate_pairmemory();
     
-    void free_memory();    
+    void check_atommemory(int inum, int nall);
+    void free_atommemory();    
+    void allocate_atommemory();    
+    
+    void free_memory();            
     void allocate_memory();
-    void allocate_memory(int Ni, int Ng, int Nij);
-    void allocate_memory(datastruct data);
-    
+    void estimate_memory(datastruct data);    
+        
+    void get_atomblocks(int natom);
     
     int podfullneighborlist(double *y, int *alist, int *pairlist, int *pairnum, int *pairnumsum, 
         double *x, double *a1, double *a2, double *a3, double rcut, int *pbc, int nx);
-
-    //void podNeighPairs(double *x, double *a1, double *a2, double *a3, double rcut, int *pbc, int natom);
         
-    void podNeighPairs(int istart, int iend);
+    void podNeighPairs(int *atomtype, int istart, int iend);
         
     void lammpsNeighPairs(double **x, int **firstneigh, int *atomtype, int *numneigh, 
             int *ilist, int istart, int iend);
             
-    double podenergyforce();   
-    double lammpsenergyforce(double **f, double **x, int **firstneigh, int *atomtype, 
-            int *numneigh, int *ilist);     
+    double podenergy(double *x, double *a1, double *a2, double *a3, int *atomtype, int inum);    
+    double podeatom(double *eatom, double *x, double *a1, double *a2, double *a3, int *atomtypes, int inum);
+    void podforce(double *f, double *x, double *a1, double *a2, double *a3, int *atomtypes, int inum);
+    double podenergyforce(double *f, double *x, double *a1, double *a2, double *a3, int *atomtype, int inum);   
     
-protected:       
-    double *rij=NULL;     // xj - xi    
-    int *idxi=NULL;
-    int *ai=NULL;
-    int *aj=NULL;
-    int *ti=NULL;
-    int *tj=NULL;
+    double lammpsenergy(double **x, int **firstneigh, int *atype, int *numneigh, int *ilist, int inum, int nall);
+    double lammpseatom(double *eatom, double **x, int **firstneigh, int *atomtypes, int *numneigh, 
+        int *ilist, int inum, int nall);
+    void lammpsforce(double **f, double **x, int **firstneigh, int *atomtypes, 
+        int *numneigh, int *ilist, int inum, int nall);
+    double lammpsenergyforce(double **f, double **x, int **firstneigh, int *atomtype, int *numneigh, int *ilist, int inum, int nall);     
             
-    double *y=NULL;     // positions of own and ghost atoms    
-    int *pairlist; //     
-    int *pairnum;
-    int *pairnumsum=NULL;    
-    int *atomlist;    
+    void print_analysis(double *outarray, double *errors);
+    void error_analsysis();
     
-    double *tmpmem;
-    int *tmpint;
-    int szd;    // size of tmpmem
-    int szi;    // size of tmpint
-
-    int nboxatom;    // number of atom in the simulation box    
-    int nlocalatom;   // number of owned atoms
-    int nghostatom; // number of ghost atoms
-    int ntotalatom; // number of owned + ghost atoms
-    int nmaxatom;  // maximum number of atoms (nmaxatom >= ntotalatom)   
-    int nblock; // number of atoms per computation block    
-    int nblockmax; // maximum number of atoms per computation block    
-    int nij;    //  number of atom pairs per computation block    
-    int nijmax;  // maximum number of atom pairs per computation block      
+    void printinfo()
+    {        
+        printf("print pairpod information: \n"); 
+        printf("backend %d \n", backend); 
+        printf("podpairlist %d \n", podpairlist);         
+        printf("lammpspairlist %d \n", lammpspairlist);         
+        printf("analysis %d \n", analysis);         
+        printf("runMD %d \n", runMD); 
+        printf("savecalculation %d \n", savecalculation);
+        printf("savefrequency %d \n", savefrequency);       
+        printf("numatoms %d \n", numatoms);
+        printf("nlocalatom %d \n", nlocalatom);
+        printf("nghostatom %d \n", nghostatom);
+        printf("ntotalatom %d \n", ntotalatom);
+        printf("nlocalmax %d \n", nlocalmax);
+        printf("nmaxatom %d \n", nmaxatom);
+        printf("natompairs %d \n", natompairs);        
+        printf("nmaxpairs %d \n", nmaxpairs);                       
+        printf("numblocks %d \n", numblocks);        
+        printf("blocksize %d \n", blocksize);
+        printf("nablock %d \n", nablock);
+        printf("nablockmax %d \n", nablockmax);       
+        printf("nij %d \n", nij);       
+        printf("nijmax %d \n", nijmax);       
+        printf("szd %d \n", szd);       
+    }    
+protected:                   
+    int atomblocks[1001]; // store sizes of computation blocks   
+    int numblocks=1;      // number of computation blocks                        
+    int nablock=0;        // number of atoms per computation block    
+    int nablockmax=0;     // maximum number of atoms per computation block    
+    int nij=0;    //  number of atom pairs per computation block    
+    int nijmax=0;  // maximum number of atom pairs per computation block              
+    int szd=0;    // size of tmpmem
     
-    int compblocks; // number of computation blocks    
-    int *istart;    
-    int pairstart;
-    
+    // temporary arrays for computation blocks  
+    double *tmpmem=NULL;  // temporary memory
+    int *typeai=NULL;     // types of atoms I only
+    int *numneighsum=NULL;// cumulative sum for an array of numbers of neighbors    
+    double *rij=NULL;     // (xj - xi) for all pairs (I, J)
+    int *idxi=NULL;       // storing linear indices for all pairs (I, J)
+    int *ai=NULL;         // IDs of atoms I for all pairs (I, J)
+    int *aj=NULL;         // IDs of atoms J for all pairs (I, J)
+    int *ti=NULL;         // types of atoms I for all pairs (I, J) 
+    int *tj=NULL;         // types of atoms J  for all pairs (I, J)
+        
     double **scale;         // for thermodynamic integration  
 };
 
 #endif
+

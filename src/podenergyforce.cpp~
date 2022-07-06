@@ -413,7 +413,7 @@ void CPOD::linear_descriptors_ij(double *gd, double *eatom, double *rij, double 
     DGEMV(&cht, &natom, &nd1234, &one, eatom1, &natom, tmpmem, &inc1, &one, gd, &inc1);                        
 }
 
-double CPOD::calculate_energy(double *forcecoeff, double *gd, double *coeff)
+double CPOD::calculate_energy(double *effectivecoeff, double *gd, double *coeff)
 {        
     int nd1 = pod.nd1;
     int nd2 = pod.nd2;
@@ -452,15 +452,15 @@ double CPOD::calculate_energy(double *forcecoeff, double *gd, double *coeff)
     // calculate energy for linear potentials
     double energy = 0.0;
     for (int i=0; i< nd1234; i++) {
-        forcecoeff[i] = 0.0;    
+        effectivecoeff[i] = 0.0;    
         energy += coeff[i]*gd[i];    
     }
     
     // effective POD coefficients for calculating force 
-    //double *c1 = &forcecoeff[0];
-    double *c2 = &forcecoeff[nd1];  
-    double *c3 = &forcecoeff[nd1+nd2];
-    double *c4 = &forcecoeff[nd1+nd2+nd3];
+    //double *c1 = &effectivecoeff[0];
+    double *c2 = &effectivecoeff[nd1];  
+    double *c3 = &effectivecoeff[nd1+nd2];
+    double *c4 = &effectivecoeff[nd1+nd2+nd3];
     
     // calculate energy for quadratic22 potential
     if (nd22>0) energy += this->quadratic_coefficients(c2, d2, coeff22, pod.quadratic22, nc2);
@@ -490,7 +490,7 @@ double CPOD::calculate_energy(double *forcecoeff, double *gd, double *coeff)
     if (nd444>0) energy += this->cubic_coefficients(c4, d4, coeff444, pod.cubic444, nc4);
     
     // calculate effective POD coefficients
-    for (int i=0; i< nd1234; i++) forcecoeff[i] += coeff[i];    
+    for (int i=0; i< nd1234; i++) effectivecoeff[i] += coeff[i];    
                 
     return energy;
 }
@@ -544,45 +544,37 @@ double CPOD::calculate_energy(double *energycoeff, double *forcecoeff, double *g
     double *c2 = &forcecoeff[nd1];  
     double *c3 = &forcecoeff[nd1+nd2];
     double *c4 = &forcecoeff[nd1+nd2+nd3];
-
-    double *ce2 = &energycoeff[nd1];  
-    double *ce3 = &energycoeff[nd1+nd2];
-    double *ce4 = &energycoeff[nd1+nd2+nd3];
-
+    
     // calculate energy for quadratic22 potential
-    if (nd22>0) energy += this->quadratic_coefficients(ce2, c2, d2, coeff22, pod.quadratic22, nc2);
-
+    if (nd22>0) energy += this->quadratic_coefficients(c2, d2, coeff22, pod.quadratic22, nc2);
     
     // calculate energy for quadratic23 potential
-    if (nd23>0) energy += this->quadratic_coefficients(ce2, ce3, c2, c3, d2, d3, coeff23, pod.quadratic23, nc2, nc3);
+    if (nd23>0) energy += this->quadratic_coefficients(c2, c3, d2, d3, coeff23, pod.quadratic23, nc2, nc3);
     
     // calculate energy for quadratic24 potential
-    if (nd24>0) energy += this->quadratic_coefficients(ce2, ce4, c2, c4, d2, d4, coeff24, pod.quadratic24, nc2, nc4);
-    
+    if (nd24>0) energy += this->quadratic_coefficients(c2, c4, d2, d4, coeff24, pod.quadratic24, nc2, nc4);
     
     // calculate energy for quadratic33 potential
-    if (nd33>0) energy += this->quadratic_coefficients(ce3, c3, d3, coeff33, pod.quadratic33, nc3);
+    if (nd33>0) energy += this->quadratic_coefficients(c3, d3, coeff33, pod.quadratic33, nc3);
     
     // calculate energy for quadratic34 potential
-    if (nd34>0) energy += this->quadratic_coefficients(ce3, ce4, c3, c4, d3, d4, coeff34, pod.quadratic34, nc3, nc4);
+    if (nd34>0) energy += this->quadratic_coefficients(c3, c4, d3, d4, coeff34, pod.quadratic34, nc3, nc4);
     
     // calculate energy for quadratic44 potential
-    if (nd44>0) energy += this->quadratic_coefficients(ce4, c4, d4, coeff44, pod.quadratic44, nc4);
+    if (nd44>0) energy += this->quadratic_coefficients(c4, d4, coeff44, pod.quadratic44, nc4);
     
     // calculate energy for cubic234 potential
-    if (nd234>0) energy += this->cubic_coefficients(ce2, ce3, ce4, c2, c3, c4, d2, d3, d4, coeff234, pod.cubic234, nc2, nc3, nc4);
+    if (nd234>0) energy += this->cubic_coefficients(c2, c3, c4, d2, d3, d4, coeff234, pod.cubic234, nc2, nc3, nc4);
     
     // calculate energy for cubic333 potential
-    if (nd333>0) energy += this->cubic_coefficients(ce3, c3, d3, coeff333, pod.cubic333, nc3);
+    if (nd333>0) energy += this->cubic_coefficients(c3, d3, coeff333, pod.cubic333, nc3);
 
     // calculate energy for cubic444 potential
-    if (nd444>0) energy += this->cubic_coefficients(ce4, c4, d4, coeff444, pod.cubic444, nc4);
+    if (nd444>0) energy += this->cubic_coefficients(c4, d4, coeff444, pod.cubic444, nc4);
     
     // calculate effective POD coefficients
     for (int i=0; i< nd1234; i++) {
-        energycoeff[i] += coeff[i];    
         forcecoeff[i] += coeff[i];    
-    }
                 
     return energy;
 }
@@ -831,7 +823,7 @@ void CPOD::pod4body_force(double *force, double *rij, double *coeff4, double *tm
     this->snapTallyForce(force, dblist, coeff4, ai, aj, ti, Nij, ncoeff, ntypes);           
 }
 
-void CPOD::calculate_force(double *force, double *forcecoeff, double *rij, double *tmpmem, int *pairnumsum,
+void CPOD::calculate_force(double *force, double *effectivecoeff, double *rij, double *tmpmem, int *pairnumsum,
         int *atomtype, int *idxi, int *ai, int *aj, int *ti, int *tj, int natom, int Nij)
 {        
     int nelements = pod.nelements;
@@ -850,9 +842,9 @@ void CPOD::calculate_force(double *force, double *forcecoeff, double *rij, doubl
     double *besselparams = pod.besselparams;        
     
     // effective POD coefficients for calculating force 
-    double *coeff2 = &forcecoeff[nd1];  
-    double *coeff3 = &forcecoeff[nd1+nd2];
-    double *coeff4 = &forcecoeff[nd1+nd2+nd3];    
+    double *coeff2 = &effectivecoeff[nd1];  
+    double *coeff3 = &effectivecoeff[nd1+nd2];
+    double *coeff4 = &effectivecoeff[nd1+nd2+nd3];    
     
     int nrbf = PODMAX(nrbf2, nrbf3);
     int ns = pdegree[0]*nbesselpars + pdegree[1];
@@ -910,7 +902,7 @@ void CPOD::calculate_force(double *force, double *forcecoeff, double *rij, doubl
 //    }
 }
 
-double CPOD::energyforce_calculation(double *force, double *podcoeff, double *forcecoeff, double *gd, double *rij, 
+double CPOD::energyforce_calculation(double *force, double *podcoeff, double *effectivecoeff, double *gd, double *rij, 
         double *tmpmem, int *pairnumsum, int *atomtype, int *idxi, int *ai, int *aj, int *ti, int *tj, int natom, int Nij)
 {       
     int nd1234 = pod.nd1+pod.nd2+pod.nd3+pod.nd4;
@@ -921,11 +913,11 @@ double CPOD::energyforce_calculation(double *force, double *podcoeff, double *fo
     
     // Need to do MPI_Allreduce on gd for paralell
     
-    double energy = this->calculate_energy(forcecoeff, gd, podcoeff);    
+    double energy = this->calculate_energy(effectivecoeff, gd, podcoeff);    
         
     podArraySetValue(force, 0.0, 3*natom);    
 
-    this->calculate_force(force, forcecoeff, rij, tmpmem, pairnumsum, atomtype, idxi, ai, aj, ti, tj, natom, Nij);
+    this->calculate_force(force, effectivecoeff, rij, tmpmem, pairnumsum, atomtype, idxi, ai, aj, ti, tj, natom, Nij);
     
     return energy;
 }

@@ -221,7 +221,7 @@ double CPOD::quadratic_coefficients(double *ce2, double *ce3, double *c2, double
     return energy;
 }
 
-double CPOD::quadratic_coefficients(double *ce3, double *c3, double *d3, double *coeff33, 
+double CPOD::quadratic_coefficients(double *c3, double *d3, double *c3, double *d3, double *coeff33, 
         int *quadratic, int nc3)
 {        
     int nd3 = quadratic[0]*nc3;
@@ -233,61 +233,12 @@ double CPOD::quadratic_coefficients(double *ce3, double *c3, double *d3, double 
             energy += coeff33[m]*d3[j]*d3[k];  
             c3[k] += coeff33[m]*d3[j];
             c3[j] += coeff33[m]*d3[k];
-            ce3[k] += coeff33[m]*d3[j];
-            ce3[j] += coeff33[m]*d3[k];
             m += 1;        
         }
             
     return energy;
 }
 
-double CPOD::cubic_coefficients(double *ce2, double *ce3, double *ce4, double *c2, double *c3, double *c4, 
-        double *d2, double *d3, double *d4, double *coeff234, int *cubic, int nc2, int nc3, int nc4)
-{        
-    int nd2 = cubic[0]*nc2;
-    int nd3 = cubic[1]*nc3;
-    int nd4 = cubic[2]*nc4;
-    
-    double energy = 0.0;    
-    int m = 0;
-    for (int i=0; i< nd4; i++)
-        for (int j=0; j< nd3; j++)
-            for (int k=0; k< nd2; k++) {
-                energy += coeff234[m]*d4[i]*d3[j]*d2[k];  
-                c2[k] += coeff234[m]*d4[i]*d3[j];
-                c3[j] += coeff234[m]*d4[i]*d2[k];
-                c4[i] += coeff234[m]*d3[j]*d2[k];                
-                ce2[k] += coeff234[m]*d4[i]*d3[j]/3.0;
-                ce3[j] += coeff234[m]*d4[i]*d2[k]/3.0;
-                ce4[i] += coeff234[m]*d3[j]*d2[k]/3.0;                
-                m += 1;        
-            }
-            
-    return energy;
-}
-
-double CPOD::cubic_coefficients(double *ce3, double *c3, double *d3, double *coeff333, int *cubic, int nc3)
-{        
-    int nd3 = cubic[0]*nc3;
-        
-    double energy = 0.0;
-    
-    int m = 0;
-    for (int i=0; i< nd3; i++)
-        for (int j=i; j< nd3; j++)
-            for (int k=j; k< nd3; k++) {
-                energy += coeff333[m]*d3[i]*d3[j]*d3[k];  
-                c3[k] += coeff333[m]*d3[i]*d3[j];
-                c3[j] += coeff333[m]*d3[i]*d3[k];
-                c3[i] += coeff333[m]*d3[j]*d3[k];                
-                ce3[k] += coeff333[m]*d3[i]*d3[j];
-                ce3[j] += coeff333[m]*d3[i]*d3[k];
-                ce3[i] += coeff333[m]*d3[j]*d3[k];                
-                m += 1;        
-            }
-                                
-    return energy;
-}
 
 double CPOD::calculate_energyforce(double *force, double *gd, double *gdd, double *coeff, double *tmp, int natom)
 {        

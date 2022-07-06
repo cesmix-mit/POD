@@ -299,8 +299,9 @@ void CPOD::read_pod(std::string pod_file)
     
     // total number of descriptors for all POD potentials
     pod.nd = pod.nd1 + pod.nd2 + pod.nd3 + pod.nd4 + pod.nd22 + pod.nd23 + pod.nd24 + 
-             pod.nd33 + pod.nd34 + pod.nd44 + pod.nd234 + pod.nd333 + pod.nd444; 
-            
+             pod.nd33 + pod.nd34 + pod.nd44 + pod.nd234 + pod.nd333 + pod.nd444;             
+    pod.nd1234 = pod.nd1 + pod.nd2 + pod.nd3 + pod.nd4;
+    
     int nelements = pod.nelements;
     pod.elemindex = (int*) malloc (sizeof (int)*(nelements*nelements));     
         
