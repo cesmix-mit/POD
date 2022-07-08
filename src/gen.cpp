@@ -55,6 +55,8 @@ void buildRBF(Func & rbf, Func & drbf, Func & abf, Func & dabf,
 
   Expr one = Expr((double) 1.0);
   Expr zero = Expr((double) 0.0);
+  Expr onefive = Expr((double) 1.5);
+  Expr PI = Expr( (double)M_PI);
   Expr xij1 = xij(np, 0);
   Expr xij2 = xij(np, 1);
   Expr xij3 = xij(np, 2);
@@ -72,20 +74,20 @@ void buildRBF(Func & rbf, Func & drbf, Func & abf, Func & dabf,
   Expr y4 = y3*y3 + Expr((double) 1e-6);
   Expr y5 = sqrt(y4); //pow(y4, 0.5);
   Expr y6 = exp(-one/y5);
-  Expr y7 = pow(y4, 1.5);
+  Expr y7 = pow(y4, onefive);
   Expr fcut = y6/exp(-one);
-  Expr dfcut = ((3.0/(rmax*exp(-one)))*(y2)*y6*(y*y2 - one))/y7;
+  Expr dfcut = (((3 * one)/(rmax*exp(-one)))*(y2)*y6*(y*y2 - one))/y7;
 
   Expr alpha = min(Expr((double)1e-3), besselparams(bfp));
   Expr x =  (one - exp(-alpha*r/rmax))/(one-exp(-alpha));
   Expr dx = (alpha/rmax)*exp(-(alpha*r/rmax))/(one - exp(-alpha));
 
-  Expr a = (bfd + 1) * M_PI;
-  Expr b = sqrt(2 * one/rmax)/(bdf + 1);
+  Expr a = (bfi + 1) * PI;
+  Expr b = sqrt(2 * one/rmax)/(bfi + 1);
 
-  rbf(bfp, bfd, np) = b * fcut * sin(a*x)/r;
+  rbf(bfp, bfi, np) = b * fcut * sin(a*x)/r;
   rbf.bound(bfp, 0, nbparams);
-  rbf.bound(bfd, 0, bdegree);
+  rbf.bound(bfi, 0, bdegree);
   rbf.bound(np, 0, npairs);
   Expr drbfdr = b*(dfcut*sin(a*x)/r - fcut*sin(a*x)/(r*r) + a*cos(a*x)*fcut*dx/r);
   drbf(bfp, bfi, np, dim) = (rbf(np, dim)/dij) * drbfdr;
@@ -97,7 +99,7 @@ void buildRBF(Func & rbf, Func & drbf, Func & abf, Func & dabf,
   abf(bfi, np) = fcut/pow(dij, bfi+one);
   abf.bound(bfi, 0, adegree);
   abf.bound(np, 0, npairs);
-  Expr drbfdr_a = dfcut/a - (bfi+1.0)*fcut/(a*dij);
+  Expr drbfdr_a = dfcut/a - (bfi+one)*fcut/(a*dij);
   dabf(bfi, np, dim) = (rbf(np, dim)/dij) * drbfdr_a;
   dabf.bound(dim, 0, 3);
   dabf.bound(bfi, 0, adegree);
@@ -111,27 +113,26 @@ void buildStructureMatMul(Func & energyij, Func & forceij,
   //Multiply atom * basisfunction  by basisfunction * rbf
   Expr zero = Expr((double) 0.0);
 
-  energy(bfi, np)= zero;
-  fenergy(bfi, np, dim) = zero;
+  energyij(bfi, np)= zero;
+  forceij(bfi, np, dim) = zero;
   
-  energy.bound(bfi, 0, tdegree);
-  energy.bound(np, 0, npairs);
-  fenergy.bound(bfi, 0, tdegree);
-  fenergy.bound(np, 0, npairs);
-  fenergy.bound(dim, 0, 3);
+  energyij.bound(bfi, 0, tdegree);
+  energyij.bound(np, 0, npairs);
+  forceij.bound(bfi, 0, tdegree);
+  forceij.bound(np, 0, npairs);
+  forceij.bound(dim, 0, 3);
 
-  RDom rbf(0, bdegree, 0, nbparams);
+  RDom rbfdom(0, bdegree, 0, nbparams);
   //  RDom drbf(0, bdegree, 0, nbparams, 0, 3);
-  energy(bfi, np) += rbf(rbf.y, rbf.x, np) * Phi1(rbf.y, rbf.x, bfi);//ordering here is questionable
-  fenergy(bfi,np, dim) += drbf(rbf.y, rbf.x, np, dim) * Phi1(rbf.y, rbf.x, bfi);//ordering here is questionable
-  energy.updates(0).bound(bfi, 0, bdegree);
-  fenergy.updates(0).bound(bfi, 0, bdegree);
+  energyij(bfi, np) += rbf(rbfdom.y, rbfdom.x, np) * Phi1(rbfdom.y, rbfdom.x, bfi);//ordering here is questionable
+  forceij(bfi,np, dim) += drbf(rbfdom.y, rbfdom.x, np, dim) * Phi1(rbfdom.y, rbfdom.x, bfi);//ordering here is questionable
+  energyij.bound(bfi, 0, bdegree);
+  forceij.bound(bfi, 0, bdegree);
 
-  RDom abf(0, adegree);
-  energy(bfa, np) += abf(abf.x, np) * Phi2(abf.x, bfa);//ordering here is questionable
-  fenergy(bfa, np, dim) += abf(abf.x, np, dim) * Phi2(abf.x, bfa);//ordering here is questionable
-  energy.updates(1).bound(bfa, 0, bdegree);//check this
-  fenergy.updates(1).bound(bfa, 0, bdegree);//check this
+  RDom abfdom(0, adegree);
+  energyij(bfa, np) += abf(abfdom.x, np) * Phi2(abfdom.x, bfa);//ordering here is questionable
+  forceij(bfa, np, dim) += abf(abfdom.x, np, dim) * Phi2(abfdom.x, bfa);//ordering here is questionable
+
   
 }
 
@@ -140,7 +141,7 @@ void buildStructureMatMul(Func & energyij, Func & forceij,
 void buildPodTally2b(Func & eatom, Func & fatom,
 		     Func eij, Func fij, Func ai, Func aj, Func ti, Func tj, Func interaction,
 		     Expr npairs, Expr natom, Expr nelements, Expr nelementCombos, Expr nbf,
-		     Var np, Var atom, Var bf, Var dim, Var elem, var inter
+		     Var np, Var atom, Var bf, Var dim, Var elem, Var inter
 		     )
 {
   Expr one = Expr((double) 1.0);
@@ -173,10 +174,9 @@ void buildPodTally2b(Func & eatom, Func & fatom,
 }
 
 void buildPodTally3b(Func & eatom, Func & fatom,
-		     Func x, Func e2ij, Func f2ij, Func interaction, Func pairlist, Func pairnum, Func pairnumsum, Func atomtype, Func alist,
-		     Expr nrbf, Expr nabf, Expr nelems, Expr nelementCombos, Expr natoms, Expr nij, Expr nmax,
-		     Var atom, Var atomp, Var atompp, Var inter, Var type, Var abf, Var rbf, Var dim){
-  //
+		     Func xij, Func e2ij, Func f2ij, Func interaction, Func pairlist, Func pairnum, Func pairnumsum, Func atomtype, Func alist,
+		     Expr nrbf, Expr nabf, Expr nelems, Expr nelementCombos, Expr natom, Expr nij, Expr nmax,
+		     Var atom, Var atom_o, Var atom_i, Var atom_j, Var atom_k, Var inter, Var type, Var abf, Var rbf, Var dim){
   Expr one = Expr((double) 1.0);
   Expr zero = Expr((double) 0.0);
 
@@ -184,118 +184,86 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   fatom(rbf, abf, type, inter, atom,  dim) = zero;
 
   RDom comp(0, natom, 0, nmax, 0, nmax, 0, nrbf, 0, nabf);
-  comp.where(comp.y >= pairnumsum[comp.x] & comp.y < pairnum[comp.x] + pairnumsum(comp.x) & comp.z > comp.y & comp.z < pairnum[comp.x] + pairnumsum(comp.x));
+  comp.where(comp.y >= pairnumsum(comp.x) & comp.y < pairnum(comp.x) + pairnumsum(comp.x) & comp.z > comp.y & comp.z < pairnum(comp.x) + pairnumsum(comp.x));
 
   RVar i = comp[0];
   RVar lj = comp[1];
   RVar lk = comp[2];
-  Rvar m = comp[3];
-  RVar p = comp[4];
+  RVar m = comp[3]; //rbf
+  RVar p = comp[4]; //abf
   
   eatom.bound(rbf, 0, nrbf);
   eatom.bound(abf, 0, nabf);
   eatom.bound(type, 0, nelems);
   eatom.bound(inter, 0, nelementCombos);
-  eatom.bound(atom, 0, natoms);
+  eatom.bound(atom, 0, natom);
 
   fatom.bound(rbf, 0, nrbf);
   fatom.bound(abf, 0, nabf);
   fatom.bound(type, 0, nelems);
   fatom.bound(inter, 0, nelementCombos);
-  fatom.bound(atom, 0, natoms);
+  fatom.bound(atom, 0, natom);
   fatom.bound(dim, 0, 3);
 
-
-
-
-  Expr typei = clamp(atomtype(i) - 1, 0, nelements);
-  //  Expr s = pairnumsum(i);
-  Expr lks = lk;
-  Expr ljs = lj;
-
-
-  Expr gj = clamp(pairlist(ljs), 0, npairs);
-  Expr j = clamp(alist(gj), 0, natom);
-  Expr typej = clamp(atomtype(j) - 1, 0, nelements);
-
-  Expr gk = clamp(pairlist(lks), 0, npairs);
-  Expr k = clamp(alist(gk), 0, natom);
-  Expr typek = clamp(atomtype(k) - 1, 0, nelements);
-
-  //xij func
-
   Func xij_inter("xij_inter");
-  xij_inter(atom, atomp, dim) = xij(atom, dim) - xij(atomp, dim);
-  xij_inter.bound(atom, 0, natom);
-  xij_inter.bound(atomp, 0, natom);
+  xij_inter(atom_o, atom_i, dim) = xij(atom_o, dim) - xij(atom_i, dim);
+  xij_inter.bound(atom_i, 0, natom);
+  xij_inter.bound(atom_o, 0, natom);
   xij_inter.bound(dim, 0, 3);
-
 
   Func rij_inter("rij_inter");
   Func rij_sq_inter("rij_sq_inter");
-  rij_inter(atom, atomp) = xij_inter(atom, atomp, 0) * xij_inter(atom,atomp, 0) + xij_inter(atom, atomp, 1) * xij_binter(atom, atomp, 1) + xij_inter(atom, atomp, 2) * xij_inter(atom, atomp, 2);
+  rij_inter(atom, atom_o) = xij_inter(atom, atom_o, 0) * xij_inter(atom,atom_o, 0) + xij_inter(atom, atom_o, 1) * xij_inter(atom, atom_o, 1) + xij_inter(atom, atom_o, 2) * xij_inter(atom, atom_o, 2);
   rij_inter.bound(atom, 0, natom);
-  rij_inter.bound(atomp, 0, natom);
-
-  rij_sq_inter(atom, atomp) = sqrt(rij_inter(atom, atomp));
+  rij_inter.bound(atom_o, 0, natom);
+  rij_sq_inter(atom, atom_o) = sqrt(rij_inter(atom, atom_o));
   rij_sq_inter.bound(atom, 0, natom);
-  rij_sq_inter.bound(atomp, 0, natom);
-
-
-  //  Expr rijsq = xij_inter(gj, i, 0) * xij_inter(gj, i, 0) + xij_inter(gj, i, 1) * xij_inter(gj, i, 1) + xij_inter(gj, i, 2) * xij_inter(gj, i, 2);
-  //  Expr rij = sqrt(rijsq);
-  //  Expr riksq = xij_inter(gk, i, 0) * xij_inter(gk, i, 0) + xij_inter(gk, i, 1) * xij_inter(gk, i, 1) + xij_inter(gk, i, 2) * xij_inter(gk, i, 2);
-  //  Expr rik = sqrt(riksq);
+  rij_sq_inter.bound(atom_o, 0, natom);
 
   Func costhe("costhe");
-  costhe(atom, atomp, atompp) = clamp(xij_inter(atom, atompp, 0) * xij_inter(atomp, atompp, 0) + xij_inter(atom, atompp, 1) * xij_inter(atomp, atompp, 1) + xij_inter(atom, atompp, 2) * xij_inter(atomp, atompp, 2)/ (rij_sq_inter(atomp, atompp) * rij_sq_inter(atom, atompp)), -1, 1);
+  costhe(atom_i, atom_j, atom_k) = clamp(xij_inter(atom_j, atom_i, 0) * xij_inter(atom_k, atom_i, 0) + xij_inter(atom_j, atom_i, 1) * xij_inter(atom_k, atom_i, 1) + xij_inter(atom_j, atom_i, 2) * xij_inter(atom_k, atom_i, 2)/ (rij_sq_inter(atom_j, atom_i) * rij_sq_inter(atom_k, atom_i)), -1, 1);
   Func xdot("xdot");
-  xdot(atom, atomp, atompp) = costhe(atom, atomp, atompp) * (rij_sq_inter(atomp, atompp) * rij_sq_inter(atom, atompp));
-  
+  xdot(atom_i, atom_j, atom_k) = costhe(atom_i, atom_j, atom_k) * (rij_sq_inter(atom_j, atom_i) * rij_sq_inter(atom_k, atom_i));
   Func sinthe("sinthe");
-  sinthe(atom, atomp, atompp) = min(sqrt(one - costhe(atom, atomp, atompp)), Expr( (double) 1e-12));
+  sinthe(atom_i, atom_j, atom_k) = min(sqrt(one - costhe(atom_i, atom_j, atom_k)), Expr( (double) 1e-12));
   Func theta("theta");
-  theta(atom, atomp, atompp) = acos(costhe(atom, atomp, atompp));
+  theta(atom_i, atom_j, atom_k) = acos(costhe(atom_i, atom_j, atom_k));
   Func dtheta("dtheta");
-  dtheta(atom, atomp, atompp) = -one/sinthe(atom, atomp, atompp);
-  
-  Func dct(atom, atomp, atompp, dim) = (xij_inter(atomp, atompp, dim) * rij_sq_inter(atom, atompp) - xij_inter(atom, atompp, dim) * xdot(atom, atomp, atompp)) * (one/rij_sq_inter(atom, atompp));
+  dtheta(atom_i, atom_j, atom_k) = -one/sinthe(atom_i, atom_j, atom_k);
+
+  Func dct("dct");
+  dct(atom_i, atom_j, atom_k, dim) = (xij_inter(atom_k, atom_i, dim) * rij_sq_inter(atom_j, atom_i) - xij_inter(atom_j, atom_i, dim) * xdot(atom_i, atom_j, atom_k)) * (one/rij_sq_inter(atom_j, atom_i));
 
   Func pre_abf("pre_abf");
   Func pre_dabf("pre_dabf");
-  pre_abf(atom, atomp, atompp, abf) = cos(abf * theta(atom, atomp, atompp));
-  pre_dabf(atom, atomp, atompp, abf) = -abf * sin(abf * theta(atom, atomp, atompp)) * dtheta(atom, atomp, atompp);
-  
-  
-
-
+  pre_abf(atom_i, atom_j, atom_k, abf) = cos(abf * theta(atom_i, atom_j, atom_k));
+  pre_dabf(atom_i, atom_j, atom_k, abf, dim) = -abf * sin(abf * theta(atom_i, atom_j, atom_k)) * dtheta(atom_i, atom_j, atom_k) * dct(atom_i, atom_j, atom_k, dim);
   Func pre_rbf("pre_rbf");
-  rbf(rbf, atom, atomp) = e2ij(rbf, atom) * e2ij(rbf, atomp);
+  pre_rbf(rbf, atom_j, atom_k) = e2ij(rbf, atom_j) * e2ij(rbf, atom_k);
   Func pre_drbf("pre_drbf");
-  pre_drbf(rbf, atom, atomp, dim) = f2ij(rbf, atom, dim) * e2ij(rbf, atomp);
+  pre_drbf(rbf, atom_j, atom_k, dim) = f2ij(rbf, atom_j, dim) * e2ij(rbf, atom_j);
 
   Func pre_f("pre_f");
-  pre_f(atom, atomp, atompp, rbf, abf, dim)=pre_drbf(atom, atomp, atompp, rbf, dim) * pre_abf(atom, atomp, atompp, abf) + pre_rbf(rbf, atom, atomp) * pre_dabf(atom, atomp, atompp, abf);
-
-
-  Expr inter = clamp(interaction(typek, typej) - 1, 0, nelementCombos);
-  eatom(p, m, typei, inter, i) += pre_rbf(m, ljs, lks) * pre_abf(ljs, lks, i, p);
-
-  fatom(p, m, typei, inter, i, dim) += pre_f(ljs, lks, i, m, p, dim) + pre_f(lks, ljs, i, m, p, dim);
-  fatom(p, m, typei, inter, i, dim) -= pre_f(ljs, lks, i, m, p, dim);
-  fatom(p, m, typei, inter, i, dim) -= pre_f(lks, ljs, i, m, p, dim);
-  
+  pre_f(atom_k, atom_j, atom_i, rbf, abf, dim) =
+    pre_drbf(atom_i, atom_j, atom_k, abf, dim) * pre_abf(atom_i, atom_j, atom_k, abf) + pre_rbf(rbf, atom_j, atom_k) * pre_dabf(atom_i, atom_j, atom_k, abf, dim);
 
 
 
+  Expr typei = clamp(atomtype(i) - 1, 0, nelems);
+  Expr lks = lk;
+  Expr ljs = lj;
+  Expr gj = clamp(pairlist(ljs), 0, nij);
+  Expr j = clamp(alist(gj), 0, natom);
+  Expr typej = clamp(atomtype(j) - 1, 0, nelems);
+  Expr gk = clamp(pairlist(lks), 0, nij);
+  Expr k = clamp(alist(gk), 0, natom);
+  Expr typek = clamp(atomtype(k) - 1, 0, nelems);
+  Expr interact = clamp(interaction(typek, typej) - 1, 0, nelementCombos);
+  eatom(p, m, typei, interact, i) += pre_rbf(m, ljs, lks) * pre_abf(i, ljs, lks, p);
 
-
-  //  Expr xijv = xij_inter(gj, dim);
-
-  
-    //  eatom(r4, r3, r2, r1, r0) = ?
-
-  
+  fatom(p, m, typei, interact, i, dim) += pre_f(ljs, lks, i, m, p, dim) + pre_f(lks, ljs, i, m, p, dim);
+  fatom(p, m, typei, interact, j, dim) -= pre_f(ljs, lks, i, m, p, dim);
+  fatom(p, m, typei, interact, k, dim) -= pre_f(lks, ljs, i, m, p, dim);
 
 }
 
@@ -424,7 +392,6 @@ public:
     rbf.dim(2).set_bounds(0, npairs);
     rbf.dim(1).set_bounds(0, max(inversedegree_pre, bessel_degree_pre));
     rbf.dim(0).set_bounds(0, nbssselpars + 1);
-    
   }
 
 };

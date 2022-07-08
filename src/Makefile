@@ -20,7 +20,7 @@ default: main.cpp pod.cpp
 
 all: pod
 clean:
-	rm pod hbin/gen pod1.h *.stmt *.html *.o *.a
+	rm pod hbin/gen pod1.h *.stmt *.html *.o *. snapshot.ha
 
 
 run: pod
