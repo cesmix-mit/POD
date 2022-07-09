@@ -375,6 +375,7 @@ public:
   Input<int> natom{"natom", 1};
   Input<int> bdegree{"bdegree", 1};
   Input<int> adegree{"adegree", 1};
+  Input<int> tdegree{"tdegree", 1};
   Input<int> nbesselparams{"nbesselparams", 1};
   
   Input<double> rin{"rin", 1};
@@ -415,6 +416,12 @@ public:
     y.dim(0).set_bounds(0, natom);
     y.dim(1).set_bounds(0, 3);
     besselparams.dim(0).set_bounds(0, nbesselparams);
+    Phi1.dim(0).set_bounds(0, nbesselparams);
+    Phi1.dim(1).set_bounds(0, bdegree);
+    Phi1.dim(2).set_bounds(0, tdegree);
+
+    Phi2.dim(0).set_bounds(0, adegree);
+    Phi2.dim(1).set_bounds(0, tdegree); 
     
 
     Func ijs_f("ijs_f");
@@ -434,8 +441,8 @@ public:
     Func energyij_f("energyij_f"), forceij_f("forceij_f");
     buildStructureMatMul(energyij_f, forceij_f,
 			 rbf_f, abf_f, drbf_f, dabf_f, Phi1, Phi2,
-			 bdegree, adegree, bdegree, nbesselparams, npairs,
-			 bfi, bfa, bfp, np, dim); //FIX ME I AM HERE
+			 bdegree, adegree, tdegree, nbesselparams, npairs,
+			 bfi, bfa, bfp, np, dim); 
 
     Var ox("ox"), oy("oy"), oz("oz"), ozz("ozz");
     
@@ -445,11 +452,19 @@ public:
     drbf(ox, oy, oz, ozz)= drbf_f(ox, oy, oz, ozz);
     abf(ox, oy) = abf_f(ox, oy);
     dabf(ox, oy, oz) = dabf_f(ox, oy, oz);
+    energyij(ox, oy) = energyij_f(ox, oy);
+    forceij(ox, oy, oz) = forceij_f(ox, oy, oz);
     
     ijs.dim(0).set_bounds(0, natom);
     ijs.dim(1).set_bounds(0, 4);
     rijs.dim(0).set_bounds(0, natom);
     rijs.dim(1).set_bounds(0, 3);
+    energyij.dim(0).set_bounds(0, tdegree); //tdegree
+    forceij.dim(0).set_bounds(0, tdegree);
+    energyij.dim(1).set_bounds(0, npairs);
+    forceij.dim(1).set_bounds(0, npairs);
+    forceij.dim(2).set_bounds(0, 3);
+      
     
     
   }
