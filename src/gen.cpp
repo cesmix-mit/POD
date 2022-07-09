@@ -281,14 +281,14 @@ void buildNeighPairs(Func & outputs, Func & vectors,
   vectors.bound(np, 0, npairs);
 
 
-  RDom r(0, natom, 0, nmax);
+  RDom r(0, natom, 0, npairs);
   r.where(r.y < pairnumsum(r.x + 1) && r.y >= pairnumsum(r.x));
 
   Expr jacc = clamp(pairlist(r.y), 0, npairs);
   Expr att = clamp(alist(jacc), 0, natom); 
   Expr att_tt = atomtype(att); 
-  outputs(r.x, numOuts) = mux(numOuts, {r.x, att, atomtype(r.x), att_tt});
-  vectors(r.x, d) = atompos(r.y, d) - atompos(r.x, d);
+  outputs(r.y, numOuts) = mux(numOuts, {r.x, att, atomtype(r.x), att_tt});
+  vectors(r.y, d) = atompos(jacc, d) - atompos(r.x, d);
   
 }
 
@@ -357,6 +357,64 @@ public:
 };
 
 
+class poddesc : public Halide::Generator<poddesc> {
+public:
+
+  Input<Buffer<int>> pairlist{"pairlist", 1};
+  Input<Buffer<int>> pairnumsum{"pairnumsum", 1};
+  Input<Buffer<int>> atomtype{"atomtype", 1};
+  Input<Buffer<int>> alist{"alist", 1};
+
+  Input<Buffer<double>> y{"y", 2};
+
+  Input<int> npairs{"napirs", 1};
+  Input<int> natom{"natom", 1};
+
+  GeneratorParam<int> nmax{"nmax", 100};
+
+  Output<Buffer<int>> ijs{"ijs", 2};
+  Output<Buffer<double>> rijs{"rijs", 2};
+
+  void generate (){
+
+    Var atom("atom");
+    Var dim("dim");
+
+    Var nm("nm");
+    Var np("pairindex");
+    Var numOuts("numOuts");
+
+    pairlist.dim(0).set_bounds(0, npairs);
+    pairnumsum.dim(0).set_bounds(0, npairs);
+    atomtype.dim(0).set_bounds(0, npairs);
+    alist.dim(0).set_bounds(0, npairs);
+    y.dim(0).set_bounds(0, natom);
+    y.dim(1).set_bounds(0, 3);
+    
+
+    Func ijs_f("ijs_f");
+    Func rijs_f("rijs_f");
+    
+    buildNeighPairs(ijs_f, rijs_f,
+		    pairlist, pairnumsum, atomtype, alist, y,
+		    natom, 3, nmax, npairs,
+		    atom, dim, nm, np, numOuts);
+
+    Var ox, oy;
+    ijs(ox, oy) = ijs_f(ox, oy);
+    rijs(ox, oy) = rijs_f(ox, oy);
+    ijs.dim(0).set_bounds(0, natom);
+    ijs.dim(1).set_bounds(0, 4);
+    rijs.dim(0).set_bounds(0, natom);
+    rijs.dim(1).set_bounds(0, 3);
+    
+    
+  }
+
+
+};
+
+
 class snapshot : public Halide::Generator<snapshot> {
 public:
   //Func pairnumsum, Func pairlist,
@@ -399,6 +457,7 @@ public:
 
 HALIDE_REGISTER_GENERATOR(pod1, pod1);
 HALIDE_REGISTER_GENERATOR(snapshot, snapshot);
+HALIDE_REGISTER_GENERATOR(poddesc, poddesc);
 
 // td::tuple<Func, Func> buildNeighPairs(std::string call, Func pairnumsum, Func pairlist,
 // 				       Expr NPairs, Expr NAtoms, Expr NMax, Expr dim, Expr NTypes,

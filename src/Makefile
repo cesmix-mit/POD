@@ -12,6 +12,9 @@ pod1.o: hbin/gen
 snapshot.o: hbin/gen
 	LD_LIBRARY_PATH=${THB}/src:${CILK} hbin/gen -g snapshot -o . target=host -e static_library,stmt,stmt_html,c_header,object
 
+poddesc.o: hbin/gen
+	LD_LIBRARY_PATH=${THB}/src:${CILK} hbin/gen -g poddesc -o . target=host -e static_library,stmt,stmt_html,c_header,object
+
 pod: main.cpp pod.cpp snapshot.o readinputfiles.cpp
 	${CPP} -std=c++17 -O3 -lpng -ljpeg -lz -lpthread -ldl -lopencilk -lopencilk-personality-cpp -lopencilk-personality-c -I${THS}/tools -I${THB}/include -L/data/scratch/teoc/projects/hlc/Exasim/External/llvm/prefix/lib/clang/12.0.0/lib/x86_64-unknown-linux-gnu/ -Wall -llapack -lblas -g  main.cpp snapshot.o -o pod
 
