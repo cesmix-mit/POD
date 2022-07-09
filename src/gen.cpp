@@ -130,8 +130,8 @@ void buildStructureMatMul(Func & energyij, Func & forceij,
   forceij.bound(bfi, 0, bdegree);
 
   RDom abfdom(0, adegree);
-  energyij(bfa, np) += abf(abfdom.x, np) * Phi2(abfdom.x, bfa);//ordering here is questionable
-  forceij(bfa, np, dim) += abf(abfdom.x, np, dim) * Phi2(abfdom.x, bfa);//ordering here is questionable
+  energyij(bfi, np) += abf(abfdom.x, np) * Phi2(abfdom.x, bfi);//ordering here is questionable
+  forceij(bfi, np, dim) += dabf(abfdom.x, np, dim) * Phi2(abfdom.x, bfi);//ordering here is questionable
 
   
 }
@@ -365,7 +365,7 @@ public:
   Input<Buffer<int>> atomtype{"atomtype", 1};
   Input<Buffer<int>> alist{"alist", 1};
   Input<Buffer<double>> besselparams{"besselparams", 1};
-  Input<Buffer<double>> Phi1{"Phi1", 2};
+  Input<Buffer<double>> Phi1{"Phi1", 3};
   Input<Buffer<double>> Phi2{"Phi2", 2};
   
 
@@ -407,7 +407,7 @@ public:
 
     Var bfi("basis function index");
     Var bfp("basis function param");
-    Var bfa("inverse basis function index")
+    Var bfa("inverse basis function index");
 
     pairlist.dim(0).set_bounds(0, npairs);
     pairnumsum.dim(0).set_bounds(0, npairs);
