@@ -90,7 +90,7 @@ void buildRBF(Func & rbf, Func & drbf, Func & abf, Func & dabf,
   rbf.bound(bfi, 0, bdegree);
   rbf.bound(np, 0, npairs);
   Expr drbfdr = b*(dfcut*sin(a*x)/r - fcut*sin(a*x)/(r*r) + a*cos(a*x)*fcut*dx/r);
-  drbf(bfp, bfi, np, dim) = (rbf(np, dim)/dij) * drbfdr;
+  drbf(bfp, bfi, np, dim) = (xij(np, dim)/dij) * drbfdr;
   drbf.bound(dim, 0, 3);
   drbf.bound(bfp, 0, nbparams);
   drbf.bound(bfi, 0, bdegree);
@@ -100,7 +100,7 @@ void buildRBF(Func & rbf, Func & drbf, Func & abf, Func & dabf,
   abf.bound(bfi, 0, adegree);
   abf.bound(np, 0, npairs);
   Expr drbfdr_a = dfcut/a - (bfi+one)*fcut/(a*dij);
-  dabf(bfi, np, dim) = (rbf(np, dim)/dij) * drbfdr_a;
+  dabf(bfi, np, dim) = (xij(np, dim)/dij) * drbfdr_a;
   dabf.bound(dim, 0, 3);
   dabf.bound(bfi, 0, adegree);
   dabf.bound(np, 0, npairs);
@@ -364,16 +364,30 @@ public:
   Input<Buffer<int>> pairnumsum{"pairnumsum", 1};
   Input<Buffer<int>> atomtype{"atomtype", 1};
   Input<Buffer<int>> alist{"alist", 1};
+  Input<Buffer<double>> besselparams{"besselparams", 1};
 
   Input<Buffer<double>> y{"y", 2};
 
   Input<int> npairs{"napirs", 1};
   Input<int> natom{"natom", 1};
+  Input<int> bdegree{"bdegree", 1};
+  Input<int> adegree{"adegree", 1};
+  Input<int> nbesselparams{"nbesselparams", 1};
+  
+  Input<double> rin{"rin", 1};
+  Input<double> rcut{"rcut", 1};
+
+
 
   GeneratorParam<int> nmax{"nmax", 100};
 
   Output<Buffer<int>> ijs{"ijs", 2};
   Output<Buffer<double>> rijs{"rijs", 2};
+
+  Output<Buffer<double>> rbf{"rbf", 3};
+  Output<Buffer<double>> drbf{"drbf", 4};
+  Output<Buffer<double>> abf{"abf", 2};
+  Output<Buffer<double>> dabf{"dabf", 3};
 
   void generate (){
 
@@ -384,12 +398,16 @@ public:
     Var np("pairindex");
     Var numOuts("numOuts");
 
+    Var bfi("basis function index");
+    Var bfp("basis function param");
+
     pairlist.dim(0).set_bounds(0, npairs);
     pairnumsum.dim(0).set_bounds(0, npairs);
     atomtype.dim(0).set_bounds(0, npairs);
     alist.dim(0).set_bounds(0, npairs);
     y.dim(0).set_bounds(0, natom);
     y.dim(1).set_bounds(0, 3);
+    besselparams.dim(0).set_bounds(0, nbesselparams);
     
 
     Func ijs_f("ijs_f");
@@ -400,9 +418,21 @@ public:
 		    natom, 3, nmax, npairs,
 		    atom, dim, nm, np, numOuts);
 
-    Var ox, oy;
+    Func rbf_f("rbf_f"), drbf_f("drbf_f"), abf_f("abf_f"), dabf_f("dabf_f");
+    buildRBF(rbf_f, drbf_f, abf_f, dabf_f,
+	     rijs_f, besselparams, rin, rcut-rin,
+	     bdegree, adegree, nbesselparams, npairs,
+	     bfi, bfp, np, dim);
+
+    Var ox("ox"), oy("oy"), oz("oz"), ozz("ozz");
+    
     ijs(ox, oy) = ijs_f(ox, oy);
     rijs(ox, oy) = rijs_f(ox, oy);
+    rbf(ox, oy, oz) = rbf_f(ox, oy, oz);
+    drbf(ox, oy, oz, ozz)= drbf_f(ox, oy, oz, ozz);
+    abf(ox, oy) = abf_f(ox, oy);
+    dabf(ox, oy, oz) = dabf_f(ox, oy, oz);
+    
     ijs.dim(0).set_bounds(0, natom);
     ijs.dim(1).set_bounds(0, 4);
     rijs.dim(0).set_bounds(0, natom);
