@@ -365,6 +365,9 @@ public:
   Input<Buffer<int>> atomtype{"atomtype", 1};
   Input<Buffer<int>> alist{"alist", 1};
   Input<Buffer<double>> besselparams{"besselparams", 1};
+  Input<Buffer<double>> Phi1{"Phi1", 2};
+  Input<Buffer<double>> Phi2{"Phi2", 2};
+  
 
   Input<Buffer<double>> y{"y", 2};
 
@@ -389,6 +392,9 @@ public:
   Output<Buffer<double>> abf{"abf", 2};
   Output<Buffer<double>> dabf{"dabf", 3};
 
+  Output<Buffer<double>> energyij{"energyij", 2};
+  Output<Buffer<double>> forceij{"forceij", 3};
+
   void generate (){
 
     Var atom("atom");
@@ -400,6 +406,7 @@ public:
 
     Var bfi("basis function index");
     Var bfp("basis function param");
+    Var bfa("inverse basis function index")
 
     pairlist.dim(0).set_bounds(0, npairs);
     pairnumsum.dim(0).set_bounds(0, npairs);
@@ -423,6 +430,12 @@ public:
 	     rijs_f, besselparams, rin, rcut-rin,
 	     bdegree, adegree, nbesselparams, npairs,
 	     bfi, bfp, np, dim);
+
+    Func energyij_f("energyij_f"), forceij_f("forceij_f");
+    buildStructureMatMul(energyij_f, forceij_f,
+			 rbf_f, abf_f, drbf_f, dabf_f, Phi1, Phi2,
+			 bdegree, adegree, bdegree, nbesselparams, npairs,
+			 bfi, bfa, bfp, np, dim); //FIX ME I AM HERE
 
     Var ox("ox"), oy("oy"), oz("oz"), ozz("ozz");
     
