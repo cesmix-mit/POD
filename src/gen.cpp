@@ -139,7 +139,7 @@ void buildStructureMatMul(Func & energyij, Func & forceij,
 
 
 void buildPodTally2b(Func & eatom, Func & fatom,
-		     Func eij, Func fij, Func ai, Func aj, Func ti, Func tj, Func interaction,
+		     Func eij, Func fij, Func o_aiajtitj, Func interaction,
 		     Expr npairs, Expr natom, Expr nelements, Expr nelementCombos, Expr nbf,
 		     Var np, Var atom, Var bf, Var dim, Var elem, Var inter
 		     )
@@ -150,10 +150,10 @@ void buildPodTally2b(Func & eatom, Func & fatom,
   fatom(bf, atom, np, dim) = zero;
   RDom r(0, npairs, 0, nbf);
 
-  Expr i1 = clamp(ai(r.x), 0, natom);
-  Expr j1 = clamp(aj(r.x), 0, natom);
-  Expr typei = clamp(ti(r.x) - 1, 0, nelements);
-  Expr typej = clamp(tj(r.x) - 1, 0, nelements);
+  Expr i1 = clamp(o_aiajtitj(r.x, 0), 0, natom); //ai(r.x)
+  Expr j1 = clamp(o_aiajtitj(r.x, 1), 0, natom);
+  Expr typei = clamp(o_aiajtitj(r.x, 2) - 1, 0, nelements);
+  Expr typej = clamp(o_aiajtitj(r.x, 3) - 1, 0, nelements);
 
   Expr inter_ij = clamp(interaction(typei, typej) - 1, 0, nelementCombos);
   eatom(r.y, inter_ij, i1) += eij(r.y, r.x);
@@ -287,7 +287,7 @@ void buildNeighPairs(Func & outputs, Func & vectors,
   Expr jacc = clamp(pairlist(r.y), 0, npairs);
   Expr att = clamp(alist(jacc), 0, natom); 
   Expr att_tt = atomtype(att); 
-  outputs(r.y, numOuts) = mux(numOuts, {r.x, att, atomtype(r.x), att_tt});
+  outputs(r.y, numOuts) = mux(numOuts, {r.x, att, atomtype(r.x), att_tt}); //ai[k], aj[k], ti, tj
   vectors(r.y, d) = atompos(jacc, d) - atompos(r.x, d);
   
 }
@@ -303,13 +303,16 @@ void buildPod1Body(Func & eatom, Func atomtype,
 
 void buildPod1Body_p(Func & eatom, Func & fatom,
 		     Func atomtype,
-		     Expr nelements, Expr natom, Expr dim,
-		     Var i, Var m){
+		     Expr nelements, Expr natom,
+		     Var i, Var m, Var dim){
   eatom(i, m) = select(atomtype(i) == m, (Expr((double)1.0)), (Expr((double)0.0)));
   eatom.bound(i, 0, natom);
   eatom.bound(m, 0, nelements);
-  fatom(i) = (Expr((double)0.0));
-  fatom.bound(i, 0, dim * natom * nelements);
+  fatom(i, m, dim) = (Expr((double)0.0));
+  //  fatom.bound(i, 0, dim * natom * nelements);
+  fatom.bound(i, 0, natom);
+  fatom.bound(m, 0, nelements);
+  fatom.bound(dim, 0, 3);
 }
 
 
@@ -364,6 +367,7 @@ public:
   Input<Buffer<int>> pairnumsum{"pairnumsum", 1};
   Input<Buffer<int>> atomtype{"atomtype", 1};
   Input<Buffer<int>> alist{"alist", 1};
+  Input<Buffer<int>> interactions{"interactions", 2};
   Input<Buffer<double>> besselparams{"besselparams", 1};
   Input<Buffer<double>> Phi1{"Phi1", 3};
   Input<Buffer<double>> Phi2{"Phi2", 2};
@@ -377,6 +381,9 @@ public:
   Input<int> adegree{"adegree", 1};
   Input<int> tdegree{"tdegree", 1};
   Input<int> nbesselparams{"nbesselparams", 1};
+  Input<int> nelems{"nelems", 1};
+  Input<int> nelemscombos{"nelemsCombos", 1};
+  
   
   Input<double> rin{"rin", 1};
   Input<double> rcut{"rcut", 1};
@@ -396,10 +403,16 @@ public:
   Output<Buffer<double>> energyij{"energyij", 2};
   Output<Buffer<double>> forceij{"forceij", 3};
 
+  Output<Buffer<double>> eatom1{"eatom1", 2};
+  Output<Buffer<double>> fatom1{"fatom1", 3};
+
   void generate (){
 
     Var atom("atom");
     Var dim("dim");
+    Var elem("elem");
+    Var inter("inter");
+    
 
     Var nm("nm");
     Var np("pairindex");
@@ -411,7 +424,7 @@ public:
 
     pairlist.dim(0).set_bounds(0, npairs);
     pairnumsum.dim(0).set_bounds(0, npairs);
-    atomtype.dim(0).set_bounds(0, npairs);
+    atomtype.dim(0).set_bounds(0, natom);
     alist.dim(0).set_bounds(0, npairs);
     y.dim(0).set_bounds(0, natom);
     y.dim(1).set_bounds(0, 3);
@@ -419,9 +432,11 @@ public:
     Phi1.dim(0).set_bounds(0, nbesselparams);
     Phi1.dim(1).set_bounds(0, bdegree);
     Phi1.dim(2).set_bounds(0, tdegree);
-
     Phi2.dim(0).set_bounds(0, adegree);
-    Phi2.dim(1).set_bounds(0, tdegree); 
+    Phi2.dim(1).set_bounds(0, tdegree);
+    interactions.dim(0).set_bounds(0, nelems);
+    interactions.dim(1).set_bounds(0, nelems);
+    
     
 
     Func ijs_f("ijs_f");
@@ -442,7 +457,25 @@ public:
     buildStructureMatMul(energyij_f, forceij_f,
 			 rbf_f, abf_f, drbf_f, dabf_f, Phi1, Phi2,
 			 bdegree, adegree, tdegree, nbesselparams, npairs,
-			 bfi, bfa, bfp, np, dim); 
+			 bfi, bfa, bfp, np, dim);
+
+
+    //copy intermediates
+
+    Func eatom1_f("eatom1_f"), fatom1_f("fatom1_f");
+    buildPod1Body_p(eatom1_f, fatom1_f,
+		    atomtype,
+		    nelems, natom,
+		    atom, elem, dim);
+
+
+    Func eatom2_f("eatom2_f"), fatom2_f("fatom2_f");
+    buildPodTally2b(eatom2_f, fatom2_f,
+		    energyij_f, forceij_f,
+		    ijs_f, interactions,
+		    npairs, natom, nelems, nelemscombos, tdegree,
+		    np, atom, bfi, dim, elem, inter);
+
 
     Var ox("ox"), oy("oy"), oz("oz"), ozz("ozz");
     
@@ -454,6 +487,8 @@ public:
     dabf(ox, oy, oz) = dabf_f(ox, oy, oz);
     energyij(ox, oy) = energyij_f(ox, oy);
     forceij(ox, oy, oz) = forceij_f(ox, oy, oz);
+    eatom1(ox, oy) = eatom1_f(ox, oy);
+    fatom1(ox, oy, oz) = fatom1_f(ox, oy, oz);
     
     ijs.dim(0).set_bounds(0, natom);
     ijs.dim(1).set_bounds(0, 4);
@@ -464,6 +499,12 @@ public:
     energyij.dim(1).set_bounds(0, npairs);
     forceij.dim(1).set_bounds(0, npairs);
     forceij.dim(2).set_bounds(0, 3);
+    eatom1.dim(0).set_bounds(0, natom);
+    eatom1.dim(1).set_bounds(0, nelems);
+    fatom1.dim(0).set_bounds(0, natom);
+    fatom1.dim(1).set_bounds(0, nelems);
+    fatom1.dim(2).set_bounds(0, 3);
+
       
     
     
