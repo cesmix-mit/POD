@@ -246,11 +246,11 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   Func pre_rbf("pre_rbf");
   pre_rbf(rbf, atom_j, atom_k) = e2ij(rbf, atom_j) * e2ij(rbf, atom_k);
   Func pre_drbf("pre_drbf");
-  pre_drbf(rbf, atom_j, atom_k, dim) = f2ij(rbf, atom_j, dim) * e2ij(rbf, atom_j);
+  pre_drbf(rbf, atom_j, atom_k, dim) = f2ij(rbf, atom_j, dim) * e2ij(rbf, atom_k);
 
   Func pre_f("pre_f");
   pre_f(atom_k, atom_j, atom_i, rbf, abf, dim) =
-    pre_drbf(atom_i, atom_j, atom_k, abf, dim) * pre_abf(atom_i, atom_j, atom_k, abf) + pre_rbf(rbf, atom_j, atom_k) * pre_dabf(atom_i, atom_j, atom_k, abf, dim);
+    pre_drbf(rbf, atom_j, atom_k, dim) * pre_abf(atom_i, atom_j, atom_k, abf) + pre_rbf(rbf, atom_j, atom_k) * pre_dabf(atom_i, atom_j, atom_k, abf, dim);
 
 
 
@@ -268,7 +268,7 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   eatom(i, interact, typei, m, p) += pre_rbf(m, ljs, lks) * pre_abf(i, ljs, lks, p);
 
   //  fatom(p, m, typei, interact, i, dim) += pre_f(ljs, lks, i, m, p, dim) + pre_f(lks, ljs, i, m, p, dim);
-  fatom(dim, i, interact, typei, m,) += pre_f(ljs, lks, i, m, p, dim) + pre_f(lks, ljs, i, m, p, dim);
+  fatom(dim, i, interact, typei, m, p) += pre_f(ljs, lks, i, m, p, dim) + pre_f(lks, ljs, i, m, p, dim);
   //  fatom(p, m, typei, interact, j, dim) -= pre_f(ljs, lks, i, m, p, dim);
   fatom(dim, j, interact, typei, m, p) -= pre_f(ljs, lks, i, m, p, dim);
   //  fatom(p, m, typei, interact, k, dim) -= pre_f(lks, ljs, i, m, p, dim);
@@ -418,8 +418,8 @@ public:
   Output<Buffer<double>> eatom2{"eatom2", 3};
   Output<Buffer<double>> fatom2{"fatom2", 4};
   
-  Output<Buffer<double>> eatom3{"eatom3", 4};
-  Output<Buffer<double>> fatom3{"fatom3", 5};
+  Output<Buffer<double>> eatom3{"eatom3", 5};
+  Output<Buffer<double>> fatom3{"fatom3", 6};
 
   void generate (){
 
@@ -507,7 +507,7 @@ public:
 		    atom, atom_o, atom_i, atom_j, atom_k, inter, type,  bfa, rbf_v, dim);
 
 
-    Var ox("ox"), oy("oy"), oz("oz"), ozz("ozz"), ozzz("ozzz");
+    Var ox("ox"), oy("oy"), oz("oz"), ozz("ozz"), ozzz("ozzz"), ozzzz("ozzzz");
     
     ijs(ox, oy) = ijs_f(ox, oy);
     rijs(ox, oy) = rijs_f(ox, oy);
@@ -523,8 +523,8 @@ public:
     eatom2(ox, oy, oz) = eatom2_f(ox, oy, oz);
     fatom2(ox, oy, oz, ozz) = fatom2_f(ox, oy, oz, ozz);
 
-    eatom3(ox, oy, oz, ozz) = eatom3_f(ox, oy, oz, ozz);
-    fatom3(ox, oy, oz, ozz, ozzz) = fatom3_f(ox, oy, oz, ozz, ozzz);
+    eatom3(ox, oy, oz, ozz, ozzz) = eatom3_f(ox, oy, oz, ozz, ozzz);
+    fatom3(ox, oy, oz, ozz, ozzz, ozzzz) = fatom3_f(ox, oy, oz, ozz, ozzz, ozzzz);
 
     
     ijs.dim(0).set_bounds(0, natom);
