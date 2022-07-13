@@ -146,8 +146,8 @@ void buildPodTally2b(Func & eatom, Func & fatom,
 {
   Expr one = Expr((double) 1.0);
   Expr zero = Expr((double) 0.0);
-  eatom(bf, atom, np) = zero;
-  fatom(bf, atom, np, dim) = zero;
+  eatom(atom, np, bf) = zero;
+  fatom(dim, atom, np, bf) = zero;
   RDom r(0, npairs, 0, nbf);
 
   Expr i1 = clamp(o_aiajtitj(r.x, 0), 0, natom); //ai(r.x)
@@ -156,9 +156,9 @@ void buildPodTally2b(Func & eatom, Func & fatom,
   Expr typej = clamp(o_aiajtitj(r.x, 3) - 1, 0, nelements);
 
   Expr inter_ij = clamp(interaction(typei, typej) - 1, 0, nelementCombos);
-  eatom(r.y, inter_ij, i1) += eij(r.y, r.x);
-  fatom(r.y, inter_ij, i1, dim) += fij(r.y, r.x, dim);
-  fatom(r.y, inter_ij, j1, dim) -= fij(r.y, r.x, dim);
+  eatom(i1, inter_ij,  r.y) += eij(r.y, r.x);
+  fatom(dim, i1, inter_ij, r.y) += fij(r.y, r.x, dim);
+  fatom(dim, j1, inter_ij, r.y) -= fij(r.y, r.x, dim);
 
   
   eatom.bound(atom, 0, natom);
@@ -174,17 +174,22 @@ void buildPodTally2b(Func & eatom, Func & fatom,
 }
 
 void buildPodTally3b(Func & eatom, Func & fatom,
-		     Func xij, Func e2ij, Func f2ij, Func interaction, Func pairlist, Func pairnum, Func pairnumsum, Func atomtype, Func alist,
+		     Func xij, Func e2ij, Func f2ij, Func interaction,
+		     Func pairlist, Func pairnumsum, Func atomtype, Func alist,
 		     Expr nrbf, Expr nabf, Expr nelems, Expr nelementCombos, Expr natom, Expr nij, Expr nmax,
 		     Var atom, Var atom_o, Var atom_i, Var atom_j, Var atom_k, Var inter, Var type, Var abf, Var rbf, Var dim){
   Expr one = Expr((double) 1.0);
   Expr zero = Expr((double) 0.0);
 
-  eatom(rbf, abf, type, inter, atom) = zero;
-  fatom(rbf, abf, type, inter, atom,  dim) = zero;
+  //  eatom(rbf, abf, type, inter, atom) = zero;
+  eatom(atom, inter, type, abf, rbf) = zero;
+  fatom(dim, atom, inter, type, abf, rbf) = zero;
+  //  fatom(rbf, abf, type, inter, atom,  dim) = zero;
 
   RDom comp(0, natom, 0, nmax, 0, nmax, 0, nrbf, 0, nabf);
-  comp.where(comp.y >= pairnumsum(comp.x) & comp.y < pairnum(comp.x) + pairnumsum(comp.x) & comp.z > comp.y & comp.z < pairnum(comp.x) + pairnumsum(comp.x));
+  
+  //  comp.where(comp.y >= pairnumsum(comp.x) & comp.y < pairnum(comp.x) + pairnumsum(comp.x) & comp.z > comp.y & comp.z < pairnum(comp.x) + pairnumsum(comp.x));
+  comp.where(comp.y >= pairnumsum(comp.x) & comp.y < pairnumsum(comp.x + 1) & comp.z > comp.y & comp.z < pairnumsum(comp.x + 1));
 
   RVar i = comp[0];
   RVar lj = comp[1];
@@ -259,11 +264,15 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   Expr k = clamp(alist(gk), 0, natom);
   Expr typek = clamp(atomtype(k) - 1, 0, nelems);
   Expr interact = clamp(interaction(typek, typej) - 1, 0, nelementCombos);
-  eatom(p, m, typei, interact, i) += pre_rbf(m, ljs, lks) * pre_abf(i, ljs, lks, p);
+  //  eatom(p, m, typei, interact, i) += pre_rbf(m, ljs, lks) * pre_abf(i, ljs, lks, p);
+  eatom(i, interact, typei, m, p) += pre_rbf(m, ljs, lks) * pre_abf(i, ljs, lks, p);
 
-  fatom(p, m, typei, interact, i, dim) += pre_f(ljs, lks, i, m, p, dim) + pre_f(lks, ljs, i, m, p, dim);
-  fatom(p, m, typei, interact, j, dim) -= pre_f(ljs, lks, i, m, p, dim);
-  fatom(p, m, typei, interact, k, dim) -= pre_f(lks, ljs, i, m, p, dim);
+  //  fatom(p, m, typei, interact, i, dim) += pre_f(ljs, lks, i, m, p, dim) + pre_f(lks, ljs, i, m, p, dim);
+  fatom(dim, i, interact, typei, m,) += pre_f(ljs, lks, i, m, p, dim) + pre_f(lks, ljs, i, m, p, dim);
+  //  fatom(p, m, typei, interact, j, dim) -= pre_f(ljs, lks, i, m, p, dim);
+  fatom(dim, j, interact, typei, m, p) -= pre_f(ljs, lks, i, m, p, dim);
+  //  fatom(p, m, typei, interact, k, dim) -= pre_f(lks, ljs, i, m, p, dim);
+  fatom(dim, k, interact, typei, m, p) -= pre_f(lks, ljs, i, m, p, dim);
 
 }
 
@@ -405,6 +414,12 @@ public:
 
   Output<Buffer<double>> eatom1{"eatom1", 2};
   Output<Buffer<double>> fatom1{"fatom1", 3};
+  
+  Output<Buffer<double>> eatom2{"eatom2", 3};
+  Output<Buffer<double>> fatom2{"fatom2", 4};
+  
+  Output<Buffer<double>> eatom3{"eatom3", 4};
+  Output<Buffer<double>> fatom3{"fatom3", 5};
 
   void generate (){
 
@@ -412,7 +427,14 @@ public:
     Var dim("dim");
     Var elem("elem");
     Var inter("inter");
+    Var atom_o("atom_o");
+    Var atom_i("atom_i");
+    Var atom_j("atom_j");
+    Var atom_k("atom_k");
+    Var type("type");
+
     
+
 
     Var nm("nm");
     Var np("pairindex");
@@ -421,6 +443,7 @@ public:
     Var bfi("basis function index");
     Var bfp("basis function param");
     Var bfa("inverse basis function index");
+    Var rbf_v("rbf_v");
 
     pairlist.dim(0).set_bounds(0, npairs);
     pairnumsum.dim(0).set_bounds(0, npairs);
@@ -473,11 +496,18 @@ public:
     buildPodTally2b(eatom2_f, fatom2_f,
 		    energyij_f, forceij_f,
 		    ijs_f, interactions,
-		    npairs, natom, nelems, nelemscombos, tdegree,
+		    npairs, natom,  nelems, nelemscombos, tdegree,
 		    np, atom, bfi, dim, elem, inter);
 
+    Func eatom3_f("eatom3_f"), fatom3_f("fatom3_f");
+    buildPodTally3b(eatom3_f, fatom3_f,
+		    y, energyij_f, forceij_f, interactions,
+		    pairlist, pairnumsum, atomtype, alist,
+		    tdegree, adegree, nelems, nelemscombos, natom, npairs, nmax,
+		    atom, atom_o, atom_i, atom_j, atom_k, inter, type,  bfa, rbf_v, dim);
 
-    Var ox("ox"), oy("oy"), oz("oz"), ozz("ozz");
+
+    Var ox("ox"), oy("oy"), oz("oz"), ozz("ozz"), ozzz("ozzz");
     
     ijs(ox, oy) = ijs_f(ox, oy);
     rijs(ox, oy) = rijs_f(ox, oy);
@@ -489,6 +519,13 @@ public:
     forceij(ox, oy, oz) = forceij_f(ox, oy, oz);
     eatom1(ox, oy) = eatom1_f(ox, oy);
     fatom1(ox, oy, oz) = fatom1_f(ox, oy, oz);
+
+    eatom2(ox, oy, oz) = eatom2_f(ox, oy, oz);
+    fatom2(ox, oy, oz, ozz) = fatom2_f(ox, oy, oz, ozz);
+
+    eatom3(ox, oy, oz, ozz) = eatom3_f(ox, oy, oz, ozz);
+    fatom3(ox, oy, oz, ozz, ozzz) = fatom3_f(ox, oy, oz, ozz, ozzz);
+
     
     ijs.dim(0).set_bounds(0, natom);
     ijs.dim(1).set_bounds(0, 4);
@@ -504,6 +541,30 @@ public:
     fatom1.dim(0).set_bounds(0, natom);
     fatom1.dim(1).set_bounds(0, nelems);
     fatom1.dim(2).set_bounds(0, 3);
+
+    eatom2.dim(0).set_bounds(0, natom);
+    eatom2.dim(1).set_bounds(0, npairs);
+    eatom2.dim(2).set_bounds(0, tdegree);
+
+    fatom2.dim(0).set_bounds(0, 3);
+    fatom2.dim(1).set_bounds(0, natom);
+    fatom2.dim(2).set_bounds(0, npairs);
+    fatom2.dim(3).set_bounds(0, tdegree);
+
+
+
+    eatom3.dim(0).set_bounds(0, natom);
+    eatom3.dim(1).set_bounds(0, nelemscombos);
+    eatom3.dim(2).set_bounds(0, nelems);
+    eatom3.dim(3).set_bounds(0, adegree);
+    eatom3.dim(4).set_bounds(0, tdegree);
+
+    fatom3.dim(0).set_bounds(0, 3);
+    fatom3.dim(1).set_bounds(0, natom);
+    fatom3.dim(2).set_bounds(0, nelemscombos);
+    fatom3.dim(3).set_bounds(0, nelems);
+    fatom3.dim(4).set_bounds(0, adegree);
+    fatom3.dim(5).set_bounds(0, tdegree);
 
       
     
