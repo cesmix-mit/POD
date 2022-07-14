@@ -146,28 +146,32 @@ void buildPodTally2b(Func & eatom, Func & fatom,
 {
   Expr one = Expr((double) 1.0);
   Expr zero = Expr((double) 0.0);
-  eatom(atom, np, bf) = zero;
-  fatom(dim, atom, np, bf) = zero;
+  eatom(atom, inter, bf) = zero;
+  fatom(dim, atom, inter, bf) = zero;
   RDom r(0, npairs, 0, nbf);
 
-  Expr i1 = clamp(o_aiajtitj(r.x, 0), 0, natom); //ai(r.x)
-  Expr j1 = clamp(o_aiajtitj(r.x, 1), 0, natom);
-  Expr typei = clamp(o_aiajtitj(r.x, 2) - 1, 0, nelements);
-  Expr typej = clamp(o_aiajtitj(r.x, 3) - 1, 0, nelements);
+  Expr i1 = clamp(o_aiajtitj(r.x, 0), 0, natom - 1); //ai(r.x)
+  Expr j1 = clamp(o_aiajtitj(r.x, 1), 0, natom - 1);
+  Expr typei = clamp(o_aiajtitj(r.x, 2) - 1, 0, nelements - 1);
+  Expr typej = clamp(o_aiajtitj(r.x, 3) - 1, 0, nelements - 1);
 
-  Expr inter_ij = clamp(interaction(typei, typej) - 1, 0, nelementCombos);
+  Expr inter_ij = clamp(interaction(typei, typej) - 1, 0, nelementCombos - 1);
   eatom(i1, inter_ij,  r.y) += eij(r.y, r.x);
   fatom(dim, i1, inter_ij, r.y) += fij(r.y, r.x, dim);
   fatom(dim, j1, inter_ij, r.y) -= fij(r.y, r.x, dim);
 
+
+  eatom.compute_root();
+  fatom.compute_root();
+
   
   eatom.bound(atom, 0, natom);
-  eatom.bound(np, 0, npairs);
+  eatom.bound(inter, 0, nelementCombos);
   eatom.bound(bf, 0, nbf);
   
   fatom.bound(atom, 0, natom);
   fatom.bound(bf, 0, nbf);
-  fatom.bound(np, 0, npairs);
+  fatom.bound(inter, 0, nelementCombos);
   fatom.bound(dim, 0, 3);
 
 
@@ -254,16 +258,16 @@ void buildPodTally3b(Func & eatom, Func & fatom,
 
 
 
-  Expr typei = clamp(atomtype(i) - 1, 0, nelems);
+  Expr typei = clamp(atomtype(i) - 1, 0, nelems - 1);
   Expr lks = lk;
   Expr ljs = lj;
-  Expr gj = clamp(pairlist(ljs), 0, nij);
-  Expr j = clamp(alist(gj), 0, natom);
-  Expr typej = clamp(atomtype(j) - 1, 0, nelems);
-  Expr gk = clamp(pairlist(lks), 0, nij);
-  Expr k = clamp(alist(gk), 0, natom);
-  Expr typek = clamp(atomtype(k) - 1, 0, nelems);
-  Expr interact = clamp(interaction(typek, typej) - 1, 0, nelementCombos);
+  Expr gj = clamp(pairlist(ljs), 0, nij - 1);
+  Expr j = clamp(alist(gj), 0, natom - 1);
+  Expr typej = clamp(atomtype(j) - 1, 0, nelems - 1);
+  Expr gk = clamp(pairlist(lks), 0, nij - 1);
+  Expr k = clamp(alist(gk), 0, natom - 1);
+  Expr typek = clamp(atomtype(k) - 1, 0, nelems - 1);
+  Expr interact = clamp(interaction(typek, typej) - 1, 0, nelementCombos - 1);
   //  eatom(p, m, typei, interact, i) += pre_rbf(m, ljs, lks) * pre_abf(i, ljs, lks, p);
   eatom(i, interact, typei, m, p) += pre_rbf(m, ljs, lks) * pre_abf(i, ljs, lks, p);
 
@@ -293,8 +297,8 @@ void buildNeighPairs(Func & outputs, Func & vectors,
   RDom r(0, natom, 0, npairs);
   r.where(r.y < pairnumsum(r.x + 1) && r.y >= pairnumsum(r.x));
 
-  Expr jacc = clamp(pairlist(r.y), 0, npairs);
-  Expr att = clamp(alist(jacc), 0, natom); 
+  Expr jacc = clamp(pairlist(r.y), 0, npairs - 1);
+  Expr att = clamp(alist(jacc), 0, natom - 1); 
   Expr att_tt = atomtype(att); 
   outputs(r.y, numOuts) = mux(numOuts, {r.x, att, atomtype(r.x), att_tt}); //ai[k], aj[k], ti, tj
   vectors(r.y, d) = atompos(jacc, d) - atompos(r.x, d);
@@ -543,12 +547,12 @@ public:
     fatom1.dim(2).set_bounds(0, 3);
 
     eatom2.dim(0).set_bounds(0, natom);
-    eatom2.dim(1).set_bounds(0, npairs);
+    eatom2.dim(1).set_bounds(0, nelemscombos);
     eatom2.dim(2).set_bounds(0, tdegree);
 
     fatom2.dim(0).set_bounds(0, 3);
     fatom2.dim(1).set_bounds(0, natom);
-    fatom2.dim(2).set_bounds(0, npairs);
+    fatom2.dim(2).set_bounds(0, nelemscombos);
     fatom2.dim(3).set_bounds(0, tdegree);
 
 
