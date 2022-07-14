@@ -58,7 +58,7 @@ void eigenvaluedecomposition(double *Phi, double *Lambda, double *besselparams, 
         int besseldegree, int inversedegree, int nbesselpars, int N)
 {
     int ns = besseldegree*nbesselpars + inversedegree;
-    int overapprox = std::max(// besseldegree, inversedegree
+    int overapprox = std::max( besseldegree, inversedegree
 			      )*(nbesselpars + 1);
     double *xij = (double *) malloc(N*sizeof(double));
     double *S = (double *) malloc(N*overapprox*sizeof(double));

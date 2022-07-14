@@ -161,8 +161,8 @@ void buildPodTally2b(Func & eatom, Func & fatom,
   fatom(dim, j1, inter_ij, r.y) -= fij(r.y, r.x, dim);
 
 
-  eatom.compute_root();
-  fatom.compute_root();
+  //  eatom.compute_root();
+  //  fatom.compute_root();
 
   
   eatom.bound(atom, 0, natom);
@@ -521,6 +521,7 @@ public:
     dabf(ox, oy, oz) = dabf_f(ox, oy, oz);
     energyij(ox, oy) = energyij_f(ox, oy);
     forceij(ox, oy, oz) = forceij_f(ox, oy, oz);
+    
     eatom1(ox, oy) = eatom1_f(ox, oy);
     fatom1(ox, oy, oz) = fatom1_f(ox, oy, oz);
 
@@ -540,6 +541,7 @@ public:
     energyij.dim(1).set_bounds(0, npairs);
     forceij.dim(1).set_bounds(0, npairs);
     forceij.dim(2).set_bounds(0, 3);
+    
     eatom1.dim(0).set_bounds(0, natom);
     eatom1.dim(1).set_bounds(0, nelems);
     fatom1.dim(0).set_bounds(0, natom);
