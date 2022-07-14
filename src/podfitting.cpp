@@ -149,6 +149,8 @@ void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct po
     double rin = pod.rin;
     double rcut = pod.rcut;
     double *Phi2 = pod.Phi2;
+    double *Phi21 = pod.Phi21;
+    double *Phi22 = pod.Phi22;
     //double *Phi3 = pod.Phi3;
     double *besselparams = pod.besselparams;
         
@@ -189,7 +191,7 @@ void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct po
 //             tmpmem, rin, rcut, atomtype, nb.alist, nb.pairlist, nb.pairnum, nb.pairnum_cumsum, 
 //             nb.elemindex, pdegree2, pdegree3, tmpint, nbesselpars, nrbf2, nrbf3, nabf3, 
 //             nelements, Nij, natom);            
-    poddesc(eatom1, fatom1, eatom2, fatom2, eatom3, fatom3, nb.y, Phi2, besselparams, 
+    poddesc_halide(eatom1, fatom1, eatom2, fatom2, eatom3, fatom3, nb.y, Phi2, Phi21, Phi22, besselparams, 
             tmpmem, rin, rcut, atomtype, nb.alist, nb.pairlist, nb.pairnum, nb.pairnum_cumsum, 
             nb.elemindex, pdegree2, tmpint, nbesselpars, nrbf2, nrbf3, nabf3, 
             nelements, Nij, natom);                    

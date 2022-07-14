@@ -205,6 +205,9 @@ void read_pod(podstruct &pod, std::string pod_file)
         }        
     }          
     file_in.close();
+
+
+
         
     pod.twobody[0] = pod.besseldegree;
     pod.twobody[1] = pod.inversedegree;
@@ -212,6 +215,7 @@ void read_pod(podstruct &pod, std::string pod_file)
     pod.threebody[1] = pod.inversedegree;
     
     // number of snapshots
+
     pod.ns2 = pod.nbesselpars*pod.twobody[0] + pod.twobody[1];
     pod.ns3 = pod.nbesselpars*pod.threebody[0] + pod.threebody[1];
     pod.ns4 = pod.nbesselpars*pod.fourbody[0] + pod.fourbody[1];
@@ -220,16 +224,62 @@ void read_pod(podstruct &pod, std::string pod_file)
         if (fabs(pod.besselparams[i]) < 1e-3) pod.besselparams[i] = 1e-3;
             
     // allocate memory for eigenvectors and eigenvalues
+    int tdegree1 = pod.twobody[2];
+    int tdegree2 = pod.threebody[2];
+    int tdegree = std::max(tdegree1, tdegree2);
+
     pod.Phi2 = (double *) malloc(pod.ns2*pod.ns2*sizeof(double));
+    pod.Phi21 = (double *) malloc(tdegree * pod.twobody[0] * pod.nbesselpars *sizeof(double)); //basis functions
+    pod.Phi22 = (double *) malloc(tdegree * pod.twobody[1] * sizeof(double)); //inverse basis functions
     pod.Lambda2 = (double *) malloc(pod.ns2*sizeof(double));
     pod.Phi3 = (double *) malloc(pod.ns3*pod.ns3*sizeof(double));
     pod.Lambda3 = (double *) malloc(pod.ns3*sizeof(double));
     pod.Phi4 = (double *) malloc(pod.ns4*pod.ns4*sizeof(double));
     pod.Lambda4 = (double *) malloc(pod.ns4*sizeof(double));    
-    
+
+
     if (pod.ns2>0) {
+
+
         eigenvaluedecomposition(pod.Phi2, pod.Lambda2, pod.besselparams, pod.rin, pod.rcut, 
-            pod.twobody[0], pod.twobody[1], pod.nbesselpars, 2000);                
+            pod.twobody[0], pod.twobody[1], pod.nbesselpars, 2000);
+
+
+	//memset everything to 0.
+
+	std::memset(pod.Phi21, 0, tdegree * pod.twobody[0] * pod.nbesselpars *sizeof(double));
+	std::memset(pod.Phi22, 0, tdegree * pod.twobody[1] *sizeof(double));
+	std::cout << "tdegree1=" << tdegree1 << "\n";
+	std::cout << "tdegree2=" << tdegree2 << "\n";
+	std::cout << "ns2=" << pod.ns2 << "\n";
+	std::cout << "nbp=" << pod.nbesselpars << "\n";
+	std::cout << "tb0=" << pod.twobody[0] << "\n";
+	std::cout << "tb1=" << pod.twobody[1] << "\n";
+	for (int bfip = 0; bfip < tdegree; bfip++){
+	  for (int bfi =0; bfi < pod.twobody[0]; bfi++){
+	    for (int bp= 0; bp < pod.nbesselpars; bp++){
+	      int acc = bfip * pod.ns2 + bfi* pod.nbesselpars + bp; //ordering here is questionable
+	      int acc2 = bfip * tdegree * pod.nbesselpars + bfi * pod.nbesselpars  +  bp; //ordering here is questionable
+	      pod.Phi21[acc2] = pod.Phi2[acc];
+	    }
+	  }
+	}
+	for (int bfip = 0; bfip < tdegree; bfip++){
+	  for (int bfi = 0; bfi < pod.twobody[1]; bfi++){
+	    int acc = bfip * pod.ns2 + pod.nbesselpars * bfi + pod.nbesselpars;
+	    int acc2 = bfip * tdegree + bfi;
+	    pod.Phi22[acc2] = pod.Phi2[acc];
+	    
+	  }
+	}
+	std::cout << "tdegree1=" << tdegree1 << "\n";
+	std::cout << "tdegree2=" << tdegree2 << "\n";
+	std::cout << "ns2=" << pod.ns2 << "\n";
+	std::cout << "nbp=" << pod.nbesselpars << "\n";
+	std::cout << "tb0=" << pod.twobody[0] << "\n";
+	std::cout << "tb1=" << pod.twobody[1] << "\n";
+
+	//for - SPLIT two Phi here
             
 //         /* Print eigenvalues */
 //         print_matrix( "Eigenvalues for two-body potential:", 1, pod.ns2, pod.Lambda2, 1 );

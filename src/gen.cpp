@@ -373,7 +373,7 @@ public:
 };
 
 
-class poddesc : public Halide::Generator<poddesc> {
+class poddesc1 : public Halide::Generator<poddesc1> {
 public:
 
   Input<Buffer<int>> pairlist{"pairlist", 1};
@@ -392,7 +392,8 @@ public:
   Input<int> natom{"natom", 1};
   Input<int> bdegree{"bdegree", 1};
   Input<int> adegree{"adegree", 1};
-  Input<int> tdegree{"tdegree", 1};
+  Input<int> tdegree1{"tdegree1", 1};
+  Input<int> tdegree2{"tdegree2", 1};
   Input<int> nbesselparams{"nbesselparams", 1};
   Input<int> nelems{"nelems", 1};
   Input<int> nelemscombos{"nelemsCombos", 1};
@@ -405,16 +406,16 @@ public:
 
   GeneratorParam<int> nmax{"nmax", 100};
 
-  Output<Buffer<int>> ijs{"ijs", 2};
-  Output<Buffer<double>> rijs{"rijs", 2};
+  // Output<Buffer<int>> ijs{"ijs", 2};
+  // Output<Buffer<double>> rijs{"rijs", 2};
 
-  Output<Buffer<double>> rbf{"rbf", 3};
-  Output<Buffer<double>> drbf{"drbf", 4};
-  Output<Buffer<double>> abf{"abf", 2};
-  Output<Buffer<double>> dabf{"dabf", 3};
+  // Output<Buffer<double>> rbf{"rbf", 3};
+  // Output<Buffer<double>> drbf{"drbf", 4};
+  // Output<Buffer<double>> abf{"abf", 2};
+  // Output<Buffer<double>> dabf{"dabf", 3};
 
-  Output<Buffer<double>> energyij{"energyij", 2};
-  Output<Buffer<double>> forceij{"forceij", 3};
+  // Output<Buffer<double>> energyij{"energyij", 2};
+  // Output<Buffer<double>> forceij{"forceij", 3};
 
   Output<Buffer<double>> eatom1{"eatom1", 2};
   Output<Buffer<double>> fatom1{"fatom1", 3};
@@ -449,6 +450,8 @@ public:
     Var bfa("inverse basis function index");
     Var rbf_v("rbf_v");
 
+    Expr tdegree = max(tdegree1, tdegree2);
+
     pairlist.dim(0).set_bounds(0, npairs);
     pairnumsum.dim(0).set_bounds(0, npairs);
     atomtype.dim(0).set_bounds(0, natom);
@@ -458,9 +461,9 @@ public:
     besselparams.dim(0).set_bounds(0, nbesselparams);
     Phi1.dim(0).set_bounds(0, nbesselparams);
     Phi1.dim(1).set_bounds(0, bdegree);
-    Phi1.dim(2).set_bounds(0, tdegree);
+    Phi1.dim(2).set_bounds(0, tdegree); //tdegree1
     Phi2.dim(0).set_bounds(0, adegree);
-    Phi2.dim(1).set_bounds(0, tdegree);
+    Phi2.dim(1).set_bounds(0, tdegree); //tdegree2
     interactions.dim(0).set_bounds(0, nelems);
     interactions.dim(1).set_bounds(0, nelems);
     
@@ -500,27 +503,27 @@ public:
     buildPodTally2b(eatom2_f, fatom2_f,
 		    energyij_f, forceij_f,
 		    ijs_f, interactions,
-		    npairs, natom,  nelems, nelemscombos, tdegree,
+		    npairs, natom,  nelems, nelemscombos, tdegree1,
 		    np, atom, bfi, dim, elem, inter);
 
     Func eatom3_f("eatom3_f"), fatom3_f("fatom3_f");
     buildPodTally3b(eatom3_f, fatom3_f,
 		    y, energyij_f, forceij_f, interactions,
 		    pairlist, pairnumsum, atomtype, alist,
-		    tdegree, adegree, nelems, nelemscombos, natom, npairs, nmax,
+		    tdegree2, adegree, nelems, nelemscombos, natom, npairs, nmax,
 		    atom, atom_o, atom_i, atom_j, atom_k, inter, type,  bfa, rbf_v, dim);
 
 
     Var ox("ox"), oy("oy"), oz("oz"), ozz("ozz"), ozzz("ozzz"), ozzzz("ozzzz");
     
-    ijs(ox, oy) = ijs_f(ox, oy);
-    rijs(ox, oy) = rijs_f(ox, oy);
-    rbf(ox, oy, oz) = rbf_f(ox, oy, oz);
-    drbf(ox, oy, oz, ozz)= drbf_f(ox, oy, oz, ozz);
-    abf(ox, oy) = abf_f(ox, oy);
-    dabf(ox, oy, oz) = dabf_f(ox, oy, oz);
-    energyij(ox, oy) = energyij_f(ox, oy);
-    forceij(ox, oy, oz) = forceij_f(ox, oy, oz);
+    // ijs(ox, oy) = ijs_f(ox, oy);
+    // rijs(ox, oy) = rijs_f(ox, oy);
+    // rbf(ox, oy, oz) = rbf_f(ox, oy, oz);
+    // drbf(ox, oy, oz, ozz)= drbf_f(ox, oy, oz, ozz);
+    // abf(ox, oy) = abf_f(ox, oy);
+    // dabf(ox, oy, oz) = dabf_f(ox, oy, oz);
+    // energyij(ox, oy) = energyij_f(ox, oy);
+    // forceij(ox, oy, oz) = forceij_f(ox, oy, oz);
     
     eatom1(ox, oy) = eatom1_f(ox, oy);
     fatom1(ox, oy, oz) = fatom1_f(ox, oy, oz);
@@ -532,15 +535,15 @@ public:
     fatom3(ox, oy, oz, ozz, ozzz, ozzzz) = fatom3_f(ox, oy, oz, ozz, ozzz, ozzzz);
 
     
-    ijs.dim(0).set_bounds(0, natom);
-    ijs.dim(1).set_bounds(0, 4);
-    rijs.dim(0).set_bounds(0, natom);
-    rijs.dim(1).set_bounds(0, 3);
-    energyij.dim(0).set_bounds(0, tdegree); //tdegree
-    forceij.dim(0).set_bounds(0, tdegree);
-    energyij.dim(1).set_bounds(0, npairs);
-    forceij.dim(1).set_bounds(0, npairs);
-    forceij.dim(2).set_bounds(0, 3);
+    // ijs.dim(0).set_bounds(0, natom);
+    // ijs.dim(1).set_bounds(0, 4);
+    // rijs.dim(0).set_bounds(0, natom);
+    // rijs.dim(1).set_bounds(0, 3);
+    // energyij.dim(0).set_bounds(0, tdegree); //tdegree
+    // forceij.dim(0).set_bounds(0, tdegree);
+    // energyij.dim(1).set_bounds(0, npairs);
+    // forceij.dim(1).set_bounds(0, npairs);
+    // forceij.dim(2).set_bounds(0, 3);
     
     eatom1.dim(0).set_bounds(0, natom);
     eatom1.dim(1).set_bounds(0, nelems);
@@ -550,12 +553,12 @@ public:
 
     eatom2.dim(0).set_bounds(0, natom);
     eatom2.dim(1).set_bounds(0, nelemscombos);
-    eatom2.dim(2).set_bounds(0, tdegree);
+    eatom2.dim(2).set_bounds(0, tdegree1);
 
     fatom2.dim(0).set_bounds(0, 3);
     fatom2.dim(1).set_bounds(0, natom);
     fatom2.dim(2).set_bounds(0, nelemscombos);
-    fatom2.dim(3).set_bounds(0, tdegree);
+    fatom2.dim(3).set_bounds(0, tdegree1);
 
 
 
@@ -563,14 +566,14 @@ public:
     eatom3.dim(1).set_bounds(0, nelemscombos);
     eatom3.dim(2).set_bounds(0, nelems);
     eatom3.dim(3).set_bounds(0, adegree);
-    eatom3.dim(4).set_bounds(0, tdegree);
+    eatom3.dim(4).set_bounds(0, tdegree2);
 
     fatom3.dim(0).set_bounds(0, 3);
     fatom3.dim(1).set_bounds(0, natom);
     fatom3.dim(2).set_bounds(0, nelemscombos);
     fatom3.dim(3).set_bounds(0, nelems);
     fatom3.dim(4).set_bounds(0, adegree);
-    fatom3.dim(5).set_bounds(0, tdegree);
+    fatom3.dim(5).set_bounds(0, tdegree2);
 
       
     
@@ -623,7 +626,7 @@ public:
 
 HALIDE_REGISTER_GENERATOR(pod1, pod1);
 HALIDE_REGISTER_GENERATOR(snapshot, snapshot);
-HALIDE_REGISTER_GENERATOR(poddesc, poddesc);
+HALIDE_REGISTER_GENERATOR(poddesc1, poddesc1);
 
 // td::tuple<Func, Func> buildNeighPairs(std::string call, Func pairnumsum, Func pairlist,
 // 				       Expr NPairs, Expr NAtoms, Expr NMax, Expr dim, Expr NTypes,

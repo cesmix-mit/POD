@@ -279,7 +279,8 @@ struct podstruct {
     double rin = 0.5;
     double rcut = 4.6;
     double *besselparams; //[3] = {0.0, 2.0, 4.0};        
-    double *Phi2, *Phi3, *Phi4, *Lambda2, *Lambda3, *Lambda4;    
+    double *Phi2, *Phi3, *Phi4, *Lambda2, *Lambda3, *Lambda4;
+    double *Phi21, *Phi22;
     double *coeff;
         
     int nbesselpars = 3;    
@@ -308,7 +309,9 @@ struct podstruct {
     {
         TemplateFree(pbc, backend);        
         TemplateFree(besselparams, backend);        
-        TemplateFree(Phi2, backend);        
+        TemplateFree(Phi2, backend);
+	TemplateFree(Phi21, backend);
+	TemplateFree(Phi22, backend);        
         TemplateFree(Phi3, backend);        
         TemplateFree(Phi4, backend);        
         TemplateFree(Lambda2, backend);        

@@ -153,7 +153,8 @@ public:
         double rin = 0.5;
         double rcut = 4.6;
         double *besselparams=NULL; //[3] = {0.0, 2.0, 4.0};        
-        double *Phi2=NULL, *Phi3=NULL, *Phi4=NULL, *Lambda2=NULL, *Lambda3=NULL, *Lambda4=NULL;    
+        double *Phi2=NULL, *Phi3=NULL, *Phi4=NULL, *Lambda2=NULL, *Lambda3=NULL, *Lambda4=NULL;
+        double *Phi21=NULL, Phi22=NULL;
         double *coeff=NULL;
 
         int nbesselpars = 3;    
@@ -183,7 +184,9 @@ public:
             TemplateFree(pbc, backend);    
             TemplateFree(elemindex, backend);    
             TemplateFree(besselparams, backend);        
-            TemplateFree(Phi2, backend);        
+            TemplateFree(Phi2, backend);
+	    TemplateFree(Phi21, backend);
+	    TemplateFree(Phi22, backend);
             TemplateFree(Phi3, backend);        
             TemplateFree(Phi4, backend);        
             TemplateFree(Lambda2, backend);        

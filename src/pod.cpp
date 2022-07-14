@@ -1,6 +1,8 @@
 #ifndef __POD
 #define __POD
 
+#include "poddesc1.h"
+
 void radialbasis(double *rbf, double *drbf, double *xij, double *besselparams, double rin, 
         double rmax, int besseldegree, int inversedegree, int nbesselpars, int N)
 {
@@ -248,6 +250,46 @@ void pod3body(double *eatom, double *fatom, double *x, double *e2ij, double *f2i
     }
 }
 
+void poddesc_halide(double *eatom1, double *fatom1, double *eatom2, double *fatom2, double *eatom3, 
+		    double *fatom3, double *y, double *Phi, double * Phi1, double * Phi2,
+		    double *besselparams, double *tmpmem, 
+		    double rin, double rcut, int *atomtype, int *alist, int *pairlist, int *pairnum, 
+		    int *pairnumsum, int *elemindex, int *pdegree, int *tmpint, int nbesselpars, 
+		    int nrbf2, int nrbf3, int nabf, int nelements, int Nij, int natom)
+{   
+  //  int dim = 3;
+  int nrbf = PODMAX(nrbf2, nrbf3);
+  //  int ns = pdegree[0]*nbesselpars + pdegree[1];
+  int nelements2 = nelements*(nelements+1)/2;
+  //  Halide::Runtime::Buffer<double>
+  // Halide::Runtime::Buffer<int>
+
+  std::cout << "Entering Halide...\n";
+  Halide::Runtime::Buffer<int> pairlist_buffer(pairlist, Nij);
+  Halide::Runtime::Buffer<int> pairnumsum_buffer(pairnumsum, Nij);
+  Halide::Runtime::Buffer<int> atomtype_buffer(atomtype, natom);
+  Halide::Runtime::Buffer<int> alist_buffer(alist, Nij);
+  Halide::Runtime::Buffer<int> interactions_buffer(elemindex, nelements, nelements);
+  Halide::Runtime::Buffer<double> besseparams_buffer(besselparams, nbesselpars);
+  Halide::Runtime::Buffer<double> Phi1_buffer(Phi1, nbesselpars, pdegree[0], nrbf);
+  Halide::Runtime::Buffer<double> Phi2_buffer(Phi2, pdegree[1], nrbf);
+  Halide::Runtime::Buffer<double> y_buffer(y, natom, 3);
+
+  Halide::Runtime::Buffer<double> eatom1_buffer(eatom1, natom, nelements);
+  Halide::Runtime::Buffer<double> fatom1_buffer(fatom1, natom, nelements, 3);
+  
+  Halide::Runtime::Buffer<double> eatom2_buffer(eatom2, natom, nelements2, nrbf2);
+  Halide::Runtime::Buffer<double> fatom2_buffer(fatom2, 3, natom, nelements2, nrbf2);
+  
+  Halide::Runtime::Buffer<double> eatom3_buffer(eatom3, natom, nelements2, nelements, pdegree[1], nrbf3);
+  Halide::Runtime::Buffer<double> fatom3_buffer(fatom3, 3, natom, nelements2, nelements, pdegree[1], nrbf3);
+
+  
+  poddesc1(pairlist_buffer, pairnumsum_buffer, atomtype_buffer, alist_buffer, interactions_buffer, besseparams_buffer, Phi1_buffer, Phi2_buffer, y_buffer, //inputs
+	   Nij, natom, pdegree[0], pdegree[1], nrbf2, nrbf3, nbesselpars, nelements, nelements2, rin, rcut, //params
+	   eatom1_buffer, fatom1_buffer, eatom2_buffer, fatom2_buffer, eatom3_buffer, fatom3_buffer); //outputs
+
+}
 void poddesc(double *eatom1, double *fatom1, double *eatom2, double *fatom2, double *eatom3, 
             double *fatom3, double *y, double *Phi, double *besselparams, double *tmpmem, 
             double rin, double rcut, int *atomtype, int *alist, int *pairlist, int *pairnum, 
@@ -306,6 +348,8 @@ void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct po
     double rin = pod.rin;
     double rcut = pod.rcut;
     double *Phi2 = pod.Phi2;
+    double *Phi21 = pod.Phi21;
+    double *Phi22 = pod.Phi22;
     double *besselparams = pod.besselparams;        
     double *a1 = &lattice[0];
     double *a2 = &lattice[3];
@@ -330,10 +374,15 @@ void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct po
     cpuArraySetValue(fatom1, 0.0, dim*natom*(nd1+nd2+nd3+nd4));    
     
     // peratom descriptors for one-body, two-body, and three-body linear potentials
-    poddesc(eatom1, fatom1, eatom2, fatom2, eatom3, fatom3, nb.y, Phi2, besselparams, 
-            tmpmem, rin, rcut, atomtype, nb.alist, nb.pairlist, nb.pairnum, nb.pairnum_cumsum, 
-            nb.elemindex, pdegree2, tmpint, nbesselpars, nrbf2, nrbf3, nabf3, 
-            nelements, Nij, natom);                    
+    // poddesc(eatom1, fatom1, eatom2, fatom2, eatom3, fatom3, nb.y, Phi2, besselparams, 
+    //         tmpmem, rin, rcut, atomtype, nb.alist, nb.pairlist, nb.pairnum, nb.pairnum_cumsum, 
+    //         nb.elemindex, pdegree2, tmpint, nbesselpars, nrbf2, nrbf3, nabf3, 
+    //         nelements, Nij, natom);
+    poddesc_halide(eatom1, fatom1, eatom2, fatom2, eatom3, fatom3, nb.y, Phi2, Phi21, Phi22, besselparams, 
+		   tmpmem, rin, rcut, atomtype, nb.alist, nb.pairlist, nb.pairnum, nb.pairnum_cumsum, 
+		   nb.elemindex, pdegree2, tmpint, nbesselpars, nrbf2, nrbf3, nabf3, 
+		   nelements, Nij, natom);
+
     
     if (pod.snaptwojmax>0) 
         snapCompute(eatom4, fatom4, sna, nb, nb.y, tmpmem, atomtype, tmpint, natom, Nij);            
@@ -591,7 +640,7 @@ void energyforce_calculation(descriptorstruct &desc, neighborstruct &nb, podstru
         
         int nconfigs = data.num_config[file];
         for (int ii=0; ii < nconfigs; ii++) { // loop over each configuration in a file
-            if ((ci % 100)==0) std::cout<<"Configuration: # "<<ci+1<<std::endl;
+            if ((ci % 100)==0) std::cout<<"Configuration---: # "<<ci+1<<std::endl;
             
             int natom = data.num_atom[ci];
             int nforce = dim*natom;
