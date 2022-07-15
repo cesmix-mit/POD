@@ -209,36 +209,7 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   fatom(dim, atom, inter, type, abf, rbf) = zero;
   //  fatom(rbf, abf, type, inter, atom,  dim) = zero;
 
-  //  RDom comp(0, natom, 0, nij, 0, nij, 0, nrbf, 0, nabf);
-  RDom comp(0, nabf, 0, nrbf, 0, nij, 0, nij, 0, natom);
-  
-
-  RVar p = comp[0];
-  RVar m = comp[1];
-  RVar lk = comp[2];
-  RVar lj = comp[3];
-  RVar i = comp[4];
-  
-  
-  
-  
-
-  // RVar i = comp[0];
-  // RVar lj = comp[1];
-  // RVar lk = comp[2];
-  // RVar m = comp[3]; //rbf
-  // RVar p = comp[4]; //abf
-
-  
-  //  comp.where(comp.y >= pairnumsum(comp.x) & comp.y < pairnum(comp.x) + pairnumsum(comp.x) & lk > comp.y & lk < pairnum(comp.x) + pairnumsum(comp.x));
-  comp.where(lj >= pairnumsum(i) & lj < pairnumsum(i + 1));
-  
-  comp.where(lk > lj & lk < pairnumsum(i + 1) & lk > pairnumsum(i));
-  comp.where(lj < lk & lk < pairnumsum(i +1));
-  comp.where(lk < pairnumsum(i + 1));
-  
-
-  
+    
   eatom.bound(rbf, 0, nrbf);
   eatom.bound(abf, 0, nabf);
   eatom.bound(type, 0, nelems);
@@ -252,72 +223,146 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   fatom.bound(atom, 0, natom);
   fatom.bound(dim, 0, 3);
 
+  //  RDom comp(0, natom, 0, nij, 0, nij, 0, nrbf, 0, nabf);
+  RDom comp(0, nabf, 0, nrbf, 0, nmax, 0, nmax, 0, natom);
+  
+  RVar p = comp[0];
+  RVar m = comp[1];
+  RVar lk = comp[2];
+  RVar lj = comp[3];
+  RVar i = comp[4];
+  comp.where(lj < pairnumsum(i + 1) - pairnumsum(i));
+  comp.where(lk < pairnumsum(i + 1) - lj);
+  Expr lks = clamp(lk + pairnumsum(i) + lj, 0, nij - 1);
+  Expr ljs = clamp(lj + pairnumsum(i), 0, nij - 1);
+
+  // RVar i = comp[0];
+  // RVar lj = comp[1];
+  // RVar lk = comp[2];
+  // RVar m = comp[3]; //rbf
+  // RVar p = comp[4]; //abf
+
+  
+  //  comp.where(comp.y >= pairnumsum(comp.x) & comp.y < pairnum(comp.x) + pairnumsum(comp.x) & lk > comp.y & lk < pairnum(comp.x) + pairnumsum(comp.x));
+  
+  
+  //  comp.where(lk < pairnumsum(i + 1));
+
+ 
+
   Func xij_inter("xij_inter");
-  xij_inter(atom_o, atom_i, dim) = xij(atom_o, dim) - xij(atom_i, dim);
+  xij_inter(atom_o, atom_i, dim) = xij(clamp(pairlist(atom_o), 0, natom - 1), dim) - xij(atom_i, dim);
   xij_inter.bound(atom_i, 0, natom);
-  xij_inter.bound(atom_o, 0, natom);
+  xij_inter.bound(atom_o, 0, nij);
   xij_inter.bound(dim, 0, 3);
 
   Func rij_inter("rij_inter");
   Func rij_sq_inter("rij_sq_inter");
   rij_inter(atom, atom_o) = xij_inter(atom, atom_o, 0) * xij_inter(atom,atom_o, 0) + xij_inter(atom, atom_o, 1) * xij_inter(atom, atom_o, 1) + xij_inter(atom, atom_o, 2) * xij_inter(atom, atom_o, 2);
-  rij_inter.bound(atom, 0, natom);
+  rij_inter.bound(atom, 0, nij);
   rij_inter.bound(atom_o, 0, natom);
   rij_sq_inter(atom, atom_o) = sqrt(rij_inter(atom, atom_o));
-  rij_sq_inter.bound(atom, 0, natom);
+  rij_sq_inter.bound(atom, 0, nij);
   rij_sq_inter.bound(atom_o, 0, natom);
 
   Func costhe("costhe");
   costhe(atom_i, atom_j, atom_k) = clamp(xij_inter(atom_j, atom_i, 0) * xij_inter(atom_k, atom_i, 0) + xij_inter(atom_j, atom_i, 1) * xij_inter(atom_k, atom_i, 1) + xij_inter(atom_j, atom_i, 2) * xij_inter(atom_k, atom_i, 2)/ (rij_sq_inter(atom_j, atom_i) * rij_sq_inter(atom_k, atom_i)), -1, 1);
+  costhe.bound(atom_i, 0, natom);
+  costhe.bound(atom_j, 0, nij);
+  costhe.bound(atom_k, 0, nij);
+  
   Func xdot("xdot");
   xdot(atom_i, atom_j, atom_k) = costhe(atom_i, atom_j, atom_k) * (rij_sq_inter(atom_j, atom_i) * rij_sq_inter(atom_k, atom_i));
+  xdot.bound(atom_i, 0, natom);
+  xdot.bound(atom_j, 0, nij);
+  xdot.bound(atom_k, 0, nij);
   Func sinthe("sinthe");
   sinthe(atom_i, atom_j, atom_k) = min(sqrt(one - costhe(atom_i, atom_j, atom_k)), Expr( (double) 1e-12));
+  sinthe.bound(atom_i, 0, natom);
+  sinthe.bound(atom_j, 0, nij);
+  sinthe.bound(atom_k, 0, nij);
   Func theta("theta");
   theta(atom_i, atom_j, atom_k) = acos(costhe(atom_i, atom_j, atom_k));
+  theta.bound(atom_i, 0, natom);
+  theta.bound(atom_j, 0, nij);
+  theta.bound(atom_k, 0, nij);
   Func dtheta("dtheta");
   dtheta(atom_i, atom_j, atom_k) = -one/sinthe(atom_i, atom_j, atom_k);
+  dtheta.bound(atom_i, 0, natom);
+  dtheta.bound(atom_j, 0, nij);
+  dtheta.bound(atom_k, 0, nij);
 
   Func dct("dct");
   dct(atom_i, atom_j, atom_k, dim) = (xij_inter(atom_k, atom_i, dim) * rij_sq_inter(atom_j, atom_i) - xij_inter(atom_j, atom_i, dim) * xdot(atom_i, atom_j, atom_k)) * (one/rij_sq_inter(atom_j, atom_i));
+  dct.bound(atom_i, 0, natom);
+  dct.bound(atom_j, 0, nij);
+  dct.bound(atom_k, 0, nij);
+  dct.bound(dim, 0, 3);
+  
 
   Func pre_abf("pre_abf");
   Func pre_dabf("pre_dabf");
   pre_abf(atom_i, atom_j, atom_k, abf) = cos(abf * theta(atom_i, atom_j, atom_k));
+  pre_abf.bound(abf, 0, nabf);
+  pre_abf.bound(atom_i, 0, natom);
+  pre_abf.bound(atom_j, 0, nij);
+  pre_abf.bound(atom_k, 0, nij);
+  
   pre_dabf(atom_i, atom_j, atom_k, abf, dim) = -abf * sin(abf * theta(atom_i, atom_j, atom_k)) * dtheta(atom_i, atom_j, atom_k) * dct(atom_i, atom_j, atom_k, dim);
+  pre_dabf.bound(abf, 0, nabf);
+  pre_dabf.bound(atom_i, 0, natom);
+  pre_dabf.bound(atom_j, 0, nij);
+  pre_dabf.bound(atom_k, 0, nij);
+  pre_dabf.bound(dim, 0, 3);
   Func pre_rbf("pre_rbf");
   pre_rbf(rbf, atom_j, atom_k) = e2ij(rbf, atom_j) * e2ij(rbf, atom_k);
+  pre_rbf.bound(atom_j, 0, nij);
+  pre_rbf.bound(atom_k, 0, nij);
+  pre_rbf.bound(rbf, 0, nrbf);
+  
   Func pre_drbf("pre_drbf");
   pre_drbf(rbf, atom_j, atom_k, dim) = f2ij(rbf, atom_j, dim) * e2ij(rbf, atom_k);
-
+  pre_drbf.bound(atom_j, 0, nij);
+  pre_drbf.bound(atom_k, 0, nij);
+  pre_drbf.bound(rbf, 0, nrbf);
+  pre_drbf.bound(dim, 0, 3);
+  
+ 
   Func pre_f("pre_f");
   pre_f(atom_k, atom_j, atom_i, rbf, abf, dim) =
     pre_drbf(rbf, atom_j, atom_k, dim) * pre_abf(atom_i, atom_j, atom_k, abf) + pre_rbf(rbf, atom_j, atom_k) * pre_dabf(atom_i, atom_j, atom_k, abf, dim);
 
+  pre_f.bound(atom_j, 0, nij);
+  pre_f.bound(atom_k, 0, nij);
+  pre_f.bound(atom_i, 0, natom);
+  pre_f.bound(rbf, 0, nrbf);
+  pre_f.bound(abf, 0, nabf);
+  pre_f.bound(dim, 0, 3);
+  
+
 
 
   Expr typei = clamp(atomtype(i) - 1, 0, nelems - 1);
-  Expr lks = lk;
-  Expr ljs = lj;
-  Expr gj = clamp(pairlist(ljs), 0, nij - 1);
+  Expr gj = clamp(pairlist(ljs), 0, natom - 1);
   Expr j = clamp(alist(gj), 0, natom - 1);
   Expr typej = clamp(atomtype(j) - 1, 0, nelems - 1);
-  Expr gk = clamp(pairlist(lks), 0, nij - 1);
+  Expr gk = clamp(pairlist(lks), 0, natom - 1);
   Expr k = clamp(alist(gk), 0, natom - 1);
   Expr typek = clamp(atomtype(k) - 1, 0, nelems - 1);
   Expr interact = clamp(interaction(typek, typej) - 1, 0, nelementCombos - 1);
   //  eatom(p, m, typei, interact, i) += pre_rbf(m, ljs, lks) * pre_abf(i, ljs, lks, p);
   eatom(i, interact, typei, m, p) += pre_rbf(m, ljs, lks) * pre_abf(i, ljs, lks, p);
 
-  eatom.update(0).reorder(p, m, lk, lj, i);
-  
-
+  //  eatom.update(0).reorder(p, m, lk, lj, i);
+  fatom(dim, i, interact, typei, m, p) += pre_f(ljs, lks, i, m, p, dim) + pre_f(lks, ljs, i, m, p, dim);  
+  fatom(dim, j, interact, typei, m, p) -= pre_f(ljs, lks, i, m, p, dim);
+  fatom(dim, k, interact, typei, m, p) -= pre_f(lks, ljs, i, m, p, dim);
   //  fatom(p, m, typei, interact, i, dim) += pre_f(ljs, lks, i, m, p, dim) + pre_f(lks, ljs, i, m, p, dim);
-  fatom(dim, i, interact, typei, m, p) += pre_f(ljs, lks, i, m, p, dim) + pre_f(lks, ljs, i, m, p, dim);
+
   //  fatom(p, m, typei, interact, j, dim) -= pre_f(ljs, lks, i, m, p, dim);
-  fatom(dim, j, interact, typei, m, p) += -1 * pre_f(ljs, lks, i, m, p, dim);
+
   //  fatom(p, m, typei, interact, k, dim) -= pre_f(lks, ljs, i, m, p, dim);
-  fatom(dim, k, interact, typei, m, p) += -1 * pre_f(lks, ljs, i, m, p, dim);
+
 
   //  fatom.update(0).reorder(dim, p, m, lk, lj, i);
   //  fatom.update(1).reorder(dim, p, m, lk, lj, i);
@@ -442,7 +487,7 @@ public:
 
   Input<Buffer<double>> y{"y", 2};
 
-  Input<int> npairs{"napirs", 1};
+  Input<int> npairs{"npairs", 1};
   Input<int> natom{"natom", 1};
   Input<int> bdegree{"bdegree", 1};
   Input<int> adegree{"adegree", 1};
@@ -509,9 +554,9 @@ public:
     
     Expr nmax = min(nmaxp, natom);
     pairlist.dim(0).set_bounds(0, npairs);
-    pairnumsum.dim(0).set_bounds(0, npairs);
+    pairnumsum.dim(0).set_bounds(0, npairs + 1);
     atomtype.dim(0).set_bounds(0, natom);
-    alist.dim(0).set_bounds(0, npairs);//are we sure?
+    alist.dim(0).set_bounds(0, natom);//are we sure?
     y.dim(0).set_bounds(0, natom);
     y.dim(1).set_bounds(0, 3);
     besselparams.dim(0).set_bounds(0, nbesselparams);

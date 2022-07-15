@@ -267,8 +267,8 @@ void poddesc_halide(double *eatom1, double *fatom1, double *eatom2, double *fato
   std::cout << "Entering Halide...\n";
   Halide::Runtime::Buffer<int> pairlist_buffer(pairlist, Nij);
   Halide::Runtime::Buffer<int> pairnumsum_buffer(pairnumsum, Nij);
-  Halide::Runtime::Buffer<int> atomtype_buffer(atomtype, natom);
-  Halide::Runtime::Buffer<int> alist_buffer(alist, Nij);
+  Halide::Runtime::Buffer<int> atomtype_buffer(atomtype, Nij);
+  Halide::Runtime::Buffer<int> alist_buffer(alist, natom);
   Halide::Runtime::Buffer<int> interactions_buffer(elemindex, nelements, nelements);
   Halide::Runtime::Buffer<double> besseparams_buffer(besselparams, nbesselpars);
   Halide::Runtime::Buffer<double> Phi1_buffer(Phi1, nbesselpars, pdegree[0], nrbf);
