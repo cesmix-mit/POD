@@ -143,8 +143,8 @@ void podNeighPairs(double *xij, double *x, int *ai, int *aj,  int *ti, int *tj,
         int start = pairnumsum[ii];   
         int m = pairnumsum[ii+1] - start; // number of neighbors around i             
         for (int l=0; l<m ; l++) {   // loop over each atom around atom i
-            int j = pairlist[l + start];  // atom j              
-            int k = start + l;                                     
+	    int k = start + l;                        
+            int j = pairlist[k];  // atom j
             ai[k]        = i;
             aj[k]        = alist[j];          
             ti[k]        = itype;       

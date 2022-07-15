@@ -126,8 +126,8 @@ void buildStructureMatMul(Func & energyij, Func & forceij,
   //  RDom drbf(0, bdegree, 0, nbparams, 0, 3);
   energyij(bfi, np) += rbf(rbfdom.y, rbfdom.x, np) * Phi1(rbfdom.y, rbfdom.x, bfi);//ordering here is questionable
   forceij(bfi,np, dim) += drbf(rbfdom.y, rbfdom.x, np, dim) * Phi1(rbfdom.y, rbfdom.x, bfi);//ordering here is questionable
-  energyij.bound(bfi, 0, bdegree);
-  forceij.bound(bfi, 0, bdegree);
+  //  energyij.bound(bfi, 0, tdegree);
+  //  forceij.bound(bfi, 0, tdegree);
 
   RDom abfdom(0, adegree);
   energyij(bfi, np) += abf(abfdom.x, np) * Phi2(abfdom.x, bfi);//ordering here is questionable
@@ -297,8 +297,8 @@ void buildNeighPairs(Func & outputs, Func & vectors,
   RDom r(0, natom, 0, npairs);
   r.where(r.y < pairnumsum(r.x + 1) && r.y >= pairnumsum(r.x));
 
-  Expr jacc = clamp(pairlist(r.y), 0, npairs - 1);
-  Expr att = clamp(alist(jacc), 0, natom - 1); 
+  Expr jacc = clamp(pairlist(r.y), 0, natom - 1);
+  Expr att = clamp(alist(jacc), 0, natom - 1);  //
   Expr att_tt = atomtype(att); 
   outputs(r.y, numOuts) = mux(numOuts, {r.x, att, atomtype(r.x), att_tt}); //ai[k], aj[k], ti, tj
   vectors(r.y, d) = atompos(jacc, d) - atompos(r.x, d);
@@ -404,7 +404,7 @@ public:
 
 
 
-  GeneratorParam<int> nmax{"nmax", 100};
+  GeneratorParam<int> nmaxp{"nmax", 100};
 
   // Output<Buffer<int>> ijs{"ijs", 2};
   // Output<Buffer<double>> rijs{"rijs", 2};
@@ -452,10 +452,12 @@ public:
 
     Expr tdegree = max(tdegree1, tdegree2);
 
+    
+    Expr nmax = min(nmaxp, natom);
     pairlist.dim(0).set_bounds(0, npairs);
     pairnumsum.dim(0).set_bounds(0, npairs);
     atomtype.dim(0).set_bounds(0, natom);
-    alist.dim(0).set_bounds(0, npairs);
+    alist.dim(0).set_bounds(0, npairs);//are we sure?
     y.dim(0).set_bounds(0, natom);
     y.dim(1).set_bounds(0, 3);
     besselparams.dim(0).set_bounds(0, nbesselparams);
@@ -586,9 +588,7 @@ public:
 
 class snapshot : public Halide::Generator<snapshot> {
 public:
-  //Func pairnumsum, Func pairlist,
-  //				       Expr NPairs, Expr NAtoms, Expr NMax, Expr dim,
-  //				       Func atomtype, Func alist, Func atompos
+
   
   Input<Buffer<double>> xij{"xij", 1};
   Input<Buffer<double>> besselparams{"besselparams_buf", 1};
@@ -627,38 +627,3 @@ public:
 HALIDE_REGISTER_GENERATOR(pod1, pod1);
 HALIDE_REGISTER_GENERATOR(snapshot, snapshot);
 HALIDE_REGISTER_GENERATOR(poddesc1, poddesc1);
-
-// td::tuple<Func, Func> buildNeighPairs(std::string call, Func pairnumsum, Func pairlist,
-// 				       Expr NPairs, Expr NAtoms, Expr NMax, Expr dim, Expr NTypes,
-// 				       Func atomtype, Func alist, Func atompos
-// 		     ){
-
-
-
-//   Func outputs(call + "_bnp");
-//   Func vectors(call + "_bnpd");
-
-//   Var ii("ii_" + call), c("c_" + call), j("j_" + call);
-//   //initialize ouputs
-//   outputs(j, c) = mux(c, {-1, -1, -1, -1});//ai, aj, ti, tj
-//   outputs.bound(c, 0, 4);
-//   outputs.bound(j, 0, NPairs);
-
-//   vectors(j, c) = Expr((double) 0.0);
-//   vectors.bound(c, 0, dim);
-//   vectors.bound(j, 0, NPairs);
-
-
-//   RDom r(0, NAtoms, 0, NMax);
-//   r.where(r.y < pairnumsum(r.x + 1) && r.y >= pairnumsum(r.x)); //iteration
-
-//   Expr jacc = clamp(pairlist(r.y), 0, NPairs);
-//   Expr att = clamp(alist(jacc), 0, NAtoms); 
-//   Expr att_tt = atomtype(att); 
-//   outputs(r.x, c) = mux(c, {r.x, att, atomtype(r.x), att_tt});
-
-//   vectors(r.x, c) = atompos(r.y, c) - atompos(r.x, c);
-
-//   return std::make_tuple(outputs, vectors);
-  
-// }

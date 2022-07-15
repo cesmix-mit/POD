@@ -164,7 +164,7 @@ void pod3body(double *eatom, double *fatom, double *x, double *e2ij, double *f2i
                 int gk = pairlist[lk + s];  // atom k                
                 int k = alist[gk];          // atom k
                 int typek = atomtype[k] - 1;     
-                                
+                               
                 xik1 = x[0+dim*gk] - x[0+dim*i];  // xj - xi           
                 xik2 = x[1+dim*gk] - x[1+dim*i];  // xj - xi           
                 xik3 = x[2+dim*gk] - x[2+dim*i];  // xj - xi           s
