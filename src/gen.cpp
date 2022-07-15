@@ -104,6 +104,15 @@ void buildRBF(Func & rbf, Func & drbf, Func & abf, Func & dabf,
   dabf.bound(dim, 0, 3);
   dabf.bound(bfi, 0, adegree);
   dabf.bound(np, 0, npairs);
+
+  rbf.compute_root();
+  drbf.compute_root();
+
+  abf.compute_root();
+  
+  dabf.compute_root();
+
+  
 }
 
 void buildStructureMatMul(Func & energyij, Func & forceij,
@@ -132,6 +141,11 @@ void buildStructureMatMul(Func & energyij, Func & forceij,
   RDom abfdom(0, adegree);
   energyij(bfi, np) += abf(abfdom.x, np) * Phi2(abfdom.x, bfi);//ordering here is questionable
   forceij(bfi, np, dim) += dabf(abfdom.x, np, dim) * Phi2(abfdom.x, bfi);//ordering here is questionable
+
+  energyij.compute_root();
+  forceij.compute_root();
+  
+  
 
   
 }
@@ -174,13 +188,18 @@ void buildPodTally2b(Func & eatom, Func & fatom,
   fatom.bound(inter, 0, nelementCombos);
   fatom.bound(dim, 0, 3);
 
+  eatom.compute_root();
+  fatom.compute_root();
+  
+  
+
 
 }
 
 void buildPodTally3b(Func & eatom, Func & fatom,
 		     Func xij, Func e2ij, Func f2ij, Func interaction,
 		     Func pairlist, Func pairnumsum, Func atomtype, Func alist,
-		     Expr nrbf, Expr nabf, Expr nelems, Expr nelementCombos, Expr natom, Expr nij, Expr nmax,
+		     Expr nrbf, Expr nabf, Expr nelems, Expr nelementCombos, Expr natom, Expr nij, Expr nmax, 
 		     Var atom, Var atom_o, Var atom_i, Var atom_j, Var atom_k, Var inter, Var type, Var abf, Var rbf, Var dim){
   Expr one = Expr((double) 1.0);
   Expr zero = Expr((double) 0.0);
@@ -190,16 +209,35 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   fatom(dim, atom, inter, type, abf, rbf) = zero;
   //  fatom(rbf, abf, type, inter, atom,  dim) = zero;
 
-  RDom comp(0, natom, 0, nmax, 0, nmax, 0, nrbf, 0, nabf);
+  //  RDom comp(0, natom, 0, nij, 0, nij, 0, nrbf, 0, nabf);
+  RDom comp(0, nabf, 0, nrbf, 0, nij, 0, nij, 0, natom);
   
-  //  comp.where(comp.y >= pairnumsum(comp.x) & comp.y < pairnum(comp.x) + pairnumsum(comp.x) & comp.z > comp.y & comp.z < pairnum(comp.x) + pairnumsum(comp.x));
-  comp.where(comp.y >= pairnumsum(comp.x) & comp.y < pairnumsum(comp.x + 1) & comp.z > comp.y & comp.z < pairnumsum(comp.x + 1));
 
-  RVar i = comp[0];
-  RVar lj = comp[1];
+  RVar p = comp[0];
+  RVar m = comp[1];
   RVar lk = comp[2];
-  RVar m = comp[3]; //rbf
-  RVar p = comp[4]; //abf
+  RVar lj = comp[3];
+  RVar i = comp[4];
+  
+  
+  
+  
+
+  // RVar i = comp[0];
+  // RVar lj = comp[1];
+  // RVar lk = comp[2];
+  // RVar m = comp[3]; //rbf
+  // RVar p = comp[4]; //abf
+
+  
+  //  comp.where(comp.y >= pairnumsum(comp.x) & comp.y < pairnum(comp.x) + pairnumsum(comp.x) & lk > comp.y & lk < pairnum(comp.x) + pairnumsum(comp.x));
+  comp.where(lj >= pairnumsum(i) & lj < pairnumsum(i + 1));
+  
+  comp.where(lk > lj & lk < pairnumsum(i + 1) & lk > pairnumsum(i));
+  comp.where(lj < lk & lk < pairnumsum(i +1));
+  comp.where(lk < pairnumsum(i + 1));
+  
+
   
   eatom.bound(rbf, 0, nrbf);
   eatom.bound(abf, 0, nabf);
@@ -271,12 +309,19 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   //  eatom(p, m, typei, interact, i) += pre_rbf(m, ljs, lks) * pre_abf(i, ljs, lks, p);
   eatom(i, interact, typei, m, p) += pre_rbf(m, ljs, lks) * pre_abf(i, ljs, lks, p);
 
+  eatom.update(0).reorder(p, m, lk, lj, i);
+  
+
   //  fatom(p, m, typei, interact, i, dim) += pre_f(ljs, lks, i, m, p, dim) + pre_f(lks, ljs, i, m, p, dim);
   fatom(dim, i, interact, typei, m, p) += pre_f(ljs, lks, i, m, p, dim) + pre_f(lks, ljs, i, m, p, dim);
   //  fatom(p, m, typei, interact, j, dim) -= pre_f(ljs, lks, i, m, p, dim);
-  fatom(dim, j, interact, typei, m, p) -= pre_f(ljs, lks, i, m, p, dim);
+  fatom(dim, j, interact, typei, m, p) += -1 * pre_f(ljs, lks, i, m, p, dim);
   //  fatom(p, m, typei, interact, k, dim) -= pre_f(lks, ljs, i, m, p, dim);
-  fatom(dim, k, interact, typei, m, p) -= pre_f(lks, ljs, i, m, p, dim);
+  fatom(dim, k, interact, typei, m, p) += -1 * pre_f(lks, ljs, i, m, p, dim);
+
+  //  fatom.update(0).reorder(dim, p, m, lk, lj, i);
+  //  fatom.update(1).reorder(dim, p, m, lk, lj, i);
+  //  fatom.update(2).reorder(dim, p, m, lk, lj, i);
 
 }
 
@@ -302,6 +347,15 @@ void buildNeighPairs(Func & outputs, Func & vectors,
   Expr att_tt = atomtype(att); 
   outputs(r.y, numOuts) = mux(numOuts, {r.x, att, atomtype(r.x), att_tt}); //ai[k], aj[k], ti, tj
   vectors(r.y, d) = atompos(jacc, d) - atompos(r.x, d);
+
+  outputs.compute_root();
+  vectors.compute_root();
+
+  outputs.update(0).reorder(numOuts, r.y, r.x);
+  vectors.update(0).reorder(d, r.y, r.x);
+  
+  //  ou// tputs.update(0).reorder(r.x, r.y, numOuts);
+  //  vectors.update(0).reorder(r.x, r.y, d);
   
 }
 
