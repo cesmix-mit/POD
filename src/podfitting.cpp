@@ -144,14 +144,14 @@ void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct po
     int nd3 = pod.nd3;
     int nd4 = pod.nd4;
     int *pdegree2 = pod.twobody;
-    //int *pdegree3 = pod.threebody;
+    int *pdegree3 = pod.threebody;
     int *pbc = pod.pbc;
     double rin = pod.rin;
     double rcut = pod.rcut;
     double *Phi2 = pod.Phi2;
     double *Phi21 = pod.Phi21;
     double *Phi22 = pod.Phi22;
-    //double *Phi3 = pod.Phi3;
+    double *Phi3 = pod.Phi3;
     double *besselparams = pod.besselparams;
         
     int natom = data.num_atom[ci];    
@@ -187,15 +187,17 @@ void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct po
     cpuArraySetValue(fatom1, 0.0, dim*natom*(nd1+nd2+nd3+nd4));    
     
     // peratom descriptors for one-body, two-body, and three-body linear potentials
-//     poddesc(eatom1, fatom1, eatom2, fatom2, eatom3, fatom3, nb.y, Phi2, Phi3, besselparams, 
-//             tmpmem, rin, rcut, atomtype, nb.alist, nb.pairlist, nb.pairnum, nb.pairnum_cumsum, 
-//             nb.elemindex, pdegree2, pdegree3, tmpint, nbesselpars, nrbf2, nrbf3, nabf3, 
-//             nelements, Nij, natom);            
-    poddesc_halide(eatom1, fatom1, eatom2, fatom2, eatom3, fatom3, nb.y, Phi2, Phi21, Phi22, besselparams, 
+    poddesc(eatom1, fatom1, eatom2, fatom2, eatom3, fatom3, nb.y, Phi2, besselparams, 
             tmpmem, rin, rcut, atomtype, nb.alist, nb.pairlist, nb.pairnum, nb.pairnum_cumsum, 
             nb.elemindex, pdegree2, tmpint, nbesselpars, nrbf2, nrbf3, nabf3, 
-            nelements, Nij, natom);                    
-        
+            nelements, Nij, natom);            
+    // poddesc_halide(eatom1, fatom1, eatom2, fatom2, eatom3, fatom3, nb.y, Phi2, Phi21, Phi22, besselparams, 
+    //         tmpmem, rin, rcut, atomtype, nb.alist, nb.pairlist, nb.pairnum, nb.pairnum_cumsum, 
+    //         nb.elemindex, pdegree2, tmpint, nbesselpars, nrbf2, nrbf3, nabf3, 
+    //         nelements, Nij, natom);                    
+
+    print_matrix("three body energy", 1, natom, eatom3, 1);
+    error("stop here");
     // peratom descriptors for four-body snap potential
     if (pod.snaptwojmax>0) {
         snapCompute(eatom4, fatom4, sna, nb, nb.y, tmpmem, atomtype, tmpint, natom, Nij);            

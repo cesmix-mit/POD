@@ -3,10 +3,12 @@
 
 #include "poddesc1.h"
 
+
+
 void radialbasis(double *rbf, double *drbf, double *xij, double *besselparams, double rin, 
         double rmax, int besseldegree, int inversedegree, int nbesselpars, int N)
 {
-    for (int n=0; n<N; n++) {    
+  for (int n=0; n<N; n++) {    //npairs
         double xij1 = xij[0+3*n];
         double xij2 = xij[1+3*n];
         double xij3 = xij[2+3*n];
@@ -182,10 +184,11 @@ void pod3body(double *eatom, double *fatom, double *x, double *e2ij, double *f2i
                 theta = acos(costhe);            
                 dtheta = -1.0/sinthe; 
 
-                tm1 = pow(rijsq,1.5)*rik;
-                tm2 = rij*pow(riksq,1.5);
+                tm1 = pow(rijsq,1.5) * rik;
+                tm2 = pow(riksq,1.5) * rij;
                 tm1 = 1.0/tm1;
                 tm2 = 1.0/tm2;
+
                 dct1 = (xik1*rijsq - xij1*xdot)*tm1; 
                 dct2 = (xik2*rijsq - xij2*xdot)*tm1;
                 dct3 = (xik3*rijsq - xij3*xdot)*tm1;
@@ -266,8 +269,8 @@ void poddesc_halide(double *eatom1, double *fatom1, double *eatom2, double *fato
 
   std::cout << "Entering Halide...\n";
   Halide::Runtime::Buffer<int> pairlist_buffer(pairlist, Nij);
-  Halide::Runtime::Buffer<int> pairnumsum_buffer(pairnumsum, Nij);
-  Halide::Runtime::Buffer<int> atomtype_buffer(atomtype, Nij);
+  Halide::Runtime::Buffer<int> pairnumsum_buffer(pairnumsum, Nij + 1);
+  Halide::Runtime::Buffer<int> atomtype_buffer(atomtype, natom);
   Halide::Runtime::Buffer<int> alist_buffer(alist, natom);
   Halide::Runtime::Buffer<int> interactions_buffer(elemindex, nelements, nelements);
   Halide::Runtime::Buffer<double> besseparams_buffer(besselparams, nbesselpars);
@@ -290,6 +293,8 @@ void poddesc_halide(double *eatom1, double *fatom1, double *eatom2, double *fato
 	   eatom1_buffer, fatom1_buffer, eatom2_buffer, fatom2_buffer, eatom3_buffer, fatom3_buffer); //outputs
 
 }
+
+///THE FUCNTION WE WANT TO COMPUTE
 void poddesc(double *eatom1, double *fatom1, double *eatom2, double *fatom2, double *eatom3, 
             double *fatom3, double *y, double *Phi, double *besselparams, double *tmpmem, 
             double rin, double rcut, int *atomtype, int *alist, int *pairlist, int *pairnum, 
@@ -709,7 +714,7 @@ void energyforce_calculation(descriptorstruct &desc, neighborstruct &nb, podstru
 //     // one-body descriptors
 //     pod1body(eatom1, fatom1, atomtype, nelements, natom);
 //         
-//     //print_matrix( "One-body descriptors:", natom, nelements, eatom1, natom); 
+//     //print_mat0Drix( "One-body descriptors:", natom, nelements, eatom1, natom); 
 //     //print_matrix( "One-body descriptors derivarives:", 3*natom, nelements, fatom1, 3*natom); 
 //     
 //     int ns2 = pdegree2[0]*nbesselpars + pdegree2[1];

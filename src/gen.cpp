@@ -78,7 +78,7 @@ void buildRBF(Func & rbf, Func & drbf, Func & abf, Func & dabf,
   Expr fcut = y6/exp(-one);
   Expr dfcut = (((3 * one)/(rmax*exp(-one)))*(y2)*y6*(y*y2 - one))/y7;
 
-  Expr alpha = min(Expr((double)1e-3), besselparams(bfp));
+  Expr alpha = max(Expr((double)1e-3), besselparams(bfp));
   Expr x =  (one - exp(-alpha*r/rmax))/(one-exp(-alpha));
   Expr dx = (alpha/rmax)*exp(-(alpha*r/rmax))/(one - exp(-alpha));
 
@@ -210,7 +210,7 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   //  fatom(rbf, abf, type, inter, atom,  dim) = zero;
 
     
-  eatom.bound(rbf, 0, nrbf);
+  eatom.bound(rbf, 0, nrbf); 
   eatom.bound(abf, 0, nabf);
   eatom.bound(type, 0, nelems);
   eatom.bound(inter, 0, nelementCombos);
@@ -226,15 +226,31 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   //  RDom comp(0, natom, 0, nij, 0, nij, 0, nrbf, 0, nabf);
   RDom comp(0, nabf, 0, nrbf, 0, nmax, 0, nmax, 0, natom);
   
-  RVar p = comp[0];
-  RVar m = comp[1];
+  RVar p = comp[1];
+  RVar m = comp[0];
   RVar lk = comp[2];
   RVar lj = comp[3];
   RVar i = comp[4];
-  comp.where(lj < pairnumsum(i + 1) - pairnumsum(i));
-  comp.where(lk < pairnumsum(i + 1) - lj);
-  Expr lks = clamp(lk + pairnumsum(i) + lj, 0, nij - 1);
-  Expr ljs = clamp(lj + pairnumsum(i), 0, nij - 1);
+  
+  comp.where(lj < pairnumsum(i+1) - pairnumsum(i) );
+  comp.where(lk < (pairnumsum(i+1) - pairnumsum(i)) - (lj + 1));
+  
+  //comp.where(lk > lj & lk < pairnumsum(i+1));
+  
+  //  comp.where(lk > lj & lk < pairnumsum(i + 1));
+  //  comp.where(lj < pairnumsum(i + 1)  & lj >=  pairnumsum(i));
+  //  comp.where(lj < pairnumsum(i + 1)  & lj >=  pairnumsum(i));
+
+  Expr ljs =clamp(lj + pairnumsum(i), 0, nij - 1);
+  Expr lks = clamp(lk + lj + pairnumsum(i) + 1, 0, nij - 1);
+
+  
+
+  
+  // comp.where(lj < pairnumsum(i + 1) - pairnumsum(i));
+  // comp.where(lk < pairnumsum(i + 1) - lj);
+  // Expr lks = clamp(lk + pairnumsum(i) + lj, 0, nij - 1);
+  // Expr ljs = clamp(lj + pairnumsum(i), 0, nij - 1);
 
   // RVar i = comp[0];
   // RVar lj = comp[1];
@@ -266,34 +282,41 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   rij_sq_inter.bound(atom_o, 0, natom);
 
   Func costhe("costhe");
-  costhe(atom_i, atom_j, atom_k) = clamp(xij_inter(atom_j, atom_i, 0) * xij_inter(atom_k, atom_i, 0) + xij_inter(atom_j, atom_i, 1) * xij_inter(atom_k, atom_i, 1) + xij_inter(atom_j, atom_i, 2) * xij_inter(atom_k, atom_i, 2)/ (rij_sq_inter(atom_j, atom_i) * rij_sq_inter(atom_k, atom_i)), -1, 1);
+  costhe(atom_i, atom_j, atom_k) = clamp((xij_inter(atom_j, atom_i, 0) * xij_inter(atom_k, atom_i, 0) + xij_inter(atom_j, atom_i, 1) * xij_inter(atom_k, atom_i, 1) + xij_inter(atom_j, atom_i, 2) * xij_inter(atom_k, atom_i, 2))/ (rij_sq_inter(atom_j, atom_i) * rij_sq_inter(atom_k, atom_i)), -1, 1);
   costhe.bound(atom_i, 0, natom);
   costhe.bound(atom_j, 0, nij);
   costhe.bound(atom_k, 0, nij);
   
   Func xdot("xdot");
   xdot(atom_i, atom_j, atom_k) = costhe(atom_i, atom_j, atom_k) * (rij_sq_inter(atom_j, atom_i) * rij_sq_inter(atom_k, atom_i));
+  Func sinthe("sinthe");
+  sinthe(atom_i, atom_j, atom_k) = max(sqrt(one - costhe(atom_i, atom_j, atom_k) * costhe(atom_i, atom_j, atom_k)), Expr( (double) 1e-12));
+  
   xdot.bound(atom_i, 0, natom);
   xdot.bound(atom_j, 0, nij);
   xdot.bound(atom_k, 0, nij);
-  Func sinthe("sinthe");
-  sinthe(atom_i, atom_j, atom_k) = min(sqrt(one - costhe(atom_i, atom_j, atom_k)), Expr( (double) 1e-12));
+
+  
   sinthe.bound(atom_i, 0, natom);
   sinthe.bound(atom_j, 0, nij);
   sinthe.bound(atom_k, 0, nij);
+
   Func theta("theta");
   theta(atom_i, atom_j, atom_k) = acos(costhe(atom_i, atom_j, atom_k));
+  
   theta.bound(atom_i, 0, natom);
   theta.bound(atom_j, 0, nij);
   theta.bound(atom_k, 0, nij);
   Func dtheta("dtheta");
   dtheta(atom_i, atom_j, atom_k) = -one/sinthe(atom_i, atom_j, atom_k);
+  
   dtheta.bound(atom_i, 0, natom);
   dtheta.bound(atom_j, 0, nij);
   dtheta.bound(atom_k, 0, nij);
 
   Func dct("dct");
-  dct(atom_i, atom_j, atom_k, dim) = (xij_inter(atom_k, atom_i, dim) * rij_sq_inter(atom_j, atom_i) - xij_inter(atom_j, atom_i, dim) * xdot(atom_i, atom_j, atom_k)) * (one/rij_sq_inter(atom_j, atom_i));
+  dct(atom_i, atom_j, atom_k, dim) = (xij_inter(atom_k, atom_i, dim) * rij_sq_inter(atom_j, atom_i) - xij_inter(atom_j, atom_i, dim) * xdot(atom_i, atom_j, atom_k)) * (one/(pow(rij_sq_inter(atom_j, atom_i), Expr((double) 1.5)) * rij_inter(atom_k, atom_i)));
+  
   dct.bound(atom_i, 0, natom);
   dct.bound(atom_j, 0, nij);
   dct.bound(atom_k, 0, nij);
@@ -303,6 +326,7 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   Func pre_abf("pre_abf");
   Func pre_dabf("pre_dabf");
   pre_abf(atom_i, atom_j, atom_k, abf) = cos(abf * theta(atom_i, atom_j, atom_k));
+  
   pre_abf.bound(abf, 0, nabf);
   pre_abf.bound(atom_i, 0, natom);
   pre_abf.bound(atom_j, 0, nij);
@@ -357,6 +381,11 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   fatom(dim, i, interact, typei, m, p) += pre_f(ljs, lks, i, m, p, dim) + pre_f(lks, ljs, i, m, p, dim);  
   fatom(dim, j, interact, typei, m, p) -= pre_f(ljs, lks, i, m, p, dim);
   fatom(dim, k, interact, typei, m, p) -= pre_f(lks, ljs, i, m, p, dim);
+
+  eatom.compute_root();
+
+  fatom.compute_root();
+  
   //  fatom(p, m, typei, interact, i, dim) += pre_f(ljs, lks, i, m, p, dim) + pre_f(lks, ljs, i, m, p, dim);
 
   //  fatom(p, m, typei, interact, j, dim) -= pre_f(ljs, lks, i, m, p, dim);
