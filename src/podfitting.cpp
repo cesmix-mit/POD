@@ -187,16 +187,19 @@ void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct po
     cpuArraySetValue(fatom1, 0.0, dim*natom*(nd1+nd2+nd3+nd4));    
     
     // peratom descriptors for one-body, two-body, and three-body linear potentials
+/*
     poddesc(eatom1, fatom1, eatom2, fatom2, eatom3, fatom3, nb.y, Phi2, besselparams, 
             tmpmem, rin, rcut, atomtype, nb.alist, nb.pairlist, nb.pairnum, nb.pairnum_cumsum, 
             nb.elemindex, pdegree2, tmpint, nbesselpars, nrbf2, nrbf3, nabf3, 
             nelements, Nij, natom);            
-    // poddesc_halide(eatom1, fatom1, eatom2, fatom2, eatom3, fatom3, nb.y, Phi2, Phi21, Phi22, besselparams, 
-    //         tmpmem, rin, rcut, atomtype, nb.alist, nb.pairlist, nb.pairnum, nb.pairnum_cumsum, 
-    //         nb.elemindex, pdegree2, tmpint, nbesselpars, nrbf2, nrbf3, nabf3, 
-    //         nelements, Nij, natom);                    
+*/
+     poddesc_halide(eatom1, fatom1, eatom2, fatom2, eatom3, fatom3, nb.y, Phi2, Phi21, Phi22, besselparams, 
+             tmpmem, rin, rcut, atomtype, nb.alist, nb.pairlist, nb.pairnum, nb.pairnum_cumsum, 
+             nb.elemindex, pdegree2, tmpint, nbesselpars, nrbf2, nrbf3, nabf3, 
+             nelements, Nij, natom);                    
 
-    print_matrix("three body energy", 1, natom, eatom3, 1);
+    print_matrix("eatom1 Halide", 1, natom, eatom1, 1);
+    print_matrix("fatom1 Halide", 1, natom, fatom1, 1);
     error("stop here");
     // peratom descriptors for four-body snap potential
     if (pod.snaptwojmax>0) {

@@ -446,8 +446,8 @@ void buildPod1Body_p(Func & eatom, Func & fatom,
 		     Func atomtype,
 		     Expr nelements, Expr natom,
 		     Var i, Var m, Var dim){
-  eatom(i, m) = select(atomtype(i) == m, (Expr((double)1.0)), (Expr((double)0.0)));
-  eatom.bound(i, 0, natom);
+    eatom(i, m) = select(atomtype(i) == m + 1, (Expr((double)1.0)), (Expr((double)0.0)));
+    eatom.bound(i, 0, natom);
   eatom.bound(m, 0, nelements);
   fatom(i, m, dim) = (Expr((double)0.0));
   //  fatom.bound(i, 0, dim * natom * nelements);
@@ -643,7 +643,6 @@ public:
 		    tdegree2, adegree, nelems, nelemscombos, natom, npairs, nmax,
 		    atom, atom_o, atom_i, atom_j, atom_k, inter, type,  bfa, rbf_v, dim);
 
-
     Var ox("ox"), oy("oy"), oz("oz"), ozz("ozz"), ozzz("ozzz"), ozzzz("ozzzz");
     
     // ijs(ox, oy) = ijs_f(ox, oy);
@@ -658,12 +657,15 @@ public:
     eatom1(ox, oy) = eatom1_f(ox, oy);
     fatom1(ox, oy, oz) = fatom1_f(ox, oy, oz);
 
-    eatom2(ox, oy, oz) = eatom2_f(ox, oy, oz);
-    fatom2(ox, oy, oz, ozz) = fatom2_f(ox, oy, oz, ozz);
+    //eatom2(ox, oy, oz) = eatom2_f(ox, oy, oz);
+    //fatom2(ox, oy, oz, ozz) = fatom2_f(ox, oy, oz, ozz);
+    eatom2(ox, oy, oz) = Expr((double) 0);
+    fatom2(ox, oy, oz, ozz) = Expr((double) 0);
 
-    eatom3(ox, oy, oz, ozz, ozzz) = eatom3_f(ox, oy, oz, ozz, ozzz);
-    fatom3(ox, oy, oz, ozz, ozzz, ozzzz) = fatom3_f(ox, oy, oz, ozz, ozzz, ozzzz);
-
+    //eatom3(ox, oy, oz, ozz, ozzz) = eatom3_f(ox, oy, oz, ozz, ozzz);
+    //fatom3(ox, oy, oz, ozz, ozzz, ozzzz) = fatom3_f(ox, oy, oz, ozz, ozzz, ozzzz);
+    eatom3(ox, oy, oz, ozz, ozzz) = Expr((double) 0);
+    fatom3(ox, oy, oz, ozz, ozzz, ozzzz) = Expr((double) 0);
     
     // ijs.dim(0).set_bounds(0, natom);
     // ijs.dim(1).set_bounds(0, 4);
