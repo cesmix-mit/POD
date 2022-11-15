@@ -420,8 +420,8 @@ void buildNeighPairs(Func & outputs, Func & vectors,
   RDom r(0, natom, 0, npairs);
   r.where(r.y < pairnumsum(r.x + 1) && r.y >= pairnumsum(r.x));
 
-  Expr jacc = clamp(print(pairlist(r.y), "<- pairlist"), 0, print(natom - 1, "<- npair - 1"));
-  Expr att = clamp(alist(jacc), 0, natom - 1);  //
+  Expr jacc = clamp(print(pairlist(r.y), "<- pairlist"), 0, print(npairs- 1, "<- npair - 1"));
+  Expr att = clamp(alist(jacc), 0, npairs - 1);  //
   Expr att_tt = atomtype(att);
   outputs(r.y, numOuts) = mux(numOuts, {r.x, att, atomtype(r.x), att_tt}); //ai[k], aj[k], ti, tj
   vectors(r.y, d) = atompos(print(jacc, "<- jacc", r.y, "<- r.y"), d) - atompos(print(r.x, "<- r.x"), d);
@@ -591,9 +591,9 @@ public:
     Expr nmax = min(nmaxp, natom);
     pairlist.dim(0).set_bounds(0, npairs);
     pairnumsum.dim(0).set_bounds(0, npairs + 1);
-    atomtype.dim(0).set_bounds(0, natom);
-    alist.dim(0).set_bounds(0, natom);//are we sure?
-    y.dim(0).set_bounds(0, natom);
+    atomtype.dim(0).set_bounds(0, npairs);
+    alist.dim(0).set_bounds(0, npairs);//are we sure?
+    y.dim(0).set_bounds(0, npairs);
     y.dim(1).set_bounds(0, 3);
     besselparams.dim(0).set_bounds(0, nbesselparams);
     Phi1.dim(0).set_bounds(0, nbesselparams);
@@ -644,11 +644,13 @@ public:
 		    np, atom, bfi, dim, elem, inter);
 
     Func eatom3_f("eatom3_f"), fatom3_f("fatom3_f");
+    /**
     buildPodTally3b(eatom3_f, fatom3_f,
 		    y, energyij_f, forceij_f, interactions,
 		    pairlist, pairnumsum, atomtype, alist,
 		    tdegree2, adegree, nelems, nelemscombos, natom, npairs, nmax,
 		    atom, atom_o, atom_i, atom_j, atom_k, inter, type,  bfa, rbf_v, dim);
+		    */
 
     Var ox("ox"), oy("oy"), oz("oz"), ozz("ozz"), ozzz("ozzz"), ozzzz("ozzzz");
     
