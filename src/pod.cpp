@@ -109,6 +109,8 @@ void pod2body(double *eatom, double *fatom, double *y, double *Phi, double *bess
     int *aj = &tmpint[Nij];   // Nij 
     int *ti = &tmpint[2*Nij]; // Nij
     int *tj = &tmpint[3*Nij]; // Nij
+    std::cout << "Testing" << endl;
+    // std::cout << "Intermediate vals:" << *ai << " " << *aj << " " << *ti << " " << *tj;
     podNeighPairs(rij, y, ai, aj, ti, tj, pairlist, pairnumsum, atomtype, 
                  alist, natom, dim);
     
@@ -260,6 +262,7 @@ void poddesc_halide(double *eatom1, double *fatom1, double *eatom2, double *fato
 		    int *pairnumsum, int *elemindex, int *pdegree, int *tmpint, int nbesselpars, 
 		    int nrbf2, int nrbf3, int nabf, int nelements, int Nij, int natom)
 {   
+  std::cout << "natom beginning of poddesc_halide " << natom;
   //  int dim = 3;
   int nrbf = PODMAX(nrbf2, nrbf3);
   //  int ns = pdegree[0]*nbesselpars + pdegree[1];
@@ -288,6 +291,7 @@ void poddesc_halide(double *eatom1, double *fatom1, double *eatom2, double *fato
   Halide::Runtime::Buffer<double> fatom3_buffer(fatom3, 3, natom, nelements2, nelements, pdegree[1], nrbf3);
 
   
+  std::cout << "natom before poddesc1 constructor " << natom;
   poddesc1(pairlist_buffer, pairnumsum_buffer, atomtype_buffer, alist_buffer, interactions_buffer, besseparams_buffer, Phi1_buffer, Phi2_buffer, y_buffer, //inputs
 	   Nij, natom, pdegree[0], pdegree[1], nrbf2, nrbf3, nbesselpars, nelements, nelements2, rin, rcut, //params
 	   eatom1_buffer, fatom1_buffer, eatom2_buffer, fatom2_buffer, eatom3_buffer, fatom3_buffer); //outputs

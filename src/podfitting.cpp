@@ -185,6 +185,7 @@ void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct po
     
     cpuArraySetValue(eatom1, 0.0, natom*(nd1+nd2+nd3+nd4));
     cpuArraySetValue(fatom1, 0.0, dim*natom*(nd1+nd2+nd3+nd4));    
+    std::cout << "natom before poddesc_halide " << natom;
     
     // peratom descriptors for one-body, two-body, and three-body linear potentials
 /*
@@ -200,6 +201,8 @@ void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct po
 
     print_matrix("eatom1 Halide", 1, natom, eatom1, 1);
     print_matrix("fatom1 Halide", 1, natom, fatom1, 1);
+    print_matrix("eatom2 Halide", 1, natom, eatom2, 1);
+    print_matrix("fatom2 Halide", 1, natom, fatom2, 1);
     error("stop here");
     // peratom descriptors for four-body snap potential
     if (pod.snaptwojmax>0) {

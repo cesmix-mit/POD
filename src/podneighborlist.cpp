@@ -137,6 +137,8 @@ int podNeighPairList(int *pairnum, int *pairnumsum, int *pairlist, double *x, do
 void podNeighPairs(double *xij, double *x, int *ai, int *aj,  int *ti, int *tj, 
         int *pairlist, int *pairnumsum, int *atomtype, int *alist, int inum, int dim)
 {        
+    // std::cout << "(k, d) grid is\n";
+    std::cout << "Intermediate values are:" << endl;
     for (int ii=0; ii<inum; ii++) {  // for each atom i in the simulation box     
         int i = ii;       // atom i
         int itype = atomtype[i];        
@@ -148,9 +150,13 @@ void podNeighPairs(double *xij, double *x, int *ai, int *aj,  int *ti, int *tj,
             ai[k]        = i;
             aj[k]        = alist[j];          
             ti[k]        = itype;       
-            tj[k]        = atomtype[alist[j]];        
-            for (int d=0; d<dim; d++) 
+            tj[k]        = atomtype[alist[j]];
+            for (int d=0; d<dim; d++) {
                 xij[k*dim+d]   = x[j*dim+d] -  x[i*dim+d];  // xj - xi            
+		        // std::cout << xij[k*dim+d] << " ";
+                std::cout << k << " " << j << " " << i << " ";
+            }
+	    std::cout << "\n";
         }
     }    
 };

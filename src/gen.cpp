@@ -86,17 +86,21 @@ void buildRBF(Func & rbf, Func & drbf, Func & abf, Func & dabf,
   Expr b = sqrt(2 * one/rmax)/(bfi + 1);
 
   rbf(bfp, bfi, np) = b * fcut * sin(a*x)/r;
+  rbf.trace_stores();
   rbf.bound(bfp, 0, nbparams);
   rbf.bound(bfi, 0, bdegree);
   rbf.bound(np, 0, npairs);
   Expr drbfdr = b*(dfcut*sin(a*x)/r - fcut*sin(a*x)/(r*r) + a*cos(a*x)*fcut*dx/r);
   drbf(bfp, bfi, np, dim) = (xij(np, dim)/dij) * drbfdr;
+  drbf.trace_stores();
   drbf.bound(dim, 0, 3);
   drbf.bound(bfp, 0, nbparams);
   drbf.bound(bfi, 0, bdegree);
   drbf.bound(np, 0, npairs);
 
-  abf(bfi, np) = fcut/pow(dij, bfi+one);
+  Expr power = print_when(np == 1942, pow(dij, bfi+one), "power equals");
+  abf(bfi, np) = fcut/power;;
+  abf.trace_stores();
   abf.bound(bfi, 0, adegree);
   abf.bound(np, 0, npairs);
   Expr drbfdr_a = dfcut/a - (bfi+one)*fcut/(a*dij);
@@ -184,8 +188,8 @@ void buildPodTally2b(Func & eatom, Func & fatom,
   eatom.bound(bf, 0, nbf);
   
   fatom.bound(atom, 0, natom);
-  fatom.bound(bf, 0, nbf);
   fatom.bound(inter, 0, nelementCombos);
+  fatom.bound(bf, 0, nbf);
   fatom.bound(dim, 0, 3);
 
   eatom.compute_root();
@@ -409,18 +413,21 @@ void buildNeighPairs(Func & outputs, Func & vectors,
   outputs.bound(numOuts, 0, 4);
   
   vectors(np, d) = Expr((double) 0.0);
-  vectors.bound(d, 0, dim);
+  vectors.bound(d, 0, dim).reorder_storage(d, np);
   vectors.bound(np, 0, npairs);
 
 
   RDom r(0, natom, 0, npairs);
   r.where(r.y < pairnumsum(r.x + 1) && r.y >= pairnumsum(r.x));
 
-  Expr jacc = clamp(pairlist(r.y), 0, natom - 1);
+  Expr jacc = clamp(print(pairlist(r.y), "<- pairlist"), 0, print(natom - 1, "<- npair - 1"));
   Expr att = clamp(alist(jacc), 0, natom - 1);  //
-  Expr att_tt = atomtype(att); 
+  Expr att_tt = atomtype(att);
   outputs(r.y, numOuts) = mux(numOuts, {r.x, att, atomtype(r.x), att_tt}); //ai[k], aj[k], ti, tj
-  vectors(r.y, d) = atompos(jacc, d) - atompos(r.x, d);
+  vectors(r.y, d) = atompos(print(jacc, "<- jacc", r.y, "<- r.y"), d) - atompos(print(r.x, "<- r.x"), d);
+  // std::cout << "Intermediate values haha: " << jacc << "\n" << att << "\n" << att_tt;
+  // outputs.trace_stores();
+  // vectors.trace_stores();
 
   outputs.compute_root();
   vectors.compute_root();
@@ -657,10 +664,10 @@ public:
     eatom1(ox, oy) = eatom1_f(ox, oy);
     fatom1(ox, oy, oz) = fatom1_f(ox, oy, oz);
 
-    //eatom2(ox, oy, oz) = eatom2_f(ox, oy, oz);
-    //fatom2(ox, oy, oz, ozz) = fatom2_f(ox, oy, oz, ozz);
-    eatom2(ox, oy, oz) = Expr((double) 0);
-    fatom2(ox, oy, oz, ozz) = Expr((double) 0);
+    eatom2(ox, oy, oz) = eatom2_f(ox, oy, oz);
+    fatom2(ox, oy, oz, ozz) = fatom2_f(ox, oy, oz, ozz);
+    //eatom2(ox, oy, oz) = Expr((double) 0);
+    //fatom2(ox, oy, oz, ozz) = Expr((double) 0);
 
     //eatom3(ox, oy, oz, ozz, ozzz) = eatom3_f(ox, oy, oz, ozz, ozzz);
     //fatom3(ox, oy, oz, ozz, ozzz, ozzzz) = fatom3_f(ox, oy, oz, ozz, ozzz, ozzzz);
