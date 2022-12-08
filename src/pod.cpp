@@ -40,6 +40,7 @@ void radialbasis(double *rbf, double *drbf, double *xij, double *besselparams, d
                 double b = (sqrt(2.0/(rmax))/(i+1));
                 int nij = n + N*i + N*besseldegree*j;            
                 rbf[nij] = b*fcut*sin(a*x)/r;
+		std::cout << "rbf[" << nij << "] : " <<  rbf[nij] << endl;
                 double drbfdr = b*(dfcut*sin(a*x)/r - fcut*sin(a*x)/(r*r) + a*cos(a*x)*fcut*dx/r);
                 drbf[0 + 3*nij] = drbfdr*dr1;
                 drbf[1 + 3*nij] = drbfdr*dr2;
@@ -52,12 +53,15 @@ void radialbasis(double *rbf, double *drbf, double *xij, double *besselparams, d
             int nij = n + N*p;     
             double a = pow(dij, (double) (i+1.0));
             rbf[nij] = fcut/a;
+	    std::cout << "abf[" << nij << "] : " <<  rbf[nij] << endl;
             double drbfdr = dfcut/a - (i+1.0)*fcut/(a*dij);  
             drbf[0 + 3*nij] = drbfdr*dr1;
             drbf[1 + 3*nij] = drbfdr*dr2;
             drbf[2 + 3*nij] = drbfdr*dr3;
         }
     }       
+  for (int nij = 0; nij < N + N*besseldegree + N*besseldegree*nbesselpars; nij++)
+	  std::cout << nij << " : " << rbf[nij] << endl;
 }
 
 void podtally2b(double *eatom, double *fatom, double *eij, double *fij, int *ai, int *aj, 
@@ -76,6 +80,7 @@ void podtally2b(double *eatom, double *fatom, double *eij, double *fij, int *ai,
             int im =  i1 + natom*((elemindex[typei + typej*nelements] - 1) + nelements2*m);
             int jm =  j1 + natom*((elemindex[typei + typej*nelements] - 1) + nelements2*m);
             int nm = n + N*m;
+	    std::cout << "eij[" << nm << "] : " << eij[nm] << endl;
             eatom[im] += eij[nm];
             fatom[0 + 3*im] += fij[0 + 3*nm];
             fatom[1 + 3*im] += fij[1 + 3*nm];
@@ -271,15 +276,24 @@ void poddesc_halide(double *eatom1, double *fatom1, double *eatom2, double *fato
   // Halide::Runtime::Buffer<int>
 
   std::cout << "Entering Halide...\n";
-  Halide::Runtime::Buffer<int> pairlist_buffer(pairlist, Nij);
-  Halide::Runtime::Buffer<int> pairnumsum_buffer(pairnumsum, Nij + 1);
-  Halide::Runtime::Buffer<int> atomtype_buffer(atomtype, Nij);
-  Halide::Runtime::Buffer<int> alist_buffer(alist, Nij);
+  Halide::Runtime::Buffer<int> pairlist_buffer(pairlist, Nij); // inum + nghost ?= O(Nij) 
+  Halide::Runtime::Buffer<int> pairnumsum_buffer(pairnumsum, natom + 1); // inum + 1
+  Halide::Runtime::Buffer<int> atomtype_buffer(atomtype, natom); // inum
+  Halide::Runtime::Buffer<int> alist_buffer(alist, Nij); // inum + nghost
   Halide::Runtime::Buffer<int> interactions_buffer(elemindex, nelements, nelements);
   Halide::Runtime::Buffer<double> besseparams_buffer(besselparams, nbesselpars);
   Halide::Runtime::Buffer<double> Phi1_buffer(Phi1, nbesselpars, pdegree[0], nrbf);
   Halide::Runtime::Buffer<double> Phi2_buffer(Phi2, pdegree[1], nrbf);
-  Halide::Runtime::Buffer<double> y_buffer(y, Nij, 3);
+  double *y_p = new double[Nij * 3];
+  for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < Nij; j++) {
+          //y_p[i *3 +j] = y[j * Nij  + I]
+          y_p[j  + i * Nij] = y[i +j * 3];
+      }
+  }
+  Halide::Runtime::Buffer<double> y_buffer(y_p, Nij, 3); // 3 * (inum + nghost)
+  std::cout << " Nij is ... " << Nij << endl;
+  // y_buffer.transpose(0, 1);
 
   Halide::Runtime::Buffer<double> eatom1_buffer(eatom1, natom, nelements);
   Halide::Runtime::Buffer<double> fatom1_buffer(fatom1, natom, nelements, 3);

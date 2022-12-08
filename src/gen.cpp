@@ -44,7 +44,7 @@ using namespace Halide;
 
   RDom rp(0, npairs, 0, inversedegree);
   rbf(nbseelpars, rp.y, rp.x) = abf(rp.y, rp.x);
-  //  return rbf;
+  // return rbf;
 }
 
 void buildRBF(Func & rbf, Func & drbf, Func & abf, Func & dabf,
@@ -86,13 +86,13 @@ void buildRBF(Func & rbf, Func & drbf, Func & abf, Func & dabf,
   Expr b = sqrt(2 * one/rmax)/(bfi + 1);
 
   rbf(bfp, bfi, np) = b * fcut * sin(a*x)/r;
-  rbf.trace_stores();
+  // rbf.trace_stores();
   rbf.bound(bfp, 0, nbparams);
   rbf.bound(bfi, 0, bdegree);
   rbf.bound(np, 0, npairs);
   Expr drbfdr = b*(dfcut*sin(a*x)/r - fcut*sin(a*x)/(r*r) + a*cos(a*x)*fcut*dx/r);
   drbf(bfp, bfi, np, dim) = (xij(np, dim)/dij) * drbfdr;
-  drbf.trace_stores();
+  // drbf.trace_stores();
   drbf.bound(dim, 0, 3);
   drbf.bound(bfp, 0, nbparams);
   drbf.bound(bfi, 0, bdegree);
@@ -100,7 +100,7 @@ void buildRBF(Func & rbf, Func & drbf, Func & abf, Func & dabf,
 
   Expr power = print_when(np == 1942, pow(dij, bfi+one), "power equals");
   abf(bfi, np) = fcut/power;;
-  abf.trace_stores();
+  // abf.trace_stores();
   abf.bound(bfi, 0, adegree);
   abf.bound(np, 0, npairs);
   Expr drbfdr_a = dfcut/a - (bfi+one)*fcut/(a*dij);
@@ -137,10 +137,16 @@ void buildStructureMatMul(Func & energyij, Func & forceij,
 
   RDom rbfdom(0, bdegree, 0, nbparams);
   //  RDom drbf(0, bdegree, 0, nbparams, 0, 3);
-  energyij(bfi, np) += rbf(rbfdom.y, rbfdom.x, np) * Phi1(rbfdom.y, rbfdom.x, bfi);//ordering here is questionable
-  forceij(bfi,np, dim) += drbf(rbfdom.y, rbfdom.x, np, dim) * Phi1(rbfdom.y, rbfdom.x, bfi);//ordering here is questionable
+  // energyij(bfi, np) += rbf(rbfdom.y, rbfdom.x, np) * Phi1(rbfdom.y, rbfdom.x, bfi);//ordering here is questionable
+  energyij(bfi, np) += rbf(rbfdom.y, rbfdom.x, np) * Phi1(rbfdom.x, rbfdom.y, bfi);//ordering here is questionable
+  forceij(bfi,np, dim) += drbf(rbfdom.y, rbfdom.x, np, dim) * Phi1(rbfdom.x, rbfdom.y, bfi);//ordering here is questionable
   //  energyij.bound(bfi, 0, tdegree);
   //  forceij.bound(bfi, 0, tdegree);
+  rbf.trace_loads();
+  abf.trace_loads();
+  Phi1.trace_loads();
+  Phi2.trace_loads();
+  energyij.trace_stores();
 
   RDom abfdom(0, adegree);
   energyij(bfi, np) += abf(abfdom.x, np) * Phi2(abfdom.x, bfi);//ordering here is questionable
@@ -177,6 +183,7 @@ void buildPodTally2b(Func & eatom, Func & fatom,
   eatom(i1, inter_ij,  r.y) += eij(r.y, r.x);
   fatom(dim, i1, inter_ij, r.y) += fij(r.y, r.x, dim);
   fatom(dim, j1, inter_ij, r.y) -= fij(r.y, r.x, dim);
+  eij.trace_loads();
 
 
   //  eatom.compute_root();
@@ -414,19 +421,25 @@ void buildNeighPairs(Func & outputs, Func & vectors,
   
   vectors(np, d) = Expr((double) 0.0);
   vectors.bound(d, 0, dim).reorder_storage(d, np);
+  // vectors.bound(d, 0, dim);
   vectors.bound(np, 0, npairs);
 
 
   RDom r(0, natom, 0, npairs);
   r.where(r.y < pairnumsum(r.x + 1) && r.y >= pairnumsum(r.x));
 
-  Expr jacc = clamp(print(pairlist(r.y), "<- pairlist"), 0, print(npairs- 1, "<- npair - 1"));
-  Expr att = clamp(alist(jacc), 0, npairs - 1);  //
+  // Expr jacc = clamp(print(pairlist(r.y), "<- pairlist"), 0, print(npairs- 1, "<- npair - 1"));
+  Expr jacc = clamp(pairlist(r.y), 0, npairs- 1);
+  Expr att = clamp(alist(jacc), 0, natom - 1);  //
   Expr att_tt = atomtype(att);
   outputs(r.y, numOuts) = mux(numOuts, {r.x, att, atomtype(r.x), att_tt}); //ai[k], aj[k], ti, tj
-  vectors(r.y, d) = atompos(print(jacc, "<- jacc", r.y, "<- r.y"), d) - atompos(print(r.x, "<- r.x"), d);
-  // std::cout << "Intermediate values haha: " << jacc << "\n" << att << "\n" << att_tt;
+  // vectors(r.y, d) = atompos(print(jacc, "<- jacc", r.y, "<- r.y"), d) - atompos(print(r.x, "<- r.x"), d);
+  vectors(r.y, d) = atompos(jacc, d) - atompos(r.x, d);
+  // vectors(r.x, d) = atompos(jacc, d) - atompos(r.y, d);
+  // vectors(r.y, d) = atompos(r.x, d) - atompos(jacc, d);
   // outputs.trace_stores();
+  // atomtype.trace_loads();
+  // atompos.trace_loads();
   // vectors.trace_stores();
 
   outputs.compute_root();
@@ -589,11 +602,13 @@ public:
 
     
     Expr nmax = min(nmaxp, natom);
-    pairlist.dim(0).set_bounds(0, npairs);
-    pairnumsum.dim(0).set_bounds(0, npairs + 1);
-    atomtype.dim(0).set_bounds(0, npairs);
-    alist.dim(0).set_bounds(0, npairs);//are we sure?
-    y.dim(0).set_bounds(0, npairs);
+    pairlist.dim(0).set_bounds(0, npairs); // inum + nghost
+    pairnumsum.dim(0).set_bounds(0, natom + 1); // inum + 1
+    atomtype.dim(0).set_bounds(0, natom); // inum
+    alist.dim(0).set_bounds(0, npairs);//are we sure? // inum + nghost
+    // y.dim(0).set_bounds(0, npairs).set_stride(1);
+    // y.dim(1).set_bounds(0, 3).set_stride(npairs);
+    y.dim(0).set_bounds(0, npairs); // inum + nghost
     y.dim(1).set_bounds(0, 3);
     besselparams.dim(0).set_bounds(0, nbesselparams);
     Phi1.dim(0).set_bounds(0, nbesselparams);
@@ -643,6 +658,7 @@ public:
 		    npairs, natom,  nelems, nelemscombos, tdegree1,
 		    np, atom, bfi, dim, elem, inter);
 
+
     Func eatom3_f("eatom3_f"), fatom3_f("fatom3_f");
     /**
     buildPodTally3b(eatom3_f, fatom3_f,
@@ -650,7 +666,7 @@ public:
 		    pairlist, pairnumsum, atomtype, alist,
 		    tdegree2, adegree, nelems, nelemscombos, natom, npairs, nmax,
 		    atom, atom_o, atom_i, atom_j, atom_k, inter, type,  bfa, rbf_v, dim);
-		    */
+	*/
 
     Var ox("ox"), oy("oy"), oz("oz"), ozz("ozz"), ozzz("ozzz"), ozzzz("ozzzz");
     
@@ -667,9 +683,9 @@ public:
     fatom1(ox, oy, oz) = fatom1_f(ox, oy, oz);
 
     eatom2(ox, oy, oz) = eatom2_f(ox, oy, oz);
-    fatom2(ox, oy, oz, ozz) = fatom2_f(ox, oy, oz, ozz);
-    //eatom2(ox, oy, oz) = Expr((double) 0);
-    //fatom2(ox, oy, oz, ozz) = Expr((double) 0);
+    // fatom2(ox, oy, oz, ozz) = fatom2_f(ox, oy, oz, ozz);
+    // eatom2(ox, oy, oz) = Expr((double) 0);
+    fatom2(ox, oy, oz, ozz) = Expr((double) 0);
 
     //eatom3(ox, oy, oz, ozz, ozzz) = eatom3_f(ox, oy, oz, ozz, ozzz);
     //fatom3(ox, oy, oz, ozz, ozzz, ozzzz) = fatom3_f(ox, oy, oz, ozz, ozzz, ozzzz);
