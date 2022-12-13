@@ -12,6 +12,7 @@ void snapshots(double *rbf, double *xij, double *besselparams, double rin, doubl
   Halide::Runtime::Buffer<double> rbf_b(rbf, 1 + nbesselpars, std::max(besseldegree, inversedegree), N);
   Halide::Runtime::Buffer<double> xij_b(xij, N);
   Halide::Runtime::Buffer<double> bp_b(besselparams, nbesselpars);
+  std::cout << "nbesselpars + 1: " << 1 + nbesselpars << " besseldegree: " << besseldegree << " inversedegree: " << inversedegree << " N: " << N << endl;
   snapshot(xij_b, bp_b, rin, rcut, inversedegree, besseldegree, nbesselpars, N, rbf_b);
 
   
@@ -245,8 +246,14 @@ void read_pod(podstruct &pod, std::string pod_file)
             pod.twobody[0], pod.twobody[1], pod.nbesselpars, 2000);
 
 
-	//memset everything to 0.
+	for (int i = 0; i < pod.ns2; i++) {
+		for (int j = 0; j < pod.ns2; j++) {
+			std::cout << pod.Phi2[i * pod.ns2 + j] << " ";
+		}
+		std::cout << "\n";
+	}
 
+	//memset everything to 0.
 	std::memset(pod.Phi21, 0, tdegree * pod.twobody[0] * pod.nbesselpars *sizeof(double));
 	std::memset(pod.Phi22, 0, tdegree * pod.twobody[1] *sizeof(double));
 	std::cout << "tdegree1=" << tdegree1 << "\n";
@@ -258,20 +265,36 @@ void read_pod(podstruct &pod, std::string pod_file)
 	for (int bfip = 0; bfip < tdegree; bfip++){
 	  for (int bfi =0; bfi < pod.twobody[0]; bfi++){
 	    for (int bp= 0; bp < pod.nbesselpars; bp++){
-	      int acc = bfip * pod.ns2 + bfi* pod.nbesselpars + bp; //ordering here is questionable
-	      int acc2 = bfip * tdegree * pod.nbesselpars + bfi * pod.nbesselpars  +  bp; //ordering here is questionable
+	      int acc2 = bfip * pod.twobody[0] * pod.nbesselpars + bfi * (pod.nbesselpars)  + bp; //ordering here is questionable
+	      //int acc = bfip * tdegree * (pod.nbesselpars + 1)  + bfi * (pod.nbesselpars)  + bp; //ordering here is questionable
+	      int acc = bfip * (pod.twobody[0] * pod.nbesselpars +  pod.twobody[1]) + bfi * pod.nbesselpars  +  bp; //ordering here is questionable
 	      pod.Phi21[acc2] = pod.Phi2[acc];
 	    }
 	  }
+	  std::cout << "\n";
 	}
 	for (int bfip = 0; bfip < tdegree; bfip++){
 	  for (int bfi = 0; bfi < pod.twobody[1]; bfi++){
-	    int acc = bfip * pod.ns2 + pod.nbesselpars * bfi + pod.nbesselpars;
+	    // int acc = bfip * pod.ns2 + pod.nbesselpars * bfi + pod.nbesselpars;
+	    // int acc = bfip * (pod.twobody[1] * pod.nbesselpars) + bfi + pod.twobody[0] * pod.nbesselpars;
+	    int acc = bfip * (pod.twobody[0] * pod.nbesselpars + pod.twobody[1]) + bfi + pod.twobody[0] * pod.nbesselpars;
 	    int acc2 = bfip * tdegree + bfi;
+	    std::cout << acc << "--";
+	    std:: cout << acc2 << " ";
 	    pod.Phi22[acc2] = pod.Phi2[acc];
-	    
 	  }
+	  std::cout << "\n";
 	}
+	/*
+	 */
+	for (int i = 0; i < 15; i++) {
+		for (int j = 0; j < 6; j++) {
+			std::cout << pod.Phi22[i * 6 + j] << " ";
+		}
+		std::cout << "\n";
+	}
+	/*
+	 */
 	std::cout << "tdegree1=" << tdegree1 << "\n";
 	std::cout << "tdegree2=" << tdegree2 << "\n";
 	std::cout << "ns2=" << pod.ns2 << "\n";
