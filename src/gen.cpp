@@ -84,6 +84,7 @@ void buildRBF(Func & rbf, Func & drbf, Func & abf, Func & dabf,
 
   Expr a = (bfi + 1) * PI;
   Expr b = sqrt(2 * one/rmax)/(bfi + 1);
+  Expr c = pow(dij, bfi + 1);
 
   rbf(bfp, bfi, np) = b * fcut * sin(a*x)/r;
   // rbf.trace_stores();
@@ -103,7 +104,7 @@ void buildRBF(Func & rbf, Func & drbf, Func & abf, Func & dabf,
   // abf.trace_stores();
   abf.bound(bfi, 0, adegree);
   abf.bound(np, 0, npairs);
-  Expr drbfdr_a = dfcut/a - (bfi+one)*fcut/(a*dij);
+  Expr drbfdr_a = dfcut/c - (bfi+one)*fcut/(c*dij);
   dabf(bfi, np, dim) = (xij(np, dim)/dij) * drbfdr_a;
   dabf.bound(dim, 0, 3);
   dabf.bound(bfi, 0, adegree);
@@ -148,13 +149,13 @@ void buildStructureMatMul(Func & energyij, Func & forceij,
   forceij(bfi, np, dim) += dabf(abfdom.x, np, dim) * Phi2(abfdom.x, bfi);//ordering here is questionable
 
   // rbf.trace_loads();
-  drbf.trace_loads();
+  // drbf.trace_loads();
   // abf.trace_loads();
-  dabf.trace_loads();
-  Phi1.trace_loads();
-  Phi2.trace_loads();
+  // dabf.trace_loads();
+  // Phi1.trace_loads();
+  // Phi2.trace_loads();
   // energyij.trace_stores();
-  forceij.trace_stores();
+  // forceij.trace_stores();
 
   energyij.compute_root();
   forceij.compute_root();
@@ -188,7 +189,7 @@ void buildPodTally2b(Func & eatom, Func & fatom,
   fatom(dim, i1, inter_ij, r.y) += fij(r.y, r.x, dim);
   fatom(dim, j1, inter_ij, r.y) -= fij(r.y, r.x, dim);
   // eij.trace_loads();
-  fij.trace_loads();
+  // fij.trace_loads();
 
 
   //  eatom.compute_root();
@@ -325,6 +326,8 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   theta.bound(atom_k, 0, nij);
   Func dtheta("dtheta");
   dtheta(atom_i, atom_j, atom_k) = -one/sinthe(atom_i, atom_j, atom_k);
+  dtheta.trace_stores();
+  dtheta.trace_loads();
   
   dtheta.bound(atom_i, 0, natom);
   dtheta.bound(atom_j, 0, nij);
@@ -332,6 +335,8 @@ void buildPodTally3b(Func & eatom, Func & fatom,
 
   Func dct("dct");
   dct(atom_i, atom_j, atom_k, dim) = (xij_inter(atom_k, atom_i, dim) * rij_sq_inter(atom_j, atom_i) - xij_inter(atom_j, atom_i, dim) * xdot(atom_i, atom_j, atom_k)) * (one/(pow(rij_sq_inter(atom_j, atom_i), Expr((double) 1.5)) * rij_inter(atom_k, atom_i)));
+  dct.trace_stores();
+  dct.trace_loads();
   
   dct.bound(atom_i, 0, natom);
   dct.bound(atom_j, 0, nij);
@@ -362,6 +367,10 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   
   Func pre_drbf("pre_drbf");
   pre_drbf(rbf, atom_j, atom_k, dim) = f2ij(rbf, atom_j, dim) * e2ij(rbf, atom_k);
+  pre_dabf.trace_stores();
+  pre_dabf.trace_stores();
+  pre_drbf.trace_loads();
+  pre_drbf.trace_loads();
   pre_drbf.bound(atom_j, 0, nij);
   pre_drbf.bound(atom_k, 0, nij);
   pre_drbf.bound(rbf, 0, nrbf);
@@ -665,13 +674,11 @@ public:
 
 
     Func eatom3_f("eatom3_f"), fatom3_f("fatom3_f");
-    /**
     buildPodTally3b(eatom3_f, fatom3_f,
 		    y, energyij_f, forceij_f, interactions,
 		    pairlist, pairnumsum, atomtype, alist,
 		    tdegree2, adegree, nelems, nelemscombos, natom, npairs, nmax,
 		    atom, atom_o, atom_i, atom_j, atom_k, inter, type,  bfa, rbf_v, dim);
-	*/
 
     Var ox("ox"), oy("oy"), oz("oz"), ozz("ozz"), ozzz("ozzz"), ozzzz("ozzzz");
     
@@ -692,10 +699,10 @@ public:
     // eatom2(ox, oy, oz) = Expr((double) 0);
     // fatom2(ox, oy, oz, ozz) = Expr((double) 0);
 
-    //eatom3(ox, oy, oz, ozz, ozzz) = eatom3_f(ox, oy, oz, ozz, ozzz);
-    //fatom3(ox, oy, oz, ozz, ozzz, ozzzz) = fatom3_f(ox, oy, oz, ozz, ozzz, ozzzz);
-    eatom3(ox, oy, oz, ozz, ozzz) = Expr((double) 0);
-    fatom3(ox, oy, oz, ozz, ozzz, ozzzz) = Expr((double) 0);
+    eatom3(ox, oy, oz, ozz, ozzz) = eatom3_f(ox, oy, oz, ozz, ozzz);
+    fatom3(ox, oy, oz, ozz, ozzz, ozzzz) = fatom3_f(ox, oy, oz, ozz, ozzz, ozzzz);
+    // eatom3(ox, oy, oz, ozz, ozzz) = Expr((double) 0);
+    // fatom3(ox, oy, oz, ozz, ozzz, ozzzz) = Expr((double) 0);
     
     // ijs.dim(0).set_bounds(0, natom);
     // ijs.dim(1).set_bounds(0, 4);

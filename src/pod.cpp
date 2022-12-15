@@ -199,6 +199,7 @@ void pod3body(double *eatom, double *fatom, double *x, double *e2ij, double *f2i
                 sinthe = sinthe > 1e-12 ? sinthe : 1e-12;    
                 theta = acos(costhe);            
                 dtheta = -1.0/sinthe; 
+                std::cout << "dtheta(" << i << ", " << j << ", " << k << "): " << dtheta << endl;
 
                 tm1 = pow(rijsq,1.5) * rik;
                 tm2 = pow(riksq,1.5) * rij;
@@ -212,6 +213,13 @@ void pod3body(double *eatom, double *fatom, double *x, double *e2ij, double *f2i
                 dct5 = (xij2*riksq - xik2*xdot)*tm2;
                 dct6 = (xij3*riksq - xik3*xdot)*tm2;
                 
+                std::cout << "dct1(" << i << ", " << j << ", " << k << "): " << dct1 << endl;
+                std::cout << "dct2(" << i << ", " << j << ", " << k << "): " << dct2 << endl;
+                std::cout << "dct3(" << i << ", " << j << ", " << k << "): " << dct3 << endl;
+                std::cout << "dct4(" << i << ", " << j << ", " << k << "): " << dct4 << endl;
+                std::cout << "dct5(" << i << ", " << j << ", " << k << "): " << dct5 << endl;
+                std::cout << "dct6(" << i << ", " << j << ", " << k << "): " << dct6 << endl;
+                
                 for (int p=0; p <nabf1; p++) {
                     abf[p] = cos(p*theta);                
                     tm = -p*sin(p*theta)*dtheta;                    
@@ -221,6 +229,12 @@ void pod3body(double *eatom, double *fatom, double *x, double *e2ij, double *f2i
                     dabf4[p] = tm*dct4;
                     dabf5[p] = tm*dct5;
                     dabf6[p] = tm*dct6;        
+                    std::cout << "dabf1(" << i << ", " << j << ", " << k << ", " << p << "): " << dabf1[p] << endl;
+                    std::cout << "dabf2(" << i << ", " << j << ", " << k << ", " << p << "): " << dabf2[p] << endl;
+                    std::cout << "dabf3(" << i << ", " << j << ", " << k << ", " << p << "): " << dabf3[p] << endl;
+                    std::cout << "dabf4(" << i << ", " << j << ", " << k << ", " << p << "): " << dabf4[p] << endl;
+                    std::cout << "dabf5(" << i << ", " << j << ", " << k << ", " << p << "): " << dabf5[p] << endl;
+                    std::cout << "dabf6(" << i << ", " << j << ", " << k << ", " << p << "): " << dabf6[p] << endl;
                 }
                 
                 for (int m=0; m<nrbf; m++) {
@@ -233,6 +247,12 @@ void pod3body(double *eatom, double *fatom, double *x, double *e2ij, double *f2i
                     drbf4 = f2ij[0 + dim*(lk + s) + dim*Nij*m]*uj;
                     drbf5 = f2ij[1 + dim*(lk + s) + dim*Nij*m]*uj;
                     drbf6 = f2ij[2 + dim*(lk + s) + dim*Nij*m]*uj;     
+                    std::cout << "drbf1(" << i << ", " << j << ", " << k << ", " << m << "): " << drbf1 << endl;
+                    std::cout << "drbf2(" << i << ", " << j << ", " << k << ", " << m << "): " << drbf2 << endl;
+                    std::cout << "drbf3(" << i << ", " << j << ", " << k << ", " << m << "): " << drbf3 << endl;
+                    std::cout << "drbf4(" << i << ", " << j << ", " << k << ", " << m << "): " << drbf4 << endl;
+                    std::cout << "drbf5(" << i << ", " << j << ", " << k << ", " << m << "): " << drbf5 << endl;
+                    std::cout << "drbf6(" << i << ", " << j << ", " << k << ", " << m << "): " << drbf6 << endl;
 
                     for (int p=0; p <nabf1; p++) {
                         eijk = rbf*abf[p];
