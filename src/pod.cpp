@@ -40,11 +40,14 @@ void radialbasis(double *rbf, double *drbf, double *xij, double *besselparams, d
                 double b = (sqrt(2.0/(rmax))/(i+1));
                 int nij = n + N*i + N*besseldegree*j;            
                 rbf[nij] = b*fcut*sin(a*x)/r;
-		std::cout << "rbf[" << nij << "] : " <<  rbf[nij] << endl;
+		// std::cout << "rbf[" << nij << "] : " <<  rbf[nij] << endl;
                 double drbfdr = b*(dfcut*sin(a*x)/r - fcut*sin(a*x)/(r*r) + a*cos(a*x)*fcut*dx/r);
                 drbf[0 + 3*nij] = drbfdr*dr1;
                 drbf[1 + 3*nij] = drbfdr*dr2;
                 drbf[2 + 3*nij] = drbfdr*dr3;
+		std::cout << "drbf[" << 0 + 3*nij << "] : " << drbf[0 + 3*nij] << endl;
+		std::cout << "drbf[" << 1 + 3*nij << "] : " << drbf[1 + 3*nij] << endl;
+		std::cout << "drbf[" << 2 + 3*nij << "] : " << drbf[2 + 3*nij] << endl;
             }
         }
 
@@ -53,15 +56,18 @@ void radialbasis(double *rbf, double *drbf, double *xij, double *besselparams, d
             int nij = n + N*p;     
             double a = pow(dij, (double) (i+1.0));
             rbf[nij] = fcut/a;
-	    std::cout << "abf[" << nij << "] : " <<  rbf[nij] << endl;
+	    // std::cout << "abf[" << nij << "] : " <<  rbf[nij] << endl;
             double drbfdr = dfcut/a - (i+1.0)*fcut/(a*dij);  
             drbf[0 + 3*nij] = drbfdr*dr1;
             drbf[1 + 3*nij] = drbfdr*dr2;
             drbf[2 + 3*nij] = drbfdr*dr3;
+	    std::cout << "dabf[" << 0 + 3*nij << "] : " << drbf[0 + 3*nij] << endl;
+	    std::cout << "dabf[" << 1 + 3*nij << "] : " << drbf[1 + 3*nij] << endl;
+	    std::cout << "dabf[" << 2 + 3*nij << "] : " << drbf[2 + 3*nij] << endl;
         }
     }       
-  for (int nij = 0; nij < N + N*besseldegree + N*besseldegree*nbesselpars; nij++)
-	  std::cout << nij << " : " << rbf[nij] << endl;
+  // for (int nij = 0; nij < N + N*besseldegree + N*besseldegree*nbesselpars; nij++)
+  //	  std::cout << nij << " : " << rbf[nij] << endl;
 }
 
 void podtally2b(double *eatom, double *fatom, double *eij, double *fij, int *ai, int *aj, 
@@ -80,7 +86,7 @@ void podtally2b(double *eatom, double *fatom, double *eij, double *fij, int *ai,
             int im =  i1 + natom*((elemindex[typei + typej*nelements] - 1) + nelements2*m);
             int jm =  j1 + natom*((elemindex[typei + typej*nelements] - 1) + nelements2*m);
             int nm = n + N*m;
-	    std::cout << "eij[" << nm << "] : " << eij[nm] << endl;
+	    // std::cout << "eij[" << nm << "] : " << eij[nm] << endl;
             eatom[im] += eij[nm];
             fatom[0 + 3*im] += fij[0 + 3*nm];
             fatom[1 + 3*im] += fij[1 + 3*nm];
@@ -88,6 +94,9 @@ void podtally2b(double *eatom, double *fatom, double *eij, double *fij, int *ai,
             fatom[0 + 3*jm] -= fij[0 + 3*nm];
             fatom[1 + 3*jm] -= fij[1 + 3*nm];
             fatom[2 + 3*jm] -= fij[2 + 3*nm];          
+	    std::cout << "fij[" << 0 + 3*nm << "] : " << fij[0 + 3*nm] << endl;
+	    std::cout << "fij[" << 1 + 3*nm << "] : " << fij[1 + 3*nm] << endl;
+	    std::cout << "fij[" << 2 + 3*nm << "] : " << fij[2 + 3*nm] << endl;
         }
     }
 }

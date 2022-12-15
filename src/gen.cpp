@@ -142,15 +142,19 @@ void buildStructureMatMul(Func & energyij, Func & forceij,
   forceij(bfi,np, dim) += drbf(rbfdom.y, rbfdom.x, np, dim) * Phi1(rbfdom.x, rbfdom.y, bfi);//ordering here is questionable
   //  energyij.bound(bfi, 0, tdegree);
   //  forceij.bound(bfi, 0, tdegree);
-  rbf.trace_loads();
-  abf.trace_loads();
-  Phi1.trace_loads();
-  Phi2.trace_loads();
-  energyij.trace_stores();
 
   RDom abfdom(0, adegree);
   energyij(bfi, np) += abf(abfdom.x, np) * Phi2(abfdom.x, bfi);//ordering here is questionable
   forceij(bfi, np, dim) += dabf(abfdom.x, np, dim) * Phi2(abfdom.x, bfi);//ordering here is questionable
+
+  // rbf.trace_loads();
+  drbf.trace_loads();
+  // abf.trace_loads();
+  dabf.trace_loads();
+  Phi1.trace_loads();
+  Phi2.trace_loads();
+  // energyij.trace_stores();
+  forceij.trace_stores();
 
   energyij.compute_root();
   forceij.compute_root();
@@ -183,7 +187,8 @@ void buildPodTally2b(Func & eatom, Func & fatom,
   eatom(i1, inter_ij,  r.y) += eij(r.y, r.x);
   fatom(dim, i1, inter_ij, r.y) += fij(r.y, r.x, dim);
   fatom(dim, j1, inter_ij, r.y) -= fij(r.y, r.x, dim);
-  eij.trace_loads();
+  // eij.trace_loads();
+  fij.trace_loads();
 
 
   //  eatom.compute_root();
@@ -683,9 +688,9 @@ public:
     fatom1(ox, oy, oz) = fatom1_f(ox, oy, oz);
 
     eatom2(ox, oy, oz) = eatom2_f(ox, oy, oz);
-    // fatom2(ox, oy, oz, ozz) = fatom2_f(ox, oy, oz, ozz);
+    fatom2(ox, oy, oz, ozz) = fatom2_f(ox, oy, oz, ozz);
     // eatom2(ox, oy, oz) = Expr((double) 0);
-    fatom2(ox, oy, oz, ozz) = Expr((double) 0);
+    // fatom2(ox, oy, oz, ozz) = Expr((double) 0);
 
     //eatom3(ox, oy, oz, ozz, ozzz) = eatom3_f(ox, oy, oz, ozz, ozzz);
     //fatom3(ox, oy, oz, ozz, ozzz, ozzzz) = fatom3_f(ox, oy, oz, ozz, ozzz, ozzzz);
