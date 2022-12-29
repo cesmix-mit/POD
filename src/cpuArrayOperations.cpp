@@ -13,7 +13,7 @@ void matmul(double *c, double *a, double *b, int r1, int c1, int c2)
         for(i = 0; i < r1; i++)        
             for(k = 0; k < c1; k++) {           
                 c[i + r1*j] += a[i + r1*k] * b[k + c1*j];            
-		std::cout << "a[" << i + r1*k << "]: " << a[i + r1*k] << " b[" << k + c1*j << "]: " << b[k + c1*j] << " c[" << i + r1*j << "]: " << c[i + r1*j] << endl;
+		// std::cout << "a[" << i + r1*k << "]: " << a[i + r1*k] << " b[" << k + c1*j << "]: " << b[k + c1*j] << " c[" << i + r1*j << "]: " << c[i + r1*j] << endl;
 	    }
 }
 

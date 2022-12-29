@@ -154,10 +154,10 @@ void podNeighPairs(double *xij, double *x, int *ai, int *aj,  int *ti, int *tj,
             for (int d=0; d<dim; d++) {
                 xij[k*dim+d]   = x[j*dim+d] -  x[i*dim+d];  // xj - xi            
 		        // std::cout << xij[k*dim+d] << " ";
-		std::cout << "k: " << k << " - " << xij[k*dim+d] << " j: " << j << " - " << x[j*dim+d] << " i: " << i << " - " << x[i*dim+d] << "\n";
+		// std::cout << "k: " << k << " - " << xij[k*dim+d] << " j: " << j << " - " << x[j*dim+d] << " i: " << i << " - " << x[i*dim+d] << "\n";
                 // std::cout << k << " " << j << " " << i << " ";
             }
-	    std::cout << "\n";
+	    // std::cout << "\n";
         }
     }    
 };
