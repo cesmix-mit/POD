@@ -232,12 +232,14 @@ void pod3body(double *eatom, double *fatom, double *x, double *e2ij, double *f2i
                     dabf4[p] = tm*dct4;
                     dabf5[p] = tm*dct5;
                     dabf6[p] = tm*dct6;        
+		    /**
                     std::cout << "dabf1(" << i << ", " << j << ", " << k << ", " << p << "): " << dabf1[p] << endl;
                     std::cout << "dabf2(" << i << ", " << j << ", " << k << ", " << p << "): " << dabf2[p] << endl;
                     std::cout << "dabf3(" << i << ", " << j << ", " << k << ", " << p << "): " << dabf3[p] << endl;
                     std::cout << "dabf4(" << i << ", " << j << ", " << k << ", " << p << "): " << dabf4[p] << endl;
                     std::cout << "dabf5(" << i << ", " << j << ", " << k << ", " << p << "): " << dabf5[p] << endl;
                     std::cout << "dabf6(" << i << ", " << j << ", " << k << ", " << p << "): " << dabf6[p] << endl;
+		    */
                 }
                 
                 for (int m=0; m<nrbf; m++) {
@@ -250,12 +252,14 @@ void pod3body(double *eatom, double *fatom, double *x, double *e2ij, double *f2i
                     drbf4 = f2ij[0 + dim*(lk + s) + dim*Nij*m]*uj;
                     drbf5 = f2ij[1 + dim*(lk + s) + dim*Nij*m]*uj;
                     drbf6 = f2ij[2 + dim*(lk + s) + dim*Nij*m]*uj;     
+		    /**
                     std::cout << "drbf1(" << i << ", " << j << ", " << k << ", " << m << "): " << drbf1 << endl;
                     std::cout << "drbf2(" << i << ", " << j << ", " << k << ", " << m << "): " << drbf2 << endl;
                     std::cout << "drbf3(" << i << ", " << j << ", " << k << ", " << m << "): " << drbf3 << endl;
                     std::cout << "drbf4(" << i << ", " << j << ", " << k << ", " << m << "): " << drbf4 << endl;
                     std::cout << "drbf5(" << i << ", " << j << ", " << k << ", " << m << "): " << drbf5 << endl;
                     std::cout << "drbf6(" << i << ", " << j << ", " << k << ", " << m << "): " << drbf6 << endl;
+		    */
 
                     for (int p=0; p <nabf1; p++) {
                         eijk = rbf*abf[p];
@@ -282,18 +286,26 @@ void pod3body(double *eatom, double *fatom, double *x, double *e2ij, double *f2i
                         fatom[0 + nijk3] -= fj1;
                         fatom[1 + nijk3] -= fj2;
                         fatom[2 + nijk3] -= fj3;
+			/**
 			std::cout << "fatom(" << 0 + nijk3 << "): " << fatom[0 + nijk3] << endl;
 			std::cout << "fatom(" << 1 + nijk3 << "): " << fatom[1 + nijk3] << endl;
 			std::cout << "fatom(" << 2 + nijk3 << "): " << fatom[2 + nijk3] << endl;
+			*/
 
                         nijk3 = 3*k + 3*nijk;    
                         fatom[0 + nijk3] -= fk1;   
                         fatom[1 + nijk3] -= fk2;   
                         fatom[2 + nijk3] -= fk3;                           
+			/**
 			std::cout << "fatom(" << 0 + nijk3 << "): " << fatom[0 + nijk3] << endl;
 			std::cout << "fatom(" << 1 + nijk3 << "): " << fatom[1 + nijk3] << endl;
 			std::cout << "fatom(" << 2 + nijk3 << "): " << fatom[2 + nijk3] << endl;
+			*/
                         
+			// std::cout << "sums:\n" << fj1 + fk1 << "\n" << fj2 + fk2 << "\n" << fj3 + fk3 << endl;
+			std::cout << "fj1, 2, 3:\n" << fj1 << "\n" << fj2 << "\n" << fj3 << endl;
+			std::cout << "fk1, 2, 3:\n" << fk1 << "\n" << fk2 << "\n" << fk3 << endl;
+			std::cout << "----------------------------" << endl;
                     }                    
                 }
             }
@@ -313,6 +325,7 @@ void poddesc_halide(double *eatom1, double *fatom1, double *eatom2, double *fato
   int nrbf = PODMAX(nrbf2, nrbf3);
   //  int ns = pdegree[0]*nbesselpars + pdegree[1];
   int nelements2 = nelements*(nelements+1)/2;
+  std::cout << "nelements: " << nelements << " and nelements2: " << nelements2 << endl;
   //  Halide::Runtime::Buffer<double>
   // Halide::Runtime::Buffer<int>
 

@@ -329,7 +329,8 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   theta.bound(atom_j, 0, nij);
   theta.bound(atom_k, 0, nij);
   Func dtheta("dtheta");
-  dtheta(atom_i, atom_j, atom_k) = print(-one/sinthe(atom_i, atom_j, atom_k), "<- dtheta", atom_i, atom_j, atom_k);
+  dtheta(atom_i, atom_j, atom_k) = -one/sinthe(atom_i, atom_j, atom_k);
+  //dtheta(atom_i, atom_j, atom_k) = print(-one/sinthe(atom_i, atom_j, atom_k), "<- dtheta", atom_i, atom_j, atom_k);
   dtheta.trace_stores();
   dtheta.trace_loads();
   
@@ -357,7 +358,8 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   pre_abf.bound(atom_j, 0, nij);
   pre_abf.bound(atom_k, 0, nij);
   
-  pre_dabf(atom_i, atom_j, atom_k, abf, dim) = print(-abf * sin(abf * theta(atom_i, atom_j, atom_k)) * dtheta(atom_i, atom_j, atom_k) * dct(atom_i, atom_j, atom_k, dim), "<- dabf");
+  pre_dabf(atom_i, atom_j, atom_k, abf, dim) = -abf * sin(abf * theta(atom_i, atom_j, atom_k)) * dtheta(atom_i, atom_j, atom_k) * dct(atom_i, atom_j, atom_k, dim);
+  // pre_dabf(atom_i, atom_j, atom_k, abf, dim) = print(-abf * sin(abf * theta(atom_i, atom_j, atom_k)) * dtheta(atom_i, atom_j, atom_k) * dct(atom_i, atom_j, atom_k, dim), "<- dabf");
   pre_dabf.bound(abf, 0, nabf);
   pre_dabf.bound(atom_i, 0, natom);
   pre_dabf.bound(atom_j, 0, nij);
@@ -370,7 +372,8 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   pre_rbf.bound(rbf, 0, nrbf);
   
   Func pre_drbf("pre_drbf");
-  pre_drbf(rbf, atom_j, atom_k, dim) = print(f2ij(rbf, atom_j, dim) * e2ij(rbf, atom_k), "<- pre_drbf");
+  pre_drbf(rbf, atom_j, atom_k, dim) = f2ij(rbf, atom_j, dim) * e2ij(rbf, atom_k);
+  // pre_drbf(rbf, atom_j, atom_k, dim) = print(f2ij(rbf, atom_j, dim) * e2ij(rbf, atom_k), "<- pre_drbf");
   pre_dabf.trace_stores();
   pre_drbf.trace_loads();
   pre_drbf.bound(atom_j, 0, nij);
@@ -407,11 +410,11 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   eatom(i, interact, typei, m, p) += pre_rbf(m, ljs, lks) * pre_abf(i, ljs, lks, p);
 
   //  eatom.update(0).reorder(p, m, lk, lj, i);
-  fatom(dim, i, interact, typei, m, p) += pre_f(ljs, lks, i, m, p, dim) + pre_f(lks, ljs, i, m, p, dim);  
+  fatom(dim, i, interact, typei, m, p) += print((pre_f(ljs, lks, i, m, p, dim) + pre_f(lks, ljs, i, m, p, dim)), "<- sum of ", ljs, lks);  
   // fatom(dim, i, interact, typei, m, p) = print(fatom(dim, i, interact, typei, m, p), "<-fatom +");
-  fatom(dim, j, interact, typei, m, p) -= pre_f(ljs, lks, i, m, p, dim);
+  fatom(dim, k, interact, typei, m, p) -= print(pre_f(ljs, lks, i, m, p, dim), "<- pre_f ljs");
   // fatom(dim, j, interact, typei, m, p) = print(fatom(dim, j, interact, typei, m, p), "<- fatom -1");
-  fatom(dim, k, interact, typei, m, p) -= pre_f(lks, ljs, i, m, p, dim);
+  fatom(dim, j, interact, typei, m, p) -= print(pre_f(lks, ljs, i, m, p, dim), "<- pre_f lks");
   // fatom(dim, k, interact, typei, m, p) = print(fatom(dim, k, interact, typei, m, p), "<- fatom -2");
 
   fatom.trace_stores();
@@ -707,8 +710,8 @@ public:
     // eatom2(ox, oy, oz) = Expr((double) 0);
     // fatom2(ox, oy, oz, ozz) = Expr((double) 0);
 
-    eatom3(ox, oy, oz, ozz, ozzz) = eatom3_f(ox, oy, oz, ozz, ozzz);
-    fatom3(ox, oy, oz, ozz, ozzz, ozzzz) = fatom3_f(ox, oy, oz, ozz, ozzz, ozzzz);
+    eatom3(ox, oy, oz, ozz, ozzz) = eatom3_f(ox, oy, oz, ozzz, ozz);
+    fatom3(ox, oy, oz, ozz, ozzz, ozzzz) = fatom3_f(ox, oy, oz, ozz, ozzzz, ozzz);
     // eatom3(ox, oy, oz, ozz, ozzz) = Expr((double) 0);
     // fatom3(ox, oy, oz, ozz, ozzz, ozzzz) = Expr((double) 0);
     
