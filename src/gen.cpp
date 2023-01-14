@@ -60,6 +60,9 @@ void buildRBF(Func & rbf, Func & drbf, Func & abf, Func & dabf,
   Expr xij1 = xij(np, 0);
   Expr xij2 = xij(np, 1);
   Expr xij3 = xij(np, 2);
+  // Expr xij1 = print(xij(np, 0), "<- xij1");
+  // Expr xij2 = print(xij(np, 1), "<- xij2");
+  // Expr xij3 = print(xij(np, 2), "<- xij3");
 
   Expr s = xij1*xij1 + xij2*xij2 + xij3*xij3;
   Expr dij = sqrt(s);
@@ -99,7 +102,7 @@ void buildRBF(Func & rbf, Func & drbf, Func & abf, Func & dabf,
   drbf.bound(bfi, 0, bdegree);
   drbf.bound(np, 0, npairs);
 
-  Expr power = print_when(np == 1942, pow(dij, bfi+one), "power equals");
+  Expr power = pow(dij, bfi+one);
   abf(bfi, np) = fcut/power;;
   // abf.trace_stores();
   abf.bound(bfi, 0, adegree);
@@ -331,8 +334,8 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   Func dtheta("dtheta");
   dtheta(atom_i, atom_j, atom_k) = -one/sinthe(atom_i, atom_j, atom_k);
   //dtheta(atom_i, atom_j, atom_k) = print(-one/sinthe(atom_i, atom_j, atom_k), "<- dtheta", atom_i, atom_j, atom_k);
-  dtheta.trace_stores();
-  dtheta.trace_loads();
+  // dtheta.trace_stores();
+  // dtheta.trace_loads();
   
   dtheta.bound(atom_i, 0, natom);
   dtheta.bound(atom_j, 0, nij);
@@ -340,8 +343,8 @@ void buildPodTally3b(Func & eatom, Func & fatom,
 
   Func dct("dct");
   dct(atom_i, atom_j, atom_k, dim) = (xij_inter(atom_k, atom_i, dim) * rij_sq_inter(atom_j, atom_i) - xij_inter(atom_j, atom_i, dim) * xdot(atom_i, atom_j, atom_k)) * (one/(pow(rij_sq_inter(atom_j, atom_i), Expr((double) 1.5)) * rij_inter(atom_k, atom_i)));
-  dct.trace_stores();
-  dct.trace_loads();
+  // dct.trace_stores();
+  // dct.trace_loads();
   
   dct.bound(atom_i, 0, natom);
   dct.bound(atom_j, 0, nij);
@@ -374,8 +377,8 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   Func pre_drbf("pre_drbf");
   pre_drbf(rbf, atom_j, atom_k, dim) = f2ij(rbf, atom_j, dim) * e2ij(rbf, atom_k);
   // pre_drbf(rbf, atom_j, atom_k, dim) = print(f2ij(rbf, atom_j, dim) * e2ij(rbf, atom_k), "<- pre_drbf");
-  pre_dabf.trace_stores();
-  pre_drbf.trace_loads();
+  // pre_dabf.trace_stores();
+  // pre_drbf.trace_loads();
   pre_drbf.bound(atom_j, 0, nij);
   pre_drbf.bound(atom_k, 0, nij);
   pre_drbf.bound(rbf, 0, nrbf);
@@ -410,14 +413,16 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   eatom(i, interact, typei, m, p) += pre_rbf(m, ljs, lks) * pre_abf(i, ljs, lks, p);
 
   //  eatom.update(0).reorder(p, m, lk, lj, i);
-  fatom(dim, i, interact, typei, m, p) += print((pre_f(ljs, lks, i, m, p, dim) + pre_f(lks, ljs, i, m, p, dim)), "<- sum of ", ljs, lks);  
+  // fatom(dim, i, interact, typei, m, p) += print((pre_f(ljs, lks, i, m, p, dim) + pre_f(lks, ljs, i, m, p, dim)), "<- sum of ", ljs, lks);  
+  fatom(dim, i, interact, typei, m, p) += pre_f(ljs, lks, i, m, p, dim) + pre_f(lks, ljs, i, m, p, dim);  
   // fatom(dim, i, interact, typei, m, p) = print(fatom(dim, i, interact, typei, m, p), "<-fatom +");
-  fatom(dim, k, interact, typei, m, p) -= print(pre_f(ljs, lks, i, m, p, dim), "<- pre_f ljs");
+  // fatom(dim, k, interact, typei, m, p) -= print(pre_f(ljs, lks, i, m, p, dim), "<- pre_f ljs");
+  fatom(dim, k, interact, typei, m, p) -= pre_f(ljs, lks, i, m, p, dim);
   // fatom(dim, j, interact, typei, m, p) = print(fatom(dim, j, interact, typei, m, p), "<- fatom -1");
-  fatom(dim, j, interact, typei, m, p) -= print(pre_f(lks, ljs, i, m, p, dim), "<- pre_f lks");
+  fatom(dim, j, interact, typei, m, p) -= pre_f(lks, ljs, i, m, p, dim);
   // fatom(dim, k, interact, typei, m, p) = print(fatom(dim, k, interact, typei, m, p), "<- fatom -2");
 
-  fatom.trace_stores();
+  // fatom.trace_stores();
   eatom.compute_root();
 
   fatom.compute_root();
@@ -453,19 +458,20 @@ void buildNeighPairs(Func & outputs, Func & vectors,
   RDom r(0, natom, 0, npairs);
   r.where(r.y < pairnumsum(r.x + 1) && r.y >= pairnumsum(r.x));
 
-  // Expr jacc = clamp(print(pairlist(r.y), "<- pairlist"), 0, print(npairs- 1, "<- npair - 1"));
-  Expr jacc = clamp(pairlist(r.y), 0, npairs- 1);
+  Expr jacc = clamp(print(pairlist(r.y), "<- pairlist"), 0, print(npairs- 1, "<- npair - 1"));
+  // Expr jacc = clamp(pairlist(r.y), 0, npairs- 1);
   Expr att = clamp(alist(jacc), 0, natom - 1);  //
   Expr att_tt = atomtype(att);
-  outputs(r.y, numOuts) = mux(numOuts, {r.x, att, atomtype(r.x), att_tt}); //ai[k], aj[k], ti, tj
-  // vectors(r.y, d) = atompos(print(jacc, "<- jacc", r.y, "<- r.y"), d) - atompos(print(r.x, "<- r.x"), d);
-  vectors(r.y, d) = atompos(jacc, d) - atompos(r.x, d);
+  // outputs(r.y, numOuts) = mux(numOuts, {r.x, att, atomtype(r.x), att_tt}); //ai[k], aj[k], ti, tj
+  outputs(r.y, numOuts) = mux(numOuts, {print(r.x, "<- ai:"), print(att, "<- aj:"), print(atomtype(r.x), "<- ti"), print(att_tt, "<- tj")}); //ai[k], aj[k], ti, tj
+  vectors(r.y, d) = atompos(print(jacc, "<- jacc", r.y, "<- r.y"), d) - atompos(print(r.x, "<- r.x"), d);
+  // vectors(r.y, d) = atompos(jacc, d) - atompos(r.x, d);
   // vectors(r.x, d) = atompos(jacc, d) - atompos(r.y, d);
   // vectors(r.y, d) = atompos(r.x, d) - atompos(jacc, d);
   // outputs.trace_stores();
   // atomtype.trace_loads();
   // atompos.trace_loads();
-  // vectors.trace_stores();
+  vectors.trace_stores();
 
   outputs.compute_root();
   vectors.compute_root();

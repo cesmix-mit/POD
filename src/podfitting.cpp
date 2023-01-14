@@ -188,16 +188,16 @@ void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct po
     std::cout << "natom before poddesc_halide " << natom;
     
     // peratom descriptors for one-body, two-body, and three-body linear potentials
-/*
     poddesc(eatom1, fatom1, eatom2, fatom2, eatom3, fatom3, nb.y, Phi2, besselparams, 
             tmpmem, rin, rcut, atomtype, nb.alist, nb.pairlist, nb.pairnum, nb.pairnum_cumsum, 
             nb.elemindex, pdegree2, tmpint, nbesselpars, nrbf2, nrbf3, nabf3, 
             nelements, Nij, natom);            
-*/
+/*
      poddesc_halide(eatom1, fatom1, eatom2, fatom2, eatom3, fatom3, nb.y, Phi2, Phi21, Phi22, besselparams, 
              tmpmem, rin, rcut, atomtype, nb.alist, nb.pairlist, nb.pairnum, nb.pairnum_cumsum, 
              nb.elemindex, pdegree2, tmpint, nbesselpars, nrbf2, nrbf3, nabf3, 
              nelements, Nij, natom);                    
+*/
 
     print_matrix("eatom1 Halide", 1, natom, eatom1, 1);
     print_matrix("fatom1 Halide", 1, natom, fatom1, 1);
@@ -205,7 +205,7 @@ void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct po
     print_matrix("fatom2 Halide", 1, natom, fatom2, 1);
     print_matrix("eatom3 Halide", 1, natom, eatom3, 1);
     print_matrix("fatom3 Halide", 1, natom, fatom3, 1);
-    error("stop here");
+    // error("stop here");
     // peratom descriptors for four-body snap potential
     if (pod.snaptwojmax>0) {
         snapCompute(eatom4, fatom4, sna, nb, nb.y, tmpmem, atomtype, tmpint, natom, Nij);            
@@ -459,19 +459,21 @@ void least_squares_fit(descriptorstruct &desc, neighborstruct &nb, podstruct pod
     
     // loop over each configuration in the training data set
     for (int ci=0; ci < (int) data.num_atom.size(); ci++) {
-        if ((ci % 100)==0) std::cout<<"Configuration: # "<<ci+1<<std::endl;
+        if ((ci % 1)==0) std::cout<<"Configuration: # "<<ci+1<<std::endl;
         
-        // compute linear POD descriptors
-        linear_descriptors(desc, nb, pod, sna, data, ci);
-        
-        // compute quadratic POD descriptors
-        quadratic_descriptors(desc, pod, data, ci);        
-        
-        // compute cubic POD descriptors
-        cubic_descriptors(desc, pod, data, ci);    
-        
-        // assemble the least-squares linear system
-        least_squares_matrix(desc, pod, data, ci);          
+	if (ci < 30) {
+		// compute linear POD descriptors
+		linear_descriptors(desc, nb, pod, sna, data, ci);
+		
+		// compute quadratic POD descriptors
+		// quadratic_descriptors(desc, pod, data, ci);        
+		
+		// compute cubic POD descriptors
+		// cubic_descriptors(desc, pod, data, ci);    
+		
+		// assemble the least-squares linear system
+		least_squares_matrix(desc, pod, data, ci);          
+	}
     }
     
     int nd = pod.nd;
@@ -651,85 +653,87 @@ void error_analsysis(descriptorstruct &desc, neighborstruct &nb, podstruct pod, 
         int nconfigs = data.num_config[file];
         nc += nconfigs;
         for (int ii=0; ii < nconfigs; ii++) { // loop over each configuration in a file
-            if ((ci % 100)==0) std::cout<<"Configuration: # "<<ci+1<<std::endl;
+            if ((ci % 1)==0) std::cout<<"Configuration: # "<<ci+1<<std::endl;
             
-            int natom = data.num_atom[ci];
-            int nforce = dim*natom;
+	    if (ci < 30) {
+		    int natom = data.num_atom[ci];
+		    int nforce = dim*natom;
 
-            // compute linear POD descriptors
-            linear_descriptors(desc, nb, pod, sna, data, ci);
+		    // compute linear POD descriptors
+		    linear_descriptors(desc, nb, pod, sna, data, ci);
 
-//             // compute quadratic POD descriptors
-//             quadratic_descriptors(desc, pod, data, ci);        
-//             
-//             // compute cubic POD descriptors
-//             cubic_descriptors(desc, pod, data, ci);    
-//             
-//             // calculate energy and force
-//             energy = calculate_energyforce(force, desc.gd, desc.gdd, coeff, pod.nd, natom);
-            
-            // calculate energy and force
-            energy = calculate_energy_force(force, pod, desc.gd, desc.gdd, coeff, &desc.gdd[nforce*nd1234], natom);
-        
-            // calculate energy and force
-//             energy = calculate_energyforce(force, desc.gd, desc.gdd, coeff, &desc.gdd[nforce*nd1234], 
-//                         pod.quadratic22, pod.quadratic23, pod.quadratic24, pod.quadratic33, 
-//                         pod.quadratic34, pod.quadratic44, pod.nd1, pod.nd2, pod.nd3, pod.nd4, 
-//                         pod.nelements, pod.nc2, pod.nc3, pod.nc4, natom);
-// 
-//             if (pod.nd234>0) {
-//                 energy += cubic_energyforce(force, &desc.gd[pod.nd1], &desc.gd[nd12], &desc.gd[nd123], 
-//                             &desc.gdd[nforce*pod.nd1], &desc.gdd[nforce*nd12], &desc.gdd[nforce*nd123], 
-//                             &coeff[nd1234+pod.nd22+pod.nd23+pod.nd24+pod.nd33+pod.nd34+pod.nd44],
-//                             &desc.gdd[nforce*nd1234], pod.cubic234, pod.nc2, pod.nc3, pod.nc4, natom);    
-//             }
-//             
-//             if (pod.nd333>0) {
-//                 energy += cubic_energyforce(force, &desc.gd[pod.nd1+pod.nd2], &desc.gdd[nforce*(pod.nd1+pod.nd2)], 
-//                             &coeff[nd1234+pod.nd22+pod.nd23+pod.nd24+pod.nd33+pod.nd34+pod.nd44+pod.nd234],
-//                             &desc.gdd[nforce*nd1234], pod.cubic333, pod.nc3, natom);    
-//             }
-//             
-//             if (pod.nd444>0) {
-//                 energy += cubic_energyforce(force, &desc.gd[pod.nd1+pod.nd2+pod.nd3], &desc.gdd[nforce*(pod.nd1+pod.nd2+pod.nd3)], 
-//                             &coeff[nd1234+pod.nd22+pod.nd23+pod.nd24+pod.nd33+pod.nd34+pod.nd44+pod.nd234+pod.nd333],
-//                             &desc.gdd[nforce*nd1234], pod.cubic444, pod.nc4, natom);    
-//             }
-            
-//            print_matrix( "global descriptors:", pod.nd, 1, desc.gd, pod.nd); 
-            
-            double DFTenergy = data.energy[ci];   
-            int natom_cumsum = data.num_atom_cumsum[ci];    
-            double *DFTforce = &data.force[dim*natom_cumsum];     
+	//             // compute quadratic POD descriptors
+	//             quadratic_descriptors(desc, pod, data, ci);        
+	//             
+	//             // compute cubic POD descriptors
+	//             cubic_descriptors(desc, pod, data, ci);    
+	//             
+	//             // calculate energy and force
+	//             energy = calculate_energyforce(force, desc.gd, desc.gdd, coeff, pod.nd, natom);
+		    
+		    // calculate energy and force
+		    energy = calculate_energy_force(force, pod, desc.gd, desc.gdd, coeff, &desc.gdd[nforce*nd1234], natom);
+		
+		    // calculate energy and force
+	//             energy = calculate_energyforce(force, desc.gd, desc.gdd, coeff, &desc.gdd[nforce*nd1234], 
+	//                         pod.quadratic22, pod.quadratic23, pod.quadratic24, pod.quadratic33, 
+	//                         pod.quadratic34, pod.quadratic44, pod.nd1, pod.nd2, pod.nd3, pod.nd4, 
+	//                         pod.nelements, pod.nc2, pod.nc3, pod.nc4, natom);
+	// 
+	//             if (pod.nd234>0) {
+	//                 energy += cubic_energyforce(force, &desc.gd[pod.nd1], &desc.gd[nd12], &desc.gd[nd123], 
+	//                             &desc.gdd[nforce*pod.nd1], &desc.gdd[nforce*nd12], &desc.gdd[nforce*nd123], 
+	//                             &coeff[nd1234+pod.nd22+pod.nd23+pod.nd24+pod.nd33+pod.nd34+pod.nd44],
+	//                             &desc.gdd[nforce*nd1234], pod.cubic234, pod.nc2, pod.nc3, pod.nc4, natom);    
+	//             }
+	//             
+	//             if (pod.nd333>0) {
+	//                 energy += cubic_energyforce(force, &desc.gd[pod.nd1+pod.nd2], &desc.gdd[nforce*(pod.nd1+pod.nd2)], 
+	//                             &coeff[nd1234+pod.nd22+pod.nd23+pod.nd24+pod.nd33+pod.nd34+pod.nd44+pod.nd234],
+	//                             &desc.gdd[nforce*nd1234], pod.cubic333, pod.nc3, natom);    
+	//             }
+	//             
+	//             if (pod.nd444>0) {
+	//                 energy += cubic_energyforce(force, &desc.gd[pod.nd1+pod.nd2+pod.nd3], &desc.gdd[nforce*(pod.nd1+pod.nd2+pod.nd3)], 
+	//                             &coeff[nd1234+pod.nd22+pod.nd23+pod.nd24+pod.nd33+pod.nd34+pod.nd44+pod.nd234+pod.nd333],
+	//                             &desc.gdd[nforce*nd1234], pod.cubic444, pod.nc4, natom);    
+	//             }
+		    
+	//            print_matrix( "global descriptors:", pod.nd, 1, desc.gd, pod.nd); 
+		    
+		    double DFTenergy = data.energy[ci];   
+		    int natom_cumsum = data.num_atom_cumsum[ci];    
+		    double *DFTforce = &data.force[dim*natom_cumsum];     
 
-//             print_matrix( "predicted force:", 3, natom, force, 3); 
-//             print_matrix( "DFT force:", 3, natom, DFTforce, 3); 
-            
-            outarray[0 + m*ci] = ci+1;
-            outarray[1 + m*ci] = natom;
-            outarray[2 + m*ci] = energy;
-            outarray[3 + m*ci] = DFTenergy;        
-            outarray[4 + m*ci] = fabs(DFTenergy-energy)/natom;        
-            outarray[5 + m*ci] = cpuArrayNorm(force, nforce);
-            outarray[6 + m*ci] = cpuArrayNorm(DFTforce, nforce);
+	//             print_matrix( "predicted force:", 3, natom, force, 3); 
+	//             print_matrix( "DFT force:", 3, natom, DFTforce, 3); 
+		    
+		    outarray[0 + m*ci] = ci+1;
+		    outarray[1 + m*ci] = natom;
+		    outarray[2 + m*ci] = energy;
+		    outarray[3 + m*ci] = DFTenergy;        
+		    outarray[4 + m*ci] = fabs(DFTenergy-energy)/natom;        
+		    outarray[5 + m*ci] = cpuArrayNorm(force, nforce);
+		    outarray[6 + m*ci] = cpuArrayNorm(DFTforce, nforce);
 
-            double diff, sum = 0.0, ssr = 0.0;
-            for (int j=0; j<dim*natom; j++) {
-                diff = DFTforce[j] - force[j]; 
-                sum += fabs(diff);
-                ssr += diff*diff;
-            }
-            outarray[7 + m*ci] = sum/nforce;
-            //outarray[8 + m*ci] = sqrt(ssr/nforce);        
-                                                
-            emae += outarray[4 + m*ci];
-            essr += outarray[4 + m*ci]*outarray[4 + m*ci];                    
-            fmae += sum;
-            fssr += ssr;            
-            nforceall += nforce;                        
-            ci += 1;             
-            //std::cout<<"configuration: "<<ci<<",   predicted energy: "<<energy<<",   DFT energy: "<<DFTenergy<<std::endl;
-            //error("here");
+		    double diff, sum = 0.0, ssr = 0.0;
+		    for (int j=0; j<dim*natom; j++) {
+			diff = DFTforce[j] - force[j]; 
+			sum += fabs(diff);
+			ssr += diff*diff;
+		    }
+		    outarray[7 + m*ci] = sum/nforce;
+		    //outarray[8 + m*ci] = sqrt(ssr/nforce);        
+							
+		    emae += outarray[4 + m*ci];
+		    essr += outarray[4 + m*ci]*outarray[4 + m*ci];                    
+		    fmae += sum;
+		    fssr += ssr;            
+		    nforceall += nforce;                        
+		    ci += 1;             
+		    //std::cout<<"configuration: "<<ci<<",   predicted energy: "<<energy<<",   DFT energy: "<<DFTenergy<<std::endl;
+		    //error("here");
+	    }
         }
         int q = file + 1;
         errors[0 + 4*q] = emae/nconfigs; 

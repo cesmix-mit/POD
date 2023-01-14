@@ -12,6 +12,7 @@ void radialbasis(double *rbf, double *drbf, double *xij, double *besselparams, d
         double xij1 = xij[0+3*n];
         double xij2 = xij[1+3*n];
         double xij3 = xij[2+3*n];
+	// std::cout << "xij[" << 3*n << "]: " << xij1 << ", " << xij2 << ", " << xij3 << endl;
 
         double dij = pow(xij1*xij1 + xij2*xij2 + xij3*xij3, 0.5);    
         double dr1 = xij1/dij;    
@@ -123,8 +124,8 @@ void pod2body(double *eatom, double *fatom, double *y, double *Phi, double *bess
     int *aj = &tmpint[Nij];   // Nij 
     int *ti = &tmpint[2*Nij]; // Nij
     int *tj = &tmpint[3*Nij]; // Nij
-    std::cout << "Testing" << endl;
-    // std::cout << "Intermediate vals:" << *ai << " " << *aj << " " << *ti << " " << *tj;
+    // std::cout << "Testing" << endl;
+    std::cout << "Intermediate vals:" << *rij << " " << *ai << " " << *aj << " " << *ti << " " << *tj;
     podNeighPairs(rij, y, ai, aj, ti, tj, pairlist, pairnumsum, atomtype, 
                  alist, natom, dim);
     
@@ -200,7 +201,7 @@ void pod3body(double *eatom, double *fatom, double *x, double *e2ij, double *f2i
                 theta = acos(costhe);            
                 dtheta = -1.0/sinthe; 
 
-                std::cout << "dtheta(" << i << ", " << lj << ", " << lk << "): " << dtheta << endl;
+                // std::cout << "dtheta(" << i << ", " << lj << ", " << lk << "): " << dtheta << endl;
 
                 tm1 = pow(rijsq,1.5) * rik;
                 tm2 = pow(riksq,1.5) * rij;
@@ -278,9 +279,9 @@ void pod3body(double *eatom, double *fatom, double *x, double *e2ij, double *f2i
                         fatom[0 + nijk3] += fj1 + fk1;
                         fatom[1 + nijk3] += fj2 + fk2;
                         fatom[2 + nijk3] += fj3 + fk3;
-			std::cout << "fatom(" << 0 + nijk3 << "): " << fatom[0 + nijk3] << endl;
-			std::cout << "fatom(" << 1 + nijk3 << "): " << fatom[1 + nijk3] << endl;
-			std::cout << "fatom(" << 2 + nijk3 << "): " << fatom[2 + nijk3] << endl;
+			// std::cout << "fatom(" << 0 + nijk3 << "): " << fatom[0 + nijk3] << endl;
+			// std::cout << "fatom(" << 1 + nijk3 << "): " << fatom[1 + nijk3] << endl;
+			// std::cout << "fatom(" << 2 + nijk3 << "): " << fatom[2 + nijk3] << endl;
 
                         nijk3 = 3*j + 3*nijk;    
                         fatom[0 + nijk3] -= fj1;
@@ -303,9 +304,9 @@ void pod3body(double *eatom, double *fatom, double *x, double *e2ij, double *f2i
 			*/
                         
 			// std::cout << "sums:\n" << fj1 + fk1 << "\n" << fj2 + fk2 << "\n" << fj3 + fk3 << endl;
-			std::cout << "fj1, 2, 3:\n" << fj1 << "\n" << fj2 << "\n" << fj3 << endl;
-			std::cout << "fk1, 2, 3:\n" << fk1 << "\n" << fk2 << "\n" << fk3 << endl;
-			std::cout << "----------------------------" << endl;
+			// std::cout << "fj1, 2, 3:\n" << fj1 << "\n" << fj2 << "\n" << fj3 << endl;
+			// std::cout << "fk1, 2, 3:\n" << fk1 << "\n" << fk2 << "\n" << fk3 << endl;
+			// std::cout << "----------------------------" << endl;
                     }                    
                 }
             }
@@ -320,16 +321,16 @@ void poddesc_halide(double *eatom1, double *fatom1, double *eatom2, double *fato
 		    int *pairnumsum, int *elemindex, int *pdegree, int *tmpint, int nbesselpars, 
 		    int nrbf2, int nrbf3, int nabf, int nelements, int Nij, int natom)
 {   
-  std::cout << "natom beginning of poddesc_halide " << natom;
+  // std::cout << "natom beginning of poddesc_halide " << natom;
   //  int dim = 3;
   int nrbf = PODMAX(nrbf2, nrbf3);
   //  int ns = pdegree[0]*nbesselpars + pdegree[1];
   int nelements2 = nelements*(nelements+1)/2;
-  std::cout << "nelements: " << nelements << " and nelements2: " << nelements2 << endl;
+  // std::cout << "nelements: " << nelements << " and nelements2: " << nelements2 << endl;
   //  Halide::Runtime::Buffer<double>
   // Halide::Runtime::Buffer<int>
 
-  std::cout << "Entering Halide...\n";
+  // std::cout << "Entering Halide...\n";
   Halide::Runtime::Buffer<int> pairlist_buffer(pairlist, Nij); // inum + nghost ?= O(Nij) 
   Halide::Runtime::Buffer<int> pairnumsum_buffer(pairnumsum, natom + 1); // inum + 1
   Halide::Runtime::Buffer<int> atomtype_buffer(atomtype, natom); // inum
@@ -346,7 +347,7 @@ void poddesc_halide(double *eatom1, double *fatom1, double *eatom2, double *fato
       }
   }
   Halide::Runtime::Buffer<double> y_buffer(y_p, Nij, 3); // 3 * (inum + nghost)
-  std::cout << " Nij is ... " << Nij << endl;
+  // std::cout << " Nij is ... " << Nij << endl;
   // y_buffer.transpose(0, 1);
 
   Halide::Runtime::Buffer<double> eatom1_buffer(eatom1, natom, nelements);
@@ -359,7 +360,7 @@ void poddesc_halide(double *eatom1, double *fatom1, double *eatom2, double *fato
   Halide::Runtime::Buffer<double> fatom3_buffer(fatom3, 3, natom, nelements2, nelements, pdegree[1] + 1, nrbf3);
 
   
-  std::cout << "natom before poddesc1 constructor " << natom;
+  // std::cout << "natom before poddesc1 constructor " << natom;
   poddesc1(pairlist_buffer, pairnumsum_buffer, atomtype_buffer, alist_buffer, interactions_buffer, besseparams_buffer, Phi1_buffer, Phi2_buffer, y_buffer, //inputs
 	   Nij, natom, pdegree[0], pdegree[1], nrbf2, nrbf3, nbesselpars, nelements, nelements2, rin, rcut, //params
 	   eatom1_buffer, fatom1_buffer, eatom2_buffer, fatom2_buffer, eatom3_buffer, fatom3_buffer); //outputs
@@ -710,14 +711,14 @@ void energyforce_calculation(descriptorstruct &desc, neighborstruct &nb, podstru
     int nfiles = data.data_files.size();    // number of files    
     int nd1234 = pod.nd1 + pod.nd2 + pod.nd3 + pod.nd4; 
                                 
-    std::cout<<"**************** Begin of Energy/Force Calculation ****************"<<std::endl;
+    // std::cout<<"**************** Begin of Energy/Force Calculation ****************"<<std::endl;
     
     int ci = 0; // configuration counter    
     for (int file = 0; file < nfiles; file++) { // loop over each file in the data set
         
         int nconfigs = data.num_config[file];
         for (int ii=0; ii < nconfigs; ii++) { // loop over each configuration in a file
-            if ((ci % 100)==0) std::cout<<"Configuration---: # "<<ci+1<<std::endl;
+            // if ((ci % 100)==0) std::cout<<"Configuration---: # "<<ci+1<<std::endl;
             
             int natom = data.num_atom[ci];
             int nforce = dim*natom;
@@ -740,7 +741,7 @@ void energyforce_calculation(descriptorstruct &desc, neighborstruct &nb, podstru
             writearray2file(filename.c_str(), force, 1 + dim*natom, 1);
         }
     }       
-    std::cout<<"**************** End of Energy/Force Calculation ****************"<<std::endl<<std::endl;    
+    // std::cout<<"**************** End of Energy/Force Calculation ****************"<<std::endl<<std::endl;    
 }
 
 

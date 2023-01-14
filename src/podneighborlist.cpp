@@ -151,11 +151,12 @@ void podNeighPairs(double *xij, double *x, int *ai, int *aj,  int *ti, int *tj,
             aj[k]        = alist[j];          
             ti[k]        = itype;       
             tj[k]        = atomtype[alist[j]];
+            std::cout << k << " " << j << " " << i << " ";
+	    std::cout << "ai: " << ai[k] << ", aj: " << aj[k] << ", ti: " << ti[k] << ", tj: " << tj[k] << endl;
             for (int d=0; d<dim; d++) {
                 xij[k*dim+d]   = x[j*dim+d] -  x[i*dim+d];  // xj - xi            
 		        // std::cout << xij[k*dim+d] << " ";
-		// std::cout << "k: " << k << " - " << xij[k*dim+d] << " j: " << j << " - " << x[j*dim+d] << " i: " << i << " - " << x[i*dim+d] << "\n";
-                // std::cout << k << " " << j << " " << i << " ";
+		std::cout << "k: " << k << " - " << xij[k*dim+d] << " j: " << j << " - " << x[j*dim+d] << " i: " << i << " - " << x[i*dim+d] << "\n";
             }
 	    // std::cout << "\n";
         }
