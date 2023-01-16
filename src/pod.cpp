@@ -125,7 +125,7 @@ void pod2body(double *eatom, double *fatom, double *y, double *Phi, double *bess
     int *ti = &tmpint[2*Nij]; // Nij
     int *tj = &tmpint[3*Nij]; // Nij
     // std::cout << "Testing" << endl;
-    std::cout << "Intermediate vals:" << *rij << " " << *ai << " " << *aj << " " << *ti << " " << *tj;
+    // std::cout << "Intermediate vals:" << *rij << " " << *ai << " " << *aj << " " << *ti << " " << *tj;
     podNeighPairs(rij, y, ai, aj, ti, tj, pairlist, pairnumsum, atomtype, 
                  alist, natom, dim);
     
@@ -319,7 +319,7 @@ void poddesc_halide(double *eatom1, double *fatom1, double *eatom2, double *fato
 		    double *besselparams, double *tmpmem, 
 		    double rin, double rcut, int *atomtype, int *alist, int *pairlist, int *pairnum, 
 		    int *pairnumsum, int *elemindex, int *pdegree, int *tmpint, int nbesselpars, 
-		    int nrbf2, int nrbf3, int nabf, int nelements, int Nij, int natom)
+		    int nrbf2, int nrbf3, int nabf, int nelements, int Nij, int natom, int nl)
 {   
   // std::cout << "natom beginning of poddesc_halide " << natom;
   //  int dim = 3;
@@ -334,19 +334,19 @@ void poddesc_halide(double *eatom1, double *fatom1, double *eatom2, double *fato
   Halide::Runtime::Buffer<int> pairlist_buffer(pairlist, Nij); // inum + nghost ?= O(Nij) 
   Halide::Runtime::Buffer<int> pairnumsum_buffer(pairnumsum, natom + 1); // inum + 1
   Halide::Runtime::Buffer<int> atomtype_buffer(atomtype, natom); // inum
-  Halide::Runtime::Buffer<int> alist_buffer(alist, Nij); // inum + nghost
+  Halide::Runtime::Buffer<int> alist_buffer(alist, nl * natom); // inum + nghost -- nl * nx
   Halide::Runtime::Buffer<int> interactions_buffer(elemindex, nelements, nelements);
   Halide::Runtime::Buffer<double> besseparams_buffer(besselparams, nbesselpars);
   Halide::Runtime::Buffer<double> Phi1_buffer(Phi1, nbesselpars, pdegree[0], nrbf);
   Halide::Runtime::Buffer<double> Phi2_buffer(Phi2, pdegree[1], nrbf);
-  double *y_p = new double[Nij * 3];
+  double *y_p = new double[nl * natom * 3];
   for (int i = 0; i < 3; i++) {
-      for (int j = 0; j < Nij; j++) {
+      for (int j = 0; j < nl * natom; j++) {
           //y_p[i *3 +j] = y[j * Nij  + I]
-          y_p[j  + i * Nij] = y[i +j * 3];
+          y_p[j  + i * nl * natom] = y[i +j * 3];
       }
   }
-  Halide::Runtime::Buffer<double> y_buffer(y_p, Nij, 3); // 3 * (inum + nghost)
+  Halide::Runtime::Buffer<double> y_buffer(y_p, nl * natom, 3); // 3 * (inum + nghost) -- nl * nx
   // std::cout << " Nij is ... " << Nij << endl;
   // y_buffer.transpose(0, 1);
 
@@ -362,7 +362,7 @@ void poddesc_halide(double *eatom1, double *fatom1, double *eatom2, double *fato
   
   // std::cout << "natom before poddesc1 constructor " << natom;
   poddesc1(pairlist_buffer, pairnumsum_buffer, atomtype_buffer, alist_buffer, interactions_buffer, besseparams_buffer, Phi1_buffer, Phi2_buffer, y_buffer, //inputs
-	   Nij, natom, pdegree[0], pdegree[1], nrbf2, nrbf3, nbesselpars, nelements, nelements2, rin, rcut, //params
+	   nl, Nij, natom, pdegree[0], pdegree[1], nrbf2, nrbf3, nbesselpars, nelements, nelements2, rin, rcut, //params
 	   eatom1_buffer, fatom1_buffer, eatom2_buffer, fatom2_buffer, eatom3_buffer, fatom3_buffer); //outputs
 
 }
@@ -432,10 +432,11 @@ void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct po
     double *a1 = &lattice[0];
     double *a2 = &lattice[3];
     double *a3 = &lattice[6];
+    int nl = -1;
                 
     // neighbor list
     int Nij = podfullneighborlist(nb.y, nb.alist, nb.pairlist, nb.pairnum, nb.pairnum_cumsum, 
-                position, a1, a2, a3, rcut, pbc, natom);
+                position, a1, a2, a3, rcut, pbc, natom, &nl);
     
     double *fatom1 = &desc.gdd[0];
     double *fatom2 = &desc.gdd[dim*natom*(nd1)];
@@ -459,7 +460,7 @@ void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct po
     poddesc_halide(eatom1, fatom1, eatom2, fatom2, eatom3, fatom3, nb.y, Phi2, Phi21, Phi22, besselparams, 
 		   tmpmem, rin, rcut, atomtype, nb.alist, nb.pairlist, nb.pairnum, nb.pairnum_cumsum, 
 		   nb.elemindex, pdegree2, tmpint, nbesselpars, nrbf2, nrbf3, nabf3, 
-		   nelements, Nij, natom);
+		   nelements, Nij, natom, nl);
 
     
     if (pod.snaptwojmax>0) 

@@ -220,7 +220,7 @@ void buildPodTally2b(Func & eatom, Func & fatom,
 void buildPodTally3b(Func & eatom, Func & fatom,
 		     Func xij, Func e2ij, Func f2ij, Func interaction,
 		     Func pairlist, Func pairnumsum, Func atomtype, Func alist,
-		     Expr nrbf, Expr nabf, Expr nelems, Expr nelementCombos, Expr natom, Expr nij, Expr nmax, 
+		     Expr nrbf, Expr nabf, Expr nelems, Expr nelementCombos, Expr nl, Expr natom, Expr nij, Expr nmax, 
 		     Var atom, Var atom_o, Var atom_i, Var atom_j, Var atom_k, Var inter, Var type, Var abf, Var rbf, Var dim){
   Expr one = Expr((double) 1.0);
   Expr zero = Expr((double) 0.0);
@@ -291,7 +291,7 @@ void buildPodTally3b(Func & eatom, Func & fatom,
 
   Func xij_inter("xij_inter");
   // xij_inter(atom_o, atom_i, dim) = xij(clamp(pairlist(atom_o), 0, natom - 1), dim) - xij(atom_i, dim);
-  xij_inter(atom_o, atom_i, dim) = xij(clamp(pairlist(atom_o), 0, nij - 1), dim) - xij(atom_i, dim);
+  xij_inter(atom_o, atom_i, dim) = xij(clamp(pairlist(atom_o), 0, nl * natom - 1), dim) - xij(atom_i, dim);
   xij_inter.bound(atom_i, 0, natom);
   xij_inter.bound(atom_o, 0, nij);
   xij_inter.bound(dim, 0, 3);
@@ -401,11 +401,11 @@ void buildPodTally3b(Func & eatom, Func & fatom,
 
   Expr typei = clamp(atomtype(i) - 1, 0, nelems - 1);
   // Expr gj = clamp(pairlist(ljs), 0, natom - 1);
-  Expr gj = clamp(pairlist(ljs), 0, nij - 1);
+  Expr gj = clamp(pairlist(ljs), 0, nl * natom - 1);
   Expr j = clamp(alist(gj), 0, natom - 1);
   Expr typej = clamp(atomtype(j) - 1, 0, nelems - 1);
   // Expr gk = clamp(pairlist(lks), 0, natom - 1);
-  Expr gk = clamp(pairlist(lks), 0, nij - 1);
+  Expr gk = clamp(pairlist(lks), 0, nl * natom - 1);
   Expr k = clamp(alist(gk), 0, natom - 1);
   Expr typek = clamp(atomtype(k) - 1, 0, nelems - 1);
   Expr interact = clamp(interaction(typek, typej) - 1, 0, nelementCombos - 1);
@@ -442,7 +442,7 @@ void buildPodTally3b(Func & eatom, Func & fatom,
 
 void buildNeighPairs(Func & outputs, Func & vectors,
 		     Func pairlist, Func pairnumsum, Func atomtype, Func alist, Func atompos,
-		     Expr natom, Expr dim, Expr nmax, Expr npairs,
+		     Expr nl, Expr natom, Expr dim, Expr nmax, Expr npairs,
 		     Var atom, Var d, Var nm, Var np, Var numOuts){
   
   outputs(np, numOuts) = mux(numOuts,{-1, -1, -1, -1});
@@ -458,8 +458,8 @@ void buildNeighPairs(Func & outputs, Func & vectors,
   RDom r(0, natom, 0, npairs);
   r.where(r.y < pairnumsum(r.x + 1) && r.y >= pairnumsum(r.x));
 
-  Expr jacc = clamp(print(pairlist(r.y), "<- pairlist"), 0, print(npairs- 1, "<- npair - 1"));
-  // Expr jacc = clamp(pairlist(r.y), 0, npairs- 1);
+  // Expr jacc = clamp(print(pairlist(r.y), "<- pairlist"), 0, print(npairs- 1, "<- npair - 1"));
+  Expr jacc = clamp(pairlist(r.y), 0, nl * natom - 1);
   Expr att = clamp(alist(jacc), 0, natom - 1);  //
   Expr att_tt = atomtype(att);
   // outputs(r.y, numOuts) = mux(numOuts, {r.x, att, atomtype(r.x), att_tt}); //ai[k], aj[k], ti, tj
@@ -567,6 +567,7 @@ public:
 
   Input<Buffer<double>> y{"y", 2};
 
+  Input<int> nl{"nl", 1};
   Input<int> npairs{"npairs", 1};
   Input<int> natom{"natom", 1};
   Input<int> bdegree{"bdegree", 1};
@@ -636,10 +637,10 @@ public:
     pairlist.dim(0).set_bounds(0, npairs); // inum + nghost
     pairnumsum.dim(0).set_bounds(0, natom + 1); // inum + 1
     atomtype.dim(0).set_bounds(0, natom); // inum
-    alist.dim(0).set_bounds(0, npairs);//are we sure? // inum + nghost
+    alist.dim(0).set_bounds(0, nl * natom);//are we sure? // inum + nghost
     // y.dim(0).set_bounds(0, npairs).set_stride(1);
     // y.dim(1).set_bounds(0, 3).set_stride(npairs);
-    y.dim(0).set_bounds(0, npairs); // inum + nghost
+    y.dim(0).set_bounds(0, nl * natom); // inum + nghost
     y.dim(1).set_bounds(0, 3);
     besselparams.dim(0).set_bounds(0, nbesselparams);
     Phi1.dim(0).set_bounds(0, nbesselparams);
@@ -657,7 +658,7 @@ public:
     
     buildNeighPairs(ijs_f, rijs_f,
 		    pairlist, pairnumsum, atomtype, alist, y,
-		    natom, 3, nmax, npairs,
+		    nl, natom, 3, nmax, npairs,
 		    atom, dim, nm, np, numOuts);
 
     Func rbf_f("rbf_f"), drbf_f("drbf_f"), abf_f("abf_f"), dabf_f("dabf_f");
@@ -694,7 +695,7 @@ public:
     buildPodTally3b(eatom3_f, fatom3_f,
 		    y, energyij_f, forceij_f, interactions,
 		    pairlist, pairnumsum, atomtype, alist,
-		    tdegree2, adegree + 1, nelems, nelemscombos, natom, npairs, nmax,
+		    tdegree2, adegree + 1, nelems, nelemscombos, nl, natom, npairs, nmax,
 		    atom, atom_o, atom_i, atom_j, atom_k, inter, type,  bfa, rbf_v, dim);
 
     Var ox("ox"), oy("oy"), oz("oz"), ozz("ozz"), ozzz("ozzz"), ozzzz("ozzzz");

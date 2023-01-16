@@ -87,13 +87,14 @@ int podneighborlist(int *neighlist, int *numneigh, double *r, double rcutsq, int
 }
 
 int podfullneighborlist(double *y, int *alist, int *neighlist, int *numneigh, int *numneighsum, 
-        double *x, double *a1, double *a2, double *a3, double rcut, int *pbc, int nx)
+        double *x, double *a1, double *a2, double *a3, double rcut, int *pbc, int nx, int *nll)
 {
     double rcutsq = rcut*rcut;    
     int dim = 3, nl = 0, nn = 0;
     
     // number of lattices
     nl = latticecoords(y, alist, x, a1, a2, a3, rcut, pbc, nx);        
+    *nll = nl;
     int N = nx*nl;
             
     // total number of neighbors

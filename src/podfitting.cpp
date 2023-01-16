@@ -82,9 +82,10 @@ void allocate_memory(descriptorstruct &desc, neighborstruct &nb, podstruct pod, 
         double *a1 = &lattice[0];
         double *a2 = &lattice[3];
         double *a3 = &lattice[6];
+	int nl = -1;
             
         // neighbor list
-        Nij = podfullneighborlist(nb.y, nb.alist, nb.pairlist, nb.pairnum, nb.pairnum_cumsum, x, a1, a2, a3, rcut, pbc, natom);
+        Nij = podfullneighborlist(nb.y, nb.alist, nb.pairlist, nb.pairnum, nb.pairnum_cumsum, x, a1, a2, a3, rcut, pbc, natom, &nl);
     
         int ns2 = pdegree2[0]*nbesselpars + pdegree2[1];
         int ns3 = pdegree3[0]*nbesselpars + pdegree3[1];
@@ -162,10 +163,11 @@ void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct po
     double *a1 = &lattice[0];
     double *a2 = &lattice[3];
     double *a3 = &lattice[6];
+    int nl = -1;
                 
     // neighbor list
     int Nij = podfullneighborlist(nb.y, nb.alist, nb.pairlist, nb.pairnum, nb.pairnum_cumsum, 
-                position, a1, a2, a3, rcut, pbc, natom);
+                position, a1, a2, a3, rcut, pbc, natom, &nl);
     
     double *fatom1 = &desc.gdd[0];
     double *fatom2 = &desc.gdd[dim*natom*(nd1)];
@@ -188,16 +190,16 @@ void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct po
     std::cout << "natom before poddesc_halide " << natom;
     
     // peratom descriptors for one-body, two-body, and three-body linear potentials
+/*
     poddesc(eatom1, fatom1, eatom2, fatom2, eatom3, fatom3, nb.y, Phi2, besselparams, 
             tmpmem, rin, rcut, atomtype, nb.alist, nb.pairlist, nb.pairnum, nb.pairnum_cumsum, 
             nb.elemindex, pdegree2, tmpint, nbesselpars, nrbf2, nrbf3, nabf3, 
             nelements, Nij, natom);            
-/*
+*/
      poddesc_halide(eatom1, fatom1, eatom2, fatom2, eatom3, fatom3, nb.y, Phi2, Phi21, Phi22, besselparams, 
              tmpmem, rin, rcut, atomtype, nb.alist, nb.pairlist, nb.pairnum, nb.pairnum_cumsum, 
              nb.elemindex, pdegree2, tmpint, nbesselpars, nrbf2, nrbf3, nabf3, 
-             nelements, Nij, natom);                    
-*/
+             nelements, Nij, natom, nl);                    
 
     print_matrix("eatom1 Halide", 1, natom, eatom1, 1);
     print_matrix("fatom1 Halide", 1, natom, fatom1, 1);
