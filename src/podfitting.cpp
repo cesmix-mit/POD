@@ -202,11 +202,11 @@ void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct po
              nelements, Nij, natom, nl);                    
 
     print_matrix("eatom1 Halide", 1, natom, eatom1, 1);
-    print_matrix("fatom1 Halide", 1, natom, fatom1, 1);
+    print_matrix("fatom1 Halide", 1, natom * 3, fatom1, 1);
     print_matrix("eatom2 Halide", 1, natom, eatom2, 1);
-    print_matrix("fatom2 Halide", 1, natom, fatom2, 1);
+    print_matrix("fatom2 Halide", 1, natom * 3, fatom2, 1);
     print_matrix("eatom3 Halide", 1, natom, eatom3, 1);
-    print_matrix("fatom3 Halide", 1, natom, fatom3, 1);
+    print_matrix("fatom3 Halide", 1, natom * 3, fatom3, 1);
     // error("stop here");
     // peratom descriptors for four-body snap potential
     if (pod.snaptwojmax>0) {
@@ -463,7 +463,7 @@ void least_squares_fit(descriptorstruct &desc, neighborstruct &nb, podstruct pod
     for (int ci=0; ci < (int) data.num_atom.size(); ci++) {
         if ((ci % 1)==0) std::cout<<"Configuration: # "<<ci+1<<std::endl;
         
-	if (ci < 30) {
+	if (true) {
 		// compute linear POD descriptors
 		linear_descriptors(desc, nb, pod, sna, data, ci);
 		
@@ -657,7 +657,7 @@ void error_analsysis(descriptorstruct &desc, neighborstruct &nb, podstruct pod, 
         for (int ii=0; ii < nconfigs; ii++) { // loop over each configuration in a file
             if ((ci % 1)==0) std::cout<<"Configuration: # "<<ci+1<<std::endl;
             
-	    if (ci < 30) {
+	    if (true) {
 		    int natom = data.num_atom[ci];
 		    int nforce = dim*natom;
 

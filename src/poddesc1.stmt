@@ -1,0 +1,1292 @@
+module name=poddesc1, target=x86-64-linux-avx-avx2-f16c-fma-sse41
+external_plus_metadata func poddesc1 (pairlist, pairnumsum, atomtype, alist, interactions, besselparams, Phi1, Phi2, y, nl, npairs, natom, bdegree, adegree, adegreep, tdegree1, tdegree2, nbesselparams, nelems, nelemsCombos, rin, rcut, eatom1, fatom1, eatom2, fatom2, eatom3, fatom3) {
+assert((uint64)reinterpret((halide_buffer_t *)y.buffer) != (uint64)0, halide_error_buffer_argument_is_null("y"))
+assert((uint64)reinterpret((halide_buffer_t *)pairnumsum.buffer) != (uint64)0, halide_error_buffer_argument_is_null("pairnumsum"))
+assert((uint64)reinterpret((halide_buffer_t *)pairlist.buffer) != (uint64)0, halide_error_buffer_argument_is_null("pairlist"))
+assert((uint64)reinterpret((halide_buffer_t *)interactions.buffer) != (uint64)0, halide_error_buffer_argument_is_null("interactions"))
+assert((uint64)reinterpret((halide_buffer_t *)fatom3.buffer) != (uint64)0, halide_error_buffer_argument_is_null("fatom3"))
+assert((uint64)reinterpret((halide_buffer_t *)fatom2.buffer) != (uint64)0, halide_error_buffer_argument_is_null("fatom2"))
+assert((uint64)reinterpret((halide_buffer_t *)fatom1.buffer) != (uint64)0, halide_error_buffer_argument_is_null("fatom1"))
+assert((uint64)reinterpret((halide_buffer_t *)eatom3.buffer) != (uint64)0, halide_error_buffer_argument_is_null("eatom3"))
+assert((uint64)reinterpret((halide_buffer_t *)eatom2.buffer) != (uint64)0, halide_error_buffer_argument_is_null("eatom2"))
+assert((uint64)reinterpret((halide_buffer_t *)eatom1.buffer) != (uint64)0, halide_error_buffer_argument_is_null("eatom1"))
+assert((uint64)reinterpret((halide_buffer_t *)besselparams.buffer) != (uint64)0, halide_error_buffer_argument_is_null("besselparams"))
+assert((uint64)reinterpret((halide_buffer_t *)atomtype.buffer) != (uint64)0, halide_error_buffer_argument_is_null("atomtype"))
+assert((uint64)reinterpret((halide_buffer_t *)alist.buffer) != (uint64)0, halide_error_buffer_argument_is_null("alist"))
+assert((uint64)reinterpret((halide_buffer_t *)Phi2.buffer) != (uint64)0, halide_error_buffer_argument_is_null("Phi2"))
+assert((uint64)reinterpret((halide_buffer_t *)Phi1.buffer) != (uint64)0, halide_error_buffer_argument_is_null("Phi1"))
+let Phi1 = (void *)_halide_buffer_get_host((halide_buffer_t *)Phi1.buffer)
+let Phi1.type = (uint32)_halide_buffer_get_type((halide_buffer_t *)Phi1.buffer)
+let Phi1.device_dirty = (uint1)_halide_buffer_get_device_dirty((halide_buffer_t *)Phi1.buffer)
+let Phi1.dimensions = _halide_buffer_get_dimensions((halide_buffer_t *)Phi1.buffer)
+let Phi1.min.0 = _halide_buffer_get_min((halide_buffer_t *)Phi1.buffer, 0)
+let Phi1.extent.0 = _halide_buffer_get_extent((halide_buffer_t *)Phi1.buffer, 0)
+let Phi1.stride.0 = _halide_buffer_get_stride((halide_buffer_t *)Phi1.buffer, 0)
+let Phi1.min.1 = _halide_buffer_get_min((halide_buffer_t *)Phi1.buffer, 1)
+let Phi1.extent.1 = _halide_buffer_get_extent((halide_buffer_t *)Phi1.buffer, 1)
+let Phi1.stride.1 = _halide_buffer_get_stride((halide_buffer_t *)Phi1.buffer, 1)
+let Phi1.min.2 = _halide_buffer_get_min((halide_buffer_t *)Phi1.buffer, 2)
+let Phi1.extent.2 = _halide_buffer_get_extent((halide_buffer_t *)Phi1.buffer, 2)
+let Phi1.stride.2 = _halide_buffer_get_stride((halide_buffer_t *)Phi1.buffer, 2)
+let Phi2 = (void *)_halide_buffer_get_host((halide_buffer_t *)Phi2.buffer)
+let Phi2.type = (uint32)_halide_buffer_get_type((halide_buffer_t *)Phi2.buffer)
+let Phi2.device_dirty = (uint1)_halide_buffer_get_device_dirty((halide_buffer_t *)Phi2.buffer)
+let Phi2.dimensions = _halide_buffer_get_dimensions((halide_buffer_t *)Phi2.buffer)
+let Phi2.min.0 = _halide_buffer_get_min((halide_buffer_t *)Phi2.buffer, 0)
+let Phi2.extent.0 = _halide_buffer_get_extent((halide_buffer_t *)Phi2.buffer, 0)
+let Phi2.stride.0 = _halide_buffer_get_stride((halide_buffer_t *)Phi2.buffer, 0)
+let Phi2.min.1 = _halide_buffer_get_min((halide_buffer_t *)Phi2.buffer, 1)
+let Phi2.extent.1 = _halide_buffer_get_extent((halide_buffer_t *)Phi2.buffer, 1)
+let Phi2.stride.1 = _halide_buffer_get_stride((halide_buffer_t *)Phi2.buffer, 1)
+let alist = (void *)_halide_buffer_get_host((halide_buffer_t *)alist.buffer)
+let alist.type = (uint32)_halide_buffer_get_type((halide_buffer_t *)alist.buffer)
+let alist.device_dirty = (uint1)_halide_buffer_get_device_dirty((halide_buffer_t *)alist.buffer)
+let alist.dimensions = _halide_buffer_get_dimensions((halide_buffer_t *)alist.buffer)
+let alist.min.0 = _halide_buffer_get_min((halide_buffer_t *)alist.buffer, 0)
+let alist.extent.0 = _halide_buffer_get_extent((halide_buffer_t *)alist.buffer, 0)
+let alist.stride.0 = _halide_buffer_get_stride((halide_buffer_t *)alist.buffer, 0)
+let atomtype = (void *)_halide_buffer_get_host((halide_buffer_t *)atomtype.buffer)
+let atomtype.type = (uint32)_halide_buffer_get_type((halide_buffer_t *)atomtype.buffer)
+let atomtype.device_dirty = (uint1)_halide_buffer_get_device_dirty((halide_buffer_t *)atomtype.buffer)
+let atomtype.dimensions = _halide_buffer_get_dimensions((halide_buffer_t *)atomtype.buffer)
+let atomtype.min.0 = _halide_buffer_get_min((halide_buffer_t *)atomtype.buffer, 0)
+let atomtype.extent.0 = _halide_buffer_get_extent((halide_buffer_t *)atomtype.buffer, 0)
+let atomtype.stride.0 = _halide_buffer_get_stride((halide_buffer_t *)atomtype.buffer, 0)
+let besselparams = (void *)_halide_buffer_get_host((halide_buffer_t *)besselparams.buffer)
+let besselparams.type = (uint32)_halide_buffer_get_type((halide_buffer_t *)besselparams.buffer)
+let besselparams.device_dirty = (uint1)_halide_buffer_get_device_dirty((halide_buffer_t *)besselparams.buffer)
+let besselparams.dimensions = _halide_buffer_get_dimensions((halide_buffer_t *)besselparams.buffer)
+let besselparams.min.0 = _halide_buffer_get_min((halide_buffer_t *)besselparams.buffer, 0)
+let besselparams.extent.0 = _halide_buffer_get_extent((halide_buffer_t *)besselparams.buffer, 0)
+let besselparams.stride.0 = _halide_buffer_get_stride((halide_buffer_t *)besselparams.buffer, 0)
+let eatom1 = (void *)_halide_buffer_get_host((halide_buffer_t *)eatom1.buffer)
+let eatom1.type = (uint32)_halide_buffer_get_type((halide_buffer_t *)eatom1.buffer)
+let eatom1.device_dirty = (uint1)_halide_buffer_get_device_dirty((halide_buffer_t *)eatom1.buffer)
+let eatom1.dimensions = _halide_buffer_get_dimensions((halide_buffer_t *)eatom1.buffer)
+let eatom1.min.0 = _halide_buffer_get_min((halide_buffer_t *)eatom1.buffer, 0)
+let eatom1.extent.0 = _halide_buffer_get_extent((halide_buffer_t *)eatom1.buffer, 0)
+let eatom1.stride.0 = _halide_buffer_get_stride((halide_buffer_t *)eatom1.buffer, 0)
+let eatom1.min.1 = _halide_buffer_get_min((halide_buffer_t *)eatom1.buffer, 1)
+let eatom1.extent.1 = _halide_buffer_get_extent((halide_buffer_t *)eatom1.buffer, 1)
+let eatom1.stride.1 = _halide_buffer_get_stride((halide_buffer_t *)eatom1.buffer, 1)
+let eatom2 = (void *)_halide_buffer_get_host((halide_buffer_t *)eatom2.buffer)
+let eatom2.type = (uint32)_halide_buffer_get_type((halide_buffer_t *)eatom2.buffer)
+let eatom2.device_dirty = (uint1)_halide_buffer_get_device_dirty((halide_buffer_t *)eatom2.buffer)
+let eatom2.dimensions = _halide_buffer_get_dimensions((halide_buffer_t *)eatom2.buffer)
+let eatom2.min.0 = _halide_buffer_get_min((halide_buffer_t *)eatom2.buffer, 0)
+let eatom2.extent.0 = _halide_buffer_get_extent((halide_buffer_t *)eatom2.buffer, 0)
+let eatom2.stride.0 = _halide_buffer_get_stride((halide_buffer_t *)eatom2.buffer, 0)
+let eatom2.min.1 = _halide_buffer_get_min((halide_buffer_t *)eatom2.buffer, 1)
+let eatom2.extent.1 = _halide_buffer_get_extent((halide_buffer_t *)eatom2.buffer, 1)
+let eatom2.stride.1 = _halide_buffer_get_stride((halide_buffer_t *)eatom2.buffer, 1)
+let eatom2.min.2 = _halide_buffer_get_min((halide_buffer_t *)eatom2.buffer, 2)
+let eatom2.extent.2 = _halide_buffer_get_extent((halide_buffer_t *)eatom2.buffer, 2)
+let eatom2.stride.2 = _halide_buffer_get_stride((halide_buffer_t *)eatom2.buffer, 2)
+let eatom3 = (void *)_halide_buffer_get_host((halide_buffer_t *)eatom3.buffer)
+let eatom3.type = (uint32)_halide_buffer_get_type((halide_buffer_t *)eatom3.buffer)
+let eatom3.device_dirty = (uint1)_halide_buffer_get_device_dirty((halide_buffer_t *)eatom3.buffer)
+let eatom3.dimensions = _halide_buffer_get_dimensions((halide_buffer_t *)eatom3.buffer)
+let eatom3.min.0 = _halide_buffer_get_min((halide_buffer_t *)eatom3.buffer, 0)
+let eatom3.extent.0 = _halide_buffer_get_extent((halide_buffer_t *)eatom3.buffer, 0)
+let eatom3.stride.0 = _halide_buffer_get_stride((halide_buffer_t *)eatom3.buffer, 0)
+let eatom3.min.1 = _halide_buffer_get_min((halide_buffer_t *)eatom3.buffer, 1)
+let eatom3.extent.1 = _halide_buffer_get_extent((halide_buffer_t *)eatom3.buffer, 1)
+let eatom3.stride.1 = _halide_buffer_get_stride((halide_buffer_t *)eatom3.buffer, 1)
+let eatom3.min.2 = _halide_buffer_get_min((halide_buffer_t *)eatom3.buffer, 2)
+let eatom3.extent.2 = _halide_buffer_get_extent((halide_buffer_t *)eatom3.buffer, 2)
+let eatom3.stride.2 = _halide_buffer_get_stride((halide_buffer_t *)eatom3.buffer, 2)
+let eatom3.min.3 = _halide_buffer_get_min((halide_buffer_t *)eatom3.buffer, 3)
+let eatom3.extent.3 = _halide_buffer_get_extent((halide_buffer_t *)eatom3.buffer, 3)
+let eatom3.stride.3 = _halide_buffer_get_stride((halide_buffer_t *)eatom3.buffer, 3)
+let eatom3.min.4 = _halide_buffer_get_min((halide_buffer_t *)eatom3.buffer, 4)
+let eatom3.extent.4 = _halide_buffer_get_extent((halide_buffer_t *)eatom3.buffer, 4)
+let eatom3.stride.4 = _halide_buffer_get_stride((halide_buffer_t *)eatom3.buffer, 4)
+let fatom1 = (void *)_halide_buffer_get_host((halide_buffer_t *)fatom1.buffer)
+let fatom1.type = (uint32)_halide_buffer_get_type((halide_buffer_t *)fatom1.buffer)
+let fatom1.device_dirty = (uint1)_halide_buffer_get_device_dirty((halide_buffer_t *)fatom1.buffer)
+let fatom1.dimensions = _halide_buffer_get_dimensions((halide_buffer_t *)fatom1.buffer)
+let fatom1.min.0 = _halide_buffer_get_min((halide_buffer_t *)fatom1.buffer, 0)
+let fatom1.extent.0 = _halide_buffer_get_extent((halide_buffer_t *)fatom1.buffer, 0)
+let fatom1.stride.0 = _halide_buffer_get_stride((halide_buffer_t *)fatom1.buffer, 0)
+let fatom1.min.1 = _halide_buffer_get_min((halide_buffer_t *)fatom1.buffer, 1)
+let fatom1.extent.1 = _halide_buffer_get_extent((halide_buffer_t *)fatom1.buffer, 1)
+let fatom1.stride.1 = _halide_buffer_get_stride((halide_buffer_t *)fatom1.buffer, 1)
+let fatom1.min.2 = _halide_buffer_get_min((halide_buffer_t *)fatom1.buffer, 2)
+let fatom1.extent.2 = _halide_buffer_get_extent((halide_buffer_t *)fatom1.buffer, 2)
+let fatom1.stride.2 = _halide_buffer_get_stride((halide_buffer_t *)fatom1.buffer, 2)
+let fatom2 = (void *)_halide_buffer_get_host((halide_buffer_t *)fatom2.buffer)
+let fatom2.type = (uint32)_halide_buffer_get_type((halide_buffer_t *)fatom2.buffer)
+let fatom2.device_dirty = (uint1)_halide_buffer_get_device_dirty((halide_buffer_t *)fatom2.buffer)
+let fatom2.dimensions = _halide_buffer_get_dimensions((halide_buffer_t *)fatom2.buffer)
+let fatom2.min.0 = _halide_buffer_get_min((halide_buffer_t *)fatom2.buffer, 0)
+let fatom2.extent.0 = _halide_buffer_get_extent((halide_buffer_t *)fatom2.buffer, 0)
+let fatom2.stride.0 = _halide_buffer_get_stride((halide_buffer_t *)fatom2.buffer, 0)
+let fatom2.min.1 = _halide_buffer_get_min((halide_buffer_t *)fatom2.buffer, 1)
+let fatom2.extent.1 = _halide_buffer_get_extent((halide_buffer_t *)fatom2.buffer, 1)
+let fatom2.stride.1 = _halide_buffer_get_stride((halide_buffer_t *)fatom2.buffer, 1)
+let fatom2.min.2 = _halide_buffer_get_min((halide_buffer_t *)fatom2.buffer, 2)
+let fatom2.extent.2 = _halide_buffer_get_extent((halide_buffer_t *)fatom2.buffer, 2)
+let fatom2.stride.2 = _halide_buffer_get_stride((halide_buffer_t *)fatom2.buffer, 2)
+let fatom2.min.3 = _halide_buffer_get_min((halide_buffer_t *)fatom2.buffer, 3)
+let fatom2.extent.3 = _halide_buffer_get_extent((halide_buffer_t *)fatom2.buffer, 3)
+let fatom2.stride.3 = _halide_buffer_get_stride((halide_buffer_t *)fatom2.buffer, 3)
+let fatom3 = (void *)_halide_buffer_get_host((halide_buffer_t *)fatom3.buffer)
+let fatom3.type = (uint32)_halide_buffer_get_type((halide_buffer_t *)fatom3.buffer)
+let fatom3.device_dirty = (uint1)_halide_buffer_get_device_dirty((halide_buffer_t *)fatom3.buffer)
+let fatom3.dimensions = _halide_buffer_get_dimensions((halide_buffer_t *)fatom3.buffer)
+let fatom3.min.0 = _halide_buffer_get_min((halide_buffer_t *)fatom3.buffer, 0)
+let fatom3.extent.0 = _halide_buffer_get_extent((halide_buffer_t *)fatom3.buffer, 0)
+let fatom3.stride.0 = _halide_buffer_get_stride((halide_buffer_t *)fatom3.buffer, 0)
+let fatom3.min.1 = _halide_buffer_get_min((halide_buffer_t *)fatom3.buffer, 1)
+let fatom3.extent.1 = _halide_buffer_get_extent((halide_buffer_t *)fatom3.buffer, 1)
+let fatom3.stride.1 = _halide_buffer_get_stride((halide_buffer_t *)fatom3.buffer, 1)
+let fatom3.min.2 = _halide_buffer_get_min((halide_buffer_t *)fatom3.buffer, 2)
+let fatom3.extent.2 = _halide_buffer_get_extent((halide_buffer_t *)fatom3.buffer, 2)
+let fatom3.stride.2 = _halide_buffer_get_stride((halide_buffer_t *)fatom3.buffer, 2)
+let fatom3.min.3 = _halide_buffer_get_min((halide_buffer_t *)fatom3.buffer, 3)
+let fatom3.extent.3 = _halide_buffer_get_extent((halide_buffer_t *)fatom3.buffer, 3)
+let fatom3.stride.3 = _halide_buffer_get_stride((halide_buffer_t *)fatom3.buffer, 3)
+let fatom3.min.4 = _halide_buffer_get_min((halide_buffer_t *)fatom3.buffer, 4)
+let fatom3.extent.4 = _halide_buffer_get_extent((halide_buffer_t *)fatom3.buffer, 4)
+let fatom3.stride.4 = _halide_buffer_get_stride((halide_buffer_t *)fatom3.buffer, 4)
+let fatom3.min.5 = _halide_buffer_get_min((halide_buffer_t *)fatom3.buffer, 5)
+let fatom3.extent.5 = _halide_buffer_get_extent((halide_buffer_t *)fatom3.buffer, 5)
+let fatom3.stride.5 = _halide_buffer_get_stride((halide_buffer_t *)fatom3.buffer, 5)
+let interactions = (void *)_halide_buffer_get_host((halide_buffer_t *)interactions.buffer)
+let interactions.type = (uint32)_halide_buffer_get_type((halide_buffer_t *)interactions.buffer)
+let interactions.device_dirty = (uint1)_halide_buffer_get_device_dirty((halide_buffer_t *)interactions.buffer)
+let interactions.dimensions = _halide_buffer_get_dimensions((halide_buffer_t *)interactions.buffer)
+let interactions.min.0 = _halide_buffer_get_min((halide_buffer_t *)interactions.buffer, 0)
+let interactions.extent.0 = _halide_buffer_get_extent((halide_buffer_t *)interactions.buffer, 0)
+let interactions.stride.0 = _halide_buffer_get_stride((halide_buffer_t *)interactions.buffer, 0)
+let interactions.min.1 = _halide_buffer_get_min((halide_buffer_t *)interactions.buffer, 1)
+let interactions.extent.1 = _halide_buffer_get_extent((halide_buffer_t *)interactions.buffer, 1)
+let interactions.stride.1 = _halide_buffer_get_stride((halide_buffer_t *)interactions.buffer, 1)
+let pairlist = (void *)_halide_buffer_get_host((halide_buffer_t *)pairlist.buffer)
+let pairlist.type = (uint32)_halide_buffer_get_type((halide_buffer_t *)pairlist.buffer)
+let pairlist.device_dirty = (uint1)_halide_buffer_get_device_dirty((halide_buffer_t *)pairlist.buffer)
+let pairlist.dimensions = _halide_buffer_get_dimensions((halide_buffer_t *)pairlist.buffer)
+let pairlist.min.0 = _halide_buffer_get_min((halide_buffer_t *)pairlist.buffer, 0)
+let pairlist.extent.0 = _halide_buffer_get_extent((halide_buffer_t *)pairlist.buffer, 0)
+let pairlist.stride.0 = _halide_buffer_get_stride((halide_buffer_t *)pairlist.buffer, 0)
+let pairnumsum = (void *)_halide_buffer_get_host((halide_buffer_t *)pairnumsum.buffer)
+let pairnumsum.type = (uint32)_halide_buffer_get_type((halide_buffer_t *)pairnumsum.buffer)
+let pairnumsum.device_dirty = (uint1)_halide_buffer_get_device_dirty((halide_buffer_t *)pairnumsum.buffer)
+let pairnumsum.dimensions = _halide_buffer_get_dimensions((halide_buffer_t *)pairnumsum.buffer)
+let pairnumsum.min.0 = _halide_buffer_get_min((halide_buffer_t *)pairnumsum.buffer, 0)
+let pairnumsum.extent.0 = _halide_buffer_get_extent((halide_buffer_t *)pairnumsum.buffer, 0)
+let pairnumsum.stride.0 = _halide_buffer_get_stride((halide_buffer_t *)pairnumsum.buffer, 0)
+let y = (void *)_halide_buffer_get_host((halide_buffer_t *)y.buffer)
+let y.type = (uint32)_halide_buffer_get_type((halide_buffer_t *)y.buffer)
+let y.device_dirty = (uint1)_halide_buffer_get_device_dirty((halide_buffer_t *)y.buffer)
+let y.dimensions = _halide_buffer_get_dimensions((halide_buffer_t *)y.buffer)
+let y.min.0 = _halide_buffer_get_min((halide_buffer_t *)y.buffer, 0)
+let y.extent.0 = _halide_buffer_get_extent((halide_buffer_t *)y.buffer, 0)
+let y.stride.0 = _halide_buffer_get_stride((halide_buffer_t *)y.buffer, 0)
+let y.min.1 = _halide_buffer_get_min((halide_buffer_t *)y.buffer, 1)
+let y.extent.1 = _halide_buffer_get_extent((halide_buffer_t *)y.buffer, 1)
+let y.stride.1 = _halide_buffer_get_stride((halide_buffer_t *)y.buffer, 1)
+let eatom3_f.s0.inverse basis function index.max = max(natom + -1, adegreep)
+let eatom3_f.s0.rbf_v.max.s = max(nelemsCombos, tdegree2)
+let forceij_f.s2.basis function index.max.s = max(tdegree1, tdegree2)
+let eatom3.stride.4.required = ((natom*nelemsCombos)*nelems)*(adegreep + 1)
+let y.extent.0.required.s = max(natom*nl, natom)
+assert(!(uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)Phi1.buffer) || (bdegree <= nbesselparams), halide_error_constraints_make_required_region_smaller("Input buffer Phi1", 0, 0, nbesselparams + -1, 0, bdegree + -1))
+assert(!(uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)Phi1.buffer) || (nbesselparams <= bdegree), halide_error_constraints_make_required_region_smaller("Input buffer Phi1", 1, 0, bdegree + -1, 0, nbesselparams + -1))
+assert(!(uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)alist.buffer) || (1 <= (natom*nl)), let t4233 = (natom*nl) in halide_error_constraints_make_required_region_smaller("Input buffer alist", 0, 0, t4233 + -1, 0, max(t4233, 1) + -1))
+assert(!(uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)atomtype.buffer) || (1 <= natom), halide_error_constraints_make_required_region_smaller("Input buffer atomtype", 0, 0, natom + -1, 0, 0))
+assert(!(uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)interactions.buffer) || (1 <= nelems), halide_error_constraints_make_required_region_smaller("Input buffer interactions", 0, 0, nelems + -1, 0, 0))
+assert(!(uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)y.buffer) || (max(y.extent.0.required.s, 1) <= (natom*nl)), halide_error_constraints_make_required_region_smaller("Input buffer y", 0, 0, (natom*nl) + -1, 0, max(y.extent.0.required.s, 1) + -1))
+if ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)Phi1.buffer)) {
+ (halide_buffer_t *)_halide_buffer_init((halide_buffer_t *)Phi1.buffer, (halide_dimension_t *)_halide_buffer_get_shape((halide_buffer_t *)Phi1.buffer), (void *)reinterpret((uint64)0), (uint64)0, (halide_device_interface_t *)reinterpret((uint64)0), 2, 64, 3, (halide_dimension_t *)make_struct(0, nbesselparams, 1, 0, 0, bdegree, bdegree, 0, 0, forceij_f.s2.basis function index.max.s, bdegree*nbesselparams, 0), (uint64)0)
+}
+if ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)Phi2.buffer)) {
+ (halide_buffer_t *)_halide_buffer_init((halide_buffer_t *)Phi2.buffer, (halide_dimension_t *)_halide_buffer_get_shape((halide_buffer_t *)Phi2.buffer), (void *)reinterpret((uint64)0), (uint64)0, (halide_device_interface_t *)reinterpret((uint64)0), 2, 64, 2, (halide_dimension_t *)make_struct(0, adegree, 1, 0, 0, forceij_f.s2.basis function index.max.s, adegree, 0), (uint64)0)
+}
+if ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)alist.buffer)) {
+ (halide_buffer_t *)_halide_buffer_init((halide_buffer_t *)alist.buffer, (halide_dimension_t *)_halide_buffer_get_shape((halide_buffer_t *)alist.buffer), (void *)reinterpret((uint64)0), (uint64)0, (halide_device_interface_t *)reinterpret((uint64)0), 0, 32, 1, (halide_dimension_t *)make_struct(0, natom*nl, 1, 0), (uint64)0)
+}
+if ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)atomtype.buffer)) {
+ (halide_buffer_t *)_halide_buffer_init((halide_buffer_t *)atomtype.buffer, (halide_dimension_t *)_halide_buffer_get_shape((halide_buffer_t *)atomtype.buffer), (void *)reinterpret((uint64)0), (uint64)0, (halide_device_interface_t *)reinterpret((uint64)0), 0, 32, 1, (halide_dimension_t *)make_struct(0, natom, 1, 0), (uint64)0)
+}
+if ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)besselparams.buffer)) {
+ (halide_buffer_t *)_halide_buffer_init((halide_buffer_t *)besselparams.buffer, (halide_dimension_t *)_halide_buffer_get_shape((halide_buffer_t *)besselparams.buffer), (void *)reinterpret((uint64)0), (uint64)0, (halide_device_interface_t *)reinterpret((uint64)0), 2, 64, 1, (halide_dimension_t *)make_struct(0, nbesselparams, 1, 0), (uint64)0)
+}
+if ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)eatom1.buffer)) {
+ (halide_buffer_t *)_halide_buffer_init((halide_buffer_t *)eatom1.buffer, (halide_dimension_t *)_halide_buffer_get_shape((halide_buffer_t *)eatom1.buffer), (void *)reinterpret((uint64)0), (uint64)0, (halide_device_interface_t *)reinterpret((uint64)0), 2, 64, 2, (halide_dimension_t *)make_struct(0, natom, 1, 0, 0, nelems, natom, 0), (uint64)0)
+}
+if ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)eatom2.buffer)) {
+ (halide_buffer_t *)_halide_buffer_init((halide_buffer_t *)eatom2.buffer, (halide_dimension_t *)_halide_buffer_get_shape((halide_buffer_t *)eatom2.buffer), (void *)reinterpret((uint64)0), (uint64)0, (halide_device_interface_t *)reinterpret((uint64)0), 2, 64, 3, (halide_dimension_t *)make_struct(0, natom, 1, 0, 0, nelemsCombos, natom, 0, 0, tdegree1, natom*nelemsCombos, 0), (uint64)0)
+}
+if ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)eatom3.buffer)) {
+ let t4234 = (natom*nelemsCombos) in (halide_buffer_t *)_halide_buffer_init((halide_buffer_t *)eatom3.buffer, (halide_dimension_t *)_halide_buffer_get_shape((halide_buffer_t *)eatom3.buffer), (void *)reinterpret((uint64)0), (uint64)0, (halide_device_interface_t *)reinterpret((uint64)0), 2, 64, 5, (halide_dimension_t *)make_struct(0, natom, 1, 0, 0, nelemsCombos, natom, 0, 0, nelems, t4234, 0, 0, adegreep + 1, t4234*nelems, 0, 0, tdegree2, eatom3.stride.4.required, 0), (uint64)0)
+}
+if ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)fatom1.buffer)) {
+ (halide_buffer_t *)_halide_buffer_init((halide_buffer_t *)fatom1.buffer, (halide_dimension_t *)_halide_buffer_get_shape((halide_buffer_t *)fatom1.buffer), (void *)reinterpret((uint64)0), (uint64)0, (halide_device_interface_t *)reinterpret((uint64)0), 2, 64, 3, (halide_dimension_t *)make_struct(0, natom, 1, 0, 0, nelems, natom, 0, 0, 3, natom*nelems, 0), (uint64)0)
+}
+if ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)fatom2.buffer)) {
+ (halide_buffer_t *)_halide_buffer_init((halide_buffer_t *)fatom2.buffer, (halide_dimension_t *)_halide_buffer_get_shape((halide_buffer_t *)fatom2.buffer), (void *)reinterpret((uint64)0), (uint64)0, (halide_device_interface_t *)reinterpret((uint64)0), 2, 64, 4, (halide_dimension_t *)make_struct(0, 3, 1, 0, 0, natom, 3, 0, 0, nelemsCombos, natom*3, 0, 0, tdegree1, (natom*nelemsCombos)*3, 0), (uint64)0)
+}
+if ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)fatom3.buffer)) {
+ let t4235 = (natom*nelemsCombos) in (halide_buffer_t *)_halide_buffer_init((halide_buffer_t *)fatom3.buffer, (halide_dimension_t *)_halide_buffer_get_shape((halide_buffer_t *)fatom3.buffer), (void *)reinterpret((uint64)0), (uint64)0, (halide_device_interface_t *)reinterpret((uint64)0), 2, 64, 6, (halide_dimension_t *)make_struct(0, 3, 1, 0, 0, natom, 3, 0, 0, nelemsCombos, natom*3, 0, 0, nelems, t4235*3, 0, 0, adegreep + 1, (t4235*nelems)*3, 0, 0, tdegree2, eatom3.stride.4.required*3, 0), (uint64)0)
+}
+if ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)interactions.buffer)) {
+ (halide_buffer_t *)_halide_buffer_init((halide_buffer_t *)interactions.buffer, (halide_dimension_t *)_halide_buffer_get_shape((halide_buffer_t *)interactions.buffer), (void *)reinterpret((uint64)0), (uint64)0, (halide_device_interface_t *)reinterpret((uint64)0), 0, 32, 2, (halide_dimension_t *)make_struct(0, nelems, 1, 0, 0, nelems, max(nelems, 1), 0), (uint64)0)
+}
+if ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)pairlist.buffer)) {
+ (halide_buffer_t *)_halide_buffer_init((halide_buffer_t *)pairlist.buffer, (halide_dimension_t *)_halide_buffer_get_shape((halide_buffer_t *)pairlist.buffer), (void *)reinterpret((uint64)0), (uint64)0, (halide_device_interface_t *)reinterpret((uint64)0), 0, 32, 1, (halide_dimension_t *)make_struct(0, npairs, 1, 0), (uint64)0)
+}
+if ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)pairnumsum.buffer)) {
+ (halide_buffer_t *)_halide_buffer_init((halide_buffer_t *)pairnumsum.buffer, (halide_dimension_t *)_halide_buffer_get_shape((halide_buffer_t *)pairnumsum.buffer), (void *)reinterpret((uint64)0), (uint64)0, (halide_device_interface_t *)reinterpret((uint64)0), 0, 32, 1, (halide_dimension_t *)make_struct(0, natom + 1, 1, 0), (uint64)0)
+}
+if ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)y.buffer)) {
+ (halide_buffer_t *)_halide_buffer_init((halide_buffer_t *)y.buffer, (halide_dimension_t *)_halide_buffer_get_shape((halide_buffer_t *)y.buffer), (void *)reinterpret((uint64)0), (uint64)0, (halide_device_interface_t *)reinterpret((uint64)0), 2, 64, 2, (halide_dimension_t *)make_struct(0, natom*nl, 1, 0, 0, 3, max(y.extent.0.required.s, 1), 0), (uint64)0)
+}
+if (!((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)y.buffer) || ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)pairnumsum.buffer) || ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)pairlist.buffer) || ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)interactions.buffer) || ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)fatom3.buffer) || ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)fatom2.buffer) || ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)fatom1.buffer) || ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)eatom3.buffer) || ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)eatom2.buffer) || ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)eatom1.buffer) || ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)besselparams.buffer) || ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)atomtype.buffer) || ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)alist.buffer) || ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)Phi1.buffer) || (uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)Phi2.buffer)))))))))))))))) {
+ assert(Phi1.type == (uint32)81922, halide_error_bad_type("Input buffer Phi1", Phi1.type, (uint32)81922))
+ assert(Phi1.dimensions == 3, halide_error_bad_dimensions("Input buffer Phi1", Phi1.dimensions, 3))
+ assert(Phi2.type == (uint32)81922, halide_error_bad_type("Input buffer Phi2", Phi2.type, (uint32)81922))
+ assert(Phi2.dimensions == 2, halide_error_bad_dimensions("Input buffer Phi2", Phi2.dimensions, 2))
+ assert(alist.type == (uint32)73728, halide_error_bad_type("Input buffer alist", alist.type, (uint32)73728))
+ assert(alist.dimensions == 1, halide_error_bad_dimensions("Input buffer alist", alist.dimensions, 1))
+ assert(atomtype.type == (uint32)73728, halide_error_bad_type("Input buffer atomtype", atomtype.type, (uint32)73728))
+ assert(atomtype.dimensions == 1, halide_error_bad_dimensions("Input buffer atomtype", atomtype.dimensions, 1))
+ assert(besselparams.type == (uint32)81922, halide_error_bad_type("Input buffer besselparams", besselparams.type, (uint32)81922))
+ assert(besselparams.dimensions == 1, halide_error_bad_dimensions("Input buffer besselparams", besselparams.dimensions, 1))
+ assert(eatom1.type == (uint32)81922, halide_error_bad_type("Output buffer eatom1", eatom1.type, (uint32)81922))
+ assert(eatom1.dimensions == 2, halide_error_bad_dimensions("Output buffer eatom1", eatom1.dimensions, 2))
+ assert(eatom2.type == (uint32)81922, halide_error_bad_type("Output buffer eatom2", eatom2.type, (uint32)81922))
+ assert(eatom2.dimensions == 3, halide_error_bad_dimensions("Output buffer eatom2", eatom2.dimensions, 3))
+ assert(eatom3.type == (uint32)81922, halide_error_bad_type("Output buffer eatom3", eatom3.type, (uint32)81922))
+ assert(eatom3.dimensions == 5, halide_error_bad_dimensions("Output buffer eatom3", eatom3.dimensions, 5))
+ assert(fatom1.type == (uint32)81922, halide_error_bad_type("Output buffer fatom1", fatom1.type, (uint32)81922))
+ assert(fatom1.dimensions == 3, halide_error_bad_dimensions("Output buffer fatom1", fatom1.dimensions, 3))
+ assert(fatom2.type == (uint32)81922, halide_error_bad_type("Output buffer fatom2", fatom2.type, (uint32)81922))
+ assert(fatom2.dimensions == 4, halide_error_bad_dimensions("Output buffer fatom2", fatom2.dimensions, 4))
+ assert(fatom3.type == (uint32)81922, halide_error_bad_type("Output buffer fatom3", fatom3.type, (uint32)81922))
+ assert(fatom3.dimensions == 6, halide_error_bad_dimensions("Output buffer fatom3", fatom3.dimensions, 6))
+ assert(interactions.type == (uint32)73728, halide_error_bad_type("Input buffer interactions", interactions.type, (uint32)73728))
+ assert(interactions.dimensions == 2, halide_error_bad_dimensions("Input buffer interactions", interactions.dimensions, 2))
+ assert(pairlist.type == (uint32)73728, halide_error_bad_type("Input buffer pairlist", pairlist.type, (uint32)73728))
+ assert(pairlist.dimensions == 1, halide_error_bad_dimensions("Input buffer pairlist", pairlist.dimensions, 1))
+ assert(pairnumsum.type == (uint32)73728, halide_error_bad_type("Input buffer pairnumsum", pairnumsum.type, (uint32)73728))
+ assert(pairnumsum.dimensions == 1, halide_error_bad_dimensions("Input buffer pairnumsum", pairnumsum.dimensions, 1))
+ assert(y.type == (uint32)81922, halide_error_bad_type("Input buffer y", y.type, (uint32)81922))
+ assert(y.dimensions == 2, halide_error_bad_dimensions("Input buffer y", y.dimensions, 2))
+ assert((Phi1.min.0 <= 0) && (bdegree <= (Phi1.extent.0 + Phi1.min.0)), halide_error_access_out_of_bounds("Input buffer Phi1", 0, 0, bdegree + -1, Phi1.min.0, (Phi1.extent.0 + Phi1.min.0) + -1))
+ assert(0 <= Phi1.extent.0, halide_error_buffer_extents_negative("Input buffer Phi1", 0, Phi1.extent.0))
+ assert((Phi1.min.1 <= 0) && (nbesselparams <= (Phi1.extent.1 + Phi1.min.1)), halide_error_access_out_of_bounds("Input buffer Phi1", 1, 0, nbesselparams + -1, Phi1.min.1, (Phi1.extent.1 + Phi1.min.1) + -1))
+ assert(0 <= Phi1.extent.1, halide_error_buffer_extents_negative("Input buffer Phi1", 1, Phi1.extent.1))
+ assert((Phi1.min.2 <= 0) && (forceij_f.s2.basis function index.max.s <= (Phi1.extent.2 + Phi1.min.2)), halide_error_access_out_of_bounds("Input buffer Phi1", 2, 0, forceij_f.s2.basis function index.max.s + -1, Phi1.min.2, (Phi1.extent.2 + Phi1.min.2) + -1))
+ assert(0 <= Phi1.extent.2, halide_error_buffer_extents_negative("Input buffer Phi1", 2, Phi1.extent.2))
+ assert((Phi2.min.0 <= 0) && (adegree <= (Phi2.extent.0 + Phi2.min.0)), halide_error_access_out_of_bounds("Input buffer Phi2", 0, 0, adegree + -1, Phi2.min.0, (Phi2.extent.0 + Phi2.min.0) + -1))
+ assert(0 <= Phi2.extent.0, halide_error_buffer_extents_negative("Input buffer Phi2", 0, Phi2.extent.0))
+ assert((Phi2.min.1 <= 0) && (forceij_f.s2.basis function index.max.s <= (Phi2.extent.1 + Phi2.min.1)), halide_error_access_out_of_bounds("Input buffer Phi2", 1, 0, forceij_f.s2.basis function index.max.s + -1, Phi2.min.1, (Phi2.extent.1 + Phi2.min.1) + -1))
+ assert(0 <= Phi2.extent.1, halide_error_buffer_extents_negative("Input buffer Phi2", 1, Phi2.extent.1))
+ assert((alist.min.0 <= 0) && (max(natom*nl, 1) <= (alist.extent.0 + alist.min.0)), halide_error_access_out_of_bounds("Input buffer alist", 0, 0, max(natom*nl, 1) + -1, alist.min.0, (alist.extent.0 + alist.min.0) + -1))
+ assert(0 <= alist.extent.0, halide_error_buffer_extents_negative("Input buffer alist", 0, alist.extent.0))
+ assert((atomtype.min.0 <= 0) && (max(natom, 1) <= (atomtype.extent.0 + atomtype.min.0)), halide_error_access_out_of_bounds("Input buffer atomtype", 0, 0, max(natom, 1) + -1, atomtype.min.0, (atomtype.extent.0 + atomtype.min.0) + -1))
+ assert(0 <= atomtype.extent.0, halide_error_buffer_extents_negative("Input buffer atomtype", 0, atomtype.extent.0))
+ assert((besselparams.min.0 <= 0) && (nbesselparams <= (besselparams.extent.0 + besselparams.min.0)), halide_error_access_out_of_bounds("Input buffer besselparams", 0, 0, nbesselparams + -1, besselparams.min.0, (besselparams.extent.0 + besselparams.min.0) + -1))
+ assert(0 <= besselparams.extent.0, halide_error_buffer_extents_negative("Input buffer besselparams", 0, besselparams.extent.0))
+ assert((eatom1.min.0 <= 0) && (natom <= (eatom1.extent.0 + eatom1.min.0)), halide_error_access_out_of_bounds("Output buffer eatom1", 0, 0, natom + -1, eatom1.min.0, (eatom1.extent.0 + eatom1.min.0) + -1))
+ assert(0 <= eatom1.extent.0, halide_error_buffer_extents_negative("Output buffer eatom1", 0, eatom1.extent.0))
+ assert((eatom1.min.1 <= 0) && (nelems <= (eatom1.extent.1 + eatom1.min.1)), halide_error_access_out_of_bounds("Output buffer eatom1", 1, 0, nelems + -1, eatom1.min.1, (eatom1.extent.1 + eatom1.min.1) + -1))
+ assert(0 <= eatom1.extent.1, halide_error_buffer_extents_negative("Output buffer eatom1", 1, eatom1.extent.1))
+ assert((eatom2.min.0 <= 0) && (natom <= (eatom2.extent.0 + eatom2.min.0)), halide_error_access_out_of_bounds("Output buffer eatom2", 0, 0, natom + -1, eatom2.min.0, (eatom2.extent.0 + eatom2.min.0) + -1))
+ assert(0 <= eatom2.extent.0, halide_error_buffer_extents_negative("Output buffer eatom2", 0, eatom2.extent.0))
+ assert((eatom2.min.1 <= 0) && (nelemsCombos <= (eatom2.extent.1 + eatom2.min.1)), halide_error_access_out_of_bounds("Output buffer eatom2", 1, 0, nelemsCombos + -1, eatom2.min.1, (eatom2.extent.1 + eatom2.min.1) + -1))
+ assert(0 <= eatom2.extent.1, halide_error_buffer_extents_negative("Output buffer eatom2", 1, eatom2.extent.1))
+ assert((eatom2.min.2 <= 0) && (tdegree1 <= (eatom2.extent.2 + eatom2.min.2)), halide_error_access_out_of_bounds("Output buffer eatom2", 2, 0, tdegree1 + -1, eatom2.min.2, (eatom2.extent.2 + eatom2.min.2) + -1))
+ assert(0 <= eatom2.extent.2, halide_error_buffer_extents_negative("Output buffer eatom2", 2, eatom2.extent.2))
+ assert((eatom3.min.0 <= 0) && (natom <= (eatom3.extent.0 + eatom3.min.0)), halide_error_access_out_of_bounds("Output buffer eatom3", 0, 0, natom + -1, eatom3.min.0, (eatom3.extent.0 + eatom3.min.0) + -1))
+ assert(0 <= eatom3.extent.0, halide_error_buffer_extents_negative("Output buffer eatom3", 0, eatom3.extent.0))
+ assert((eatom3.min.1 <= 0) && (nelemsCombos <= (eatom3.extent.1 + eatom3.min.1)), halide_error_access_out_of_bounds("Output buffer eatom3", 1, 0, nelemsCombos + -1, eatom3.min.1, (eatom3.extent.1 + eatom3.min.1) + -1))
+ assert(0 <= eatom3.extent.1, halide_error_buffer_extents_negative("Output buffer eatom3", 1, eatom3.extent.1))
+ assert((eatom3.min.2 <= 0) && (nelems <= (eatom3.extent.2 + eatom3.min.2)), halide_error_access_out_of_bounds("Output buffer eatom3", 2, 0, nelems + -1, eatom3.min.2, (eatom3.extent.2 + eatom3.min.2) + -1))
+ assert(0 <= eatom3.extent.2, halide_error_buffer_extents_negative("Output buffer eatom3", 2, eatom3.extent.2))
+ assert((eatom3.min.3 <= 0) && ((adegreep + 1) <= (eatom3.extent.3 + eatom3.min.3)), halide_error_access_out_of_bounds("Output buffer eatom3", 3, 0, adegreep, eatom3.min.3, (eatom3.extent.3 + eatom3.min.3) + -1))
+ assert(0 <= eatom3.extent.3, halide_error_buffer_extents_negative("Output buffer eatom3", 3, eatom3.extent.3))
+ assert((eatom3.min.4 <= 0) && (tdegree2 <= (eatom3.extent.4 + eatom3.min.4)), halide_error_access_out_of_bounds("Output buffer eatom3", 4, 0, tdegree2 + -1, eatom3.min.4, (eatom3.extent.4 + eatom3.min.4) + -1))
+ assert(0 <= eatom3.extent.4, halide_error_buffer_extents_negative("Output buffer eatom3", 4, eatom3.extent.4))
+ assert((fatom1.min.0 <= 0) && (natom <= (fatom1.extent.0 + fatom1.min.0)), halide_error_access_out_of_bounds("Output buffer fatom1", 0, 0, natom + -1, fatom1.min.0, (fatom1.extent.0 + fatom1.min.0) + -1))
+ assert(0 <= fatom1.extent.0, halide_error_buffer_extents_negative("Output buffer fatom1", 0, fatom1.extent.0))
+ assert((fatom1.min.1 <= 0) && (nelems <= (fatom1.extent.1 + fatom1.min.1)), halide_error_access_out_of_bounds("Output buffer fatom1", 1, 0, nelems + -1, fatom1.min.1, (fatom1.extent.1 + fatom1.min.1) + -1))
+ assert(0 <= fatom1.extent.1, halide_error_buffer_extents_negative("Output buffer fatom1", 1, fatom1.extent.1))
+ assert((fatom1.min.2 <= 0) && (3 <= (fatom1.extent.2 + fatom1.min.2)), halide_error_access_out_of_bounds("Output buffer fatom1", 2, 0, 2, fatom1.min.2, (fatom1.extent.2 + fatom1.min.2) + -1))
+ assert(0 <= fatom1.extent.2, halide_error_buffer_extents_negative("Output buffer fatom1", 2, fatom1.extent.2))
+ assert((fatom2.min.0 <= 0) && (3 <= (fatom2.extent.0 + fatom2.min.0)), halide_error_access_out_of_bounds("Output buffer fatom2", 0, 0, 2, fatom2.min.0, (fatom2.extent.0 + fatom2.min.0) + -1))
+ assert(0 <= fatom2.extent.0, halide_error_buffer_extents_negative("Output buffer fatom2", 0, fatom2.extent.0))
+ assert((fatom2.min.1 <= 0) && (natom <= (fatom2.extent.1 + fatom2.min.1)), halide_error_access_out_of_bounds("Output buffer fatom2", 1, 0, natom + -1, fatom2.min.1, (fatom2.extent.1 + fatom2.min.1) + -1))
+ assert(0 <= fatom2.extent.1, halide_error_buffer_extents_negative("Output buffer fatom2", 1, fatom2.extent.1))
+ assert((fatom2.min.2 <= 0) && (nelemsCombos <= (fatom2.extent.2 + fatom2.min.2)), halide_error_access_out_of_bounds("Output buffer fatom2", 2, 0, nelemsCombos + -1, fatom2.min.2, (fatom2.extent.2 + fatom2.min.2) + -1))
+ assert(0 <= fatom2.extent.2, halide_error_buffer_extents_negative("Output buffer fatom2", 2, fatom2.extent.2))
+ assert((fatom2.min.3 <= 0) && (tdegree1 <= (fatom2.extent.3 + fatom2.min.3)), halide_error_access_out_of_bounds("Output buffer fatom2", 3, 0, tdegree1 + -1, fatom2.min.3, (fatom2.extent.3 + fatom2.min.3) + -1))
+ assert(0 <= fatom2.extent.3, halide_error_buffer_extents_negative("Output buffer fatom2", 3, fatom2.extent.3))
+ assert((fatom3.min.0 <= 0) && (3 <= (fatom3.extent.0 + fatom3.min.0)), halide_error_access_out_of_bounds("Output buffer fatom3", 0, 0, 2, fatom3.min.0, (fatom3.extent.0 + fatom3.min.0) + -1))
+ assert(0 <= fatom3.extent.0, halide_error_buffer_extents_negative("Output buffer fatom3", 0, fatom3.extent.0))
+ assert((fatom3.min.1 <= 0) && (natom <= (fatom3.extent.1 + fatom3.min.1)), halide_error_access_out_of_bounds("Output buffer fatom3", 1, 0, natom + -1, fatom3.min.1, (fatom3.extent.1 + fatom3.min.1) + -1))
+ assert(0 <= fatom3.extent.1, halide_error_buffer_extents_negative("Output buffer fatom3", 1, fatom3.extent.1))
+ assert((fatom3.min.2 <= 0) && (nelemsCombos <= (fatom3.extent.2 + fatom3.min.2)), halide_error_access_out_of_bounds("Output buffer fatom3", 2, 0, nelemsCombos + -1, fatom3.min.2, (fatom3.extent.2 + fatom3.min.2) + -1))
+ assert(0 <= fatom3.extent.2, halide_error_buffer_extents_negative("Output buffer fatom3", 2, fatom3.extent.2))
+ assert((fatom3.min.3 <= 0) && (nelems <= (fatom3.extent.3 + fatom3.min.3)), halide_error_access_out_of_bounds("Output buffer fatom3", 3, 0, nelems + -1, fatom3.min.3, (fatom3.extent.3 + fatom3.min.3) + -1))
+ assert(0 <= fatom3.extent.3, halide_error_buffer_extents_negative("Output buffer fatom3", 3, fatom3.extent.3))
+ assert((fatom3.min.4 <= 0) && ((adegreep + 1) <= (fatom3.extent.4 + fatom3.min.4)), halide_error_access_out_of_bounds("Output buffer fatom3", 4, 0, adegreep, fatom3.min.4, (fatom3.extent.4 + fatom3.min.4) + -1))
+ assert(0 <= fatom3.extent.4, halide_error_buffer_extents_negative("Output buffer fatom3", 4, fatom3.extent.4))
+ assert((fatom3.min.5 <= 0) && (tdegree2 <= (fatom3.extent.5 + fatom3.min.5)), halide_error_access_out_of_bounds("Output buffer fatom3", 5, 0, tdegree2 + -1, fatom3.min.5, (fatom3.extent.5 + fatom3.min.5) + -1))
+ assert(0 <= fatom3.extent.5, halide_error_buffer_extents_negative("Output buffer fatom3", 5, fatom3.extent.5))
+ assert((interactions.min.0 <= 0) && (max(nelems, 1) <= (interactions.extent.0 + interactions.min.0)), halide_error_access_out_of_bounds("Input buffer interactions", 0, 0, max(nelems, 1) + -1, interactions.min.0, (interactions.extent.0 + interactions.min.0) + -1))
+ assert(0 <= interactions.extent.0, halide_error_buffer_extents_negative("Input buffer interactions", 0, interactions.extent.0))
+ assert((interactions.min.1 <= 0) && (max(nelems, 1) <= (interactions.extent.1 + interactions.min.1)), halide_error_access_out_of_bounds("Input buffer interactions", 1, 0, max(nelems, 1) + -1, interactions.min.1, (interactions.extent.1 + interactions.min.1) + -1))
+ assert(0 <= interactions.extent.1, halide_error_buffer_extents_negative("Input buffer interactions", 1, interactions.extent.1))
+ assert((pairlist.min.0 <= 0) && (npairs <= (pairlist.extent.0 + pairlist.min.0)), halide_error_access_out_of_bounds("Input buffer pairlist", 0, 0, npairs + -1, pairlist.min.0, (pairlist.extent.0 + pairlist.min.0) + -1))
+ assert(0 <= pairlist.extent.0, halide_error_buffer_extents_negative("Input buffer pairlist", 0, pairlist.extent.0))
+ assert((pairnumsum.min.0 <= 0) && ((natom + 1) <= (pairnumsum.extent.0 + pairnumsum.min.0)), halide_error_access_out_of_bounds("Input buffer pairnumsum", 0, 0, natom, pairnumsum.min.0, (pairnumsum.extent.0 + pairnumsum.min.0) + -1))
+ assert(0 <= pairnumsum.extent.0, halide_error_buffer_extents_negative("Input buffer pairnumsum", 0, pairnumsum.extent.0))
+ assert((y.min.0 <= 0) && (max(y.extent.0.required.s, 1) <= (y.extent.0 + y.min.0)), halide_error_access_out_of_bounds("Input buffer y", 0, 0, max(y.extent.0.required.s, 1) + -1, y.min.0, (y.extent.0 + y.min.0) + -1))
+ assert(0 <= y.extent.0, halide_error_buffer_extents_negative("Input buffer y", 0, y.extent.0))
+ assert((y.min.1 <= 0) && (3 <= (y.extent.1 + y.min.1)), halide_error_access_out_of_bounds("Input buffer y", 1, 0, 2, y.min.1, (y.extent.1 + y.min.1) + -1))
+ assert(0 <= y.extent.1, halide_error_buffer_extents_negative("Input buffer y", 1, y.extent.1))
+ assert(Phi1.stride.0 == 1, halide_error_constraint_violated("Phi1.stride.0", Phi1.stride.0, "1", 1))
+ assert(Phi1.min.0 == 0, halide_error_constraint_violated("Phi1.min.0", Phi1.min.0, "0", 0))
+ assert(Phi1.extent.0 == nbesselparams, halide_error_constraint_violated("Phi1.extent.0", Phi1.extent.0, "nbesselparams", nbesselparams))
+ assert(Phi1.min.1 == 0, halide_error_constraint_violated("Phi1.min.1", Phi1.min.1, "0", 0))
+ assert(Phi1.extent.1 == bdegree, halide_error_constraint_violated("Phi1.extent.1", Phi1.extent.1, "bdegree", bdegree))
+ assert(Phi1.min.2 == 0, halide_error_constraint_violated("Phi1.min.2", Phi1.min.2, "0", 0))
+ assert(Phi1.extent.2 == forceij_f.s2.basis function index.max.s, halide_error_constraint_violated("Phi1.extent.2", Phi1.extent.2, "max(tdegree1, tdegree2)", forceij_f.s2.basis function index.max.s))
+ assert(Phi2.stride.0 == 1, halide_error_constraint_violated("Phi2.stride.0", Phi2.stride.0, "1", 1))
+ assert(Phi2.min.0 == 0, halide_error_constraint_violated("Phi2.min.0", Phi2.min.0, "0", 0))
+ assert(Phi2.extent.0 == adegree, halide_error_constraint_violated("Phi2.extent.0", Phi2.extent.0, "adegree", adegree))
+ assert(Phi2.min.1 == 0, halide_error_constraint_violated("Phi2.min.1", Phi2.min.1, "0", 0))
+ assert(Phi2.extent.1 == forceij_f.s2.basis function index.max.s, halide_error_constraint_violated("Phi2.extent.1", Phi2.extent.1, "max(tdegree1, tdegree2)", forceij_f.s2.basis function index.max.s))
+ assert(alist.stride.0 == 1, halide_error_constraint_violated("alist.stride.0", alist.stride.0, "1", 1))
+ assert(alist.min.0 == 0, halide_error_constraint_violated("alist.min.0", alist.min.0, "0", 0))
+ assert(alist.extent.0 == (natom*nl), halide_error_constraint_violated("alist.extent.0", alist.extent.0, "(nl*natom)", natom*nl))
+ assert(atomtype.stride.0 == 1, halide_error_constraint_violated("atomtype.stride.0", atomtype.stride.0, "1", 1))
+ assert(atomtype.min.0 == 0, halide_error_constraint_violated("atomtype.min.0", atomtype.min.0, "0", 0))
+ assert(atomtype.extent.0 == natom, halide_error_constraint_violated("atomtype.extent.0", atomtype.extent.0, "natom", natom))
+ assert(besselparams.stride.0 == 1, halide_error_constraint_violated("besselparams.stride.0", besselparams.stride.0, "1", 1))
+ assert(besselparams.min.0 == 0, halide_error_constraint_violated("besselparams.min.0", besselparams.min.0, "0", 0))
+ assert(besselparams.extent.0 == nbesselparams, halide_error_constraint_violated("besselparams.extent.0", besselparams.extent.0, "nbesselparams", nbesselparams))
+ assert(eatom1.stride.0 == 1, halide_error_constraint_violated("eatom1.stride.0", eatom1.stride.0, "1", 1))
+ assert(eatom1.min.0 == 0, halide_error_constraint_violated("eatom1.min.0", eatom1.min.0, "0", 0))
+ assert(eatom1.extent.0 == natom, halide_error_constraint_violated("eatom1.extent.0", eatom1.extent.0, "natom", natom))
+ assert(eatom1.min.1 == 0, halide_error_constraint_violated("eatom1.min.1", eatom1.min.1, "0", 0))
+ assert(eatom1.extent.1 == nelems, halide_error_constraint_violated("eatom1.extent.1", eatom1.extent.1, "nelems", nelems))
+ assert(eatom2.stride.0 == 1, halide_error_constraint_violated("eatom2.stride.0", eatom2.stride.0, "1", 1))
+ assert(eatom2.min.0 == 0, halide_error_constraint_violated("eatom2.min.0", eatom2.min.0, "0", 0))
+ assert(eatom2.extent.0 == natom, halide_error_constraint_violated("eatom2.extent.0", eatom2.extent.0, "natom", natom))
+ assert(eatom2.min.1 == 0, halide_error_constraint_violated("eatom2.min.1", eatom2.min.1, "0", 0))
+ assert(eatom2.extent.1 == nelemsCombos, halide_error_constraint_violated("eatom2.extent.1", eatom2.extent.1, "nelemsCombos", nelemsCombos))
+ assert(eatom2.min.2 == 0, halide_error_constraint_violated("eatom2.min.2", eatom2.min.2, "0", 0))
+ assert(eatom2.extent.2 == tdegree1, halide_error_constraint_violated("eatom2.extent.2", eatom2.extent.2, "tdegree1", tdegree1))
+ assert(eatom3.stride.0 == 1, halide_error_constraint_violated("eatom3.stride.0", eatom3.stride.0, "1", 1))
+ assert(eatom3.min.0 == 0, halide_error_constraint_violated("eatom3.min.0", eatom3.min.0, "0", 0))
+ assert(eatom3.extent.0 == natom, halide_error_constraint_violated("eatom3.extent.0", eatom3.extent.0, "natom", natom))
+ assert(eatom3.min.1 == 0, halide_error_constraint_violated("eatom3.min.1", eatom3.min.1, "0", 0))
+ assert(eatom3.extent.1 == nelemsCombos, halide_error_constraint_violated("eatom3.extent.1", eatom3.extent.1, "nelemsCombos", nelemsCombos))
+ assert(eatom3.min.2 == 0, halide_error_constraint_violated("eatom3.min.2", eatom3.min.2, "0", 0))
+ assert(eatom3.extent.2 == nelems, halide_error_constraint_violated("eatom3.extent.2", eatom3.extent.2, "nelems", nelems))
+ assert(eatom3.min.3 == 0, halide_error_constraint_violated("eatom3.min.3", eatom3.min.3, "0", 0))
+ assert(eatom3.extent.3 == (adegreep + 1), halide_error_constraint_violated("eatom3.extent.3", eatom3.extent.3, "(adegreep + 1)", adegreep + 1))
+ assert(eatom3.min.4 == 0, halide_error_constraint_violated("eatom3.min.4", eatom3.min.4, "0", 0))
+ assert(eatom3.extent.4 == tdegree2, halide_error_constraint_violated("eatom3.extent.4", eatom3.extent.4, "tdegree2", tdegree2))
+ assert(fatom1.stride.0 == 1, halide_error_constraint_violated("fatom1.stride.0", fatom1.stride.0, "1", 1))
+ assert(fatom1.min.0 == 0, halide_error_constraint_violated("fatom1.min.0", fatom1.min.0, "0", 0))
+ assert(fatom1.extent.0 == natom, halide_error_constraint_violated("fatom1.extent.0", fatom1.extent.0, "natom", natom))
+ assert(fatom1.min.1 == 0, halide_error_constraint_violated("fatom1.min.1", fatom1.min.1, "0", 0))
+ assert(fatom1.extent.1 == nelems, halide_error_constraint_violated("fatom1.extent.1", fatom1.extent.1, "nelems", nelems))
+ assert(fatom1.min.2 == 0, halide_error_constraint_violated("fatom1.min.2", fatom1.min.2, "0", 0))
+ assert(fatom1.extent.2 == 3, halide_error_constraint_violated("fatom1.extent.2", fatom1.extent.2, "3", 3))
+ assert(fatom2.stride.0 == 1, halide_error_constraint_violated("fatom2.stride.0", fatom2.stride.0, "1", 1))
+ assert(fatom2.min.0 == 0, halide_error_constraint_violated("fatom2.min.0", fatom2.min.0, "0", 0))
+ assert(fatom2.extent.0 == 3, halide_error_constraint_violated("fatom2.extent.0", fatom2.extent.0, "3", 3))
+ assert(fatom2.min.1 == 0, halide_error_constraint_violated("fatom2.min.1", fatom2.min.1, "0", 0))
+ assert(fatom2.extent.1 == natom, halide_error_constraint_violated("fatom2.extent.1", fatom2.extent.1, "natom", natom))
+ assert(fatom2.min.2 == 0, halide_error_constraint_violated("fatom2.min.2", fatom2.min.2, "0", 0))
+ assert(fatom2.extent.2 == nelemsCombos, halide_error_constraint_violated("fatom2.extent.2", fatom2.extent.2, "nelemsCombos", nelemsCombos))
+ assert(fatom2.min.3 == 0, halide_error_constraint_violated("fatom2.min.3", fatom2.min.3, "0", 0))
+ assert(fatom2.extent.3 == tdegree1, halide_error_constraint_violated("fatom2.extent.3", fatom2.extent.3, "tdegree1", tdegree1))
+ assert(fatom3.stride.0 == 1, halide_error_constraint_violated("fatom3.stride.0", fatom3.stride.0, "1", 1))
+ assert(fatom3.min.0 == 0, halide_error_constraint_violated("fatom3.min.0", fatom3.min.0, "0", 0))
+ assert(fatom3.extent.0 == 3, halide_error_constraint_violated("fatom3.extent.0", fatom3.extent.0, "3", 3))
+ assert(fatom3.min.1 == 0, halide_error_constraint_violated("fatom3.min.1", fatom3.min.1, "0", 0))
+ assert(fatom3.extent.1 == natom, halide_error_constraint_violated("fatom3.extent.1", fatom3.extent.1, "natom", natom))
+ assert(fatom3.min.2 == 0, halide_error_constraint_violated("fatom3.min.2", fatom3.min.2, "0", 0))
+ assert(fatom3.extent.2 == nelemsCombos, halide_error_constraint_violated("fatom3.extent.2", fatom3.extent.2, "nelemsCombos", nelemsCombos))
+ assert(fatom3.min.3 == 0, halide_error_constraint_violated("fatom3.min.3", fatom3.min.3, "0", 0))
+ assert(fatom3.extent.3 == nelems, halide_error_constraint_violated("fatom3.extent.3", fatom3.extent.3, "nelems", nelems))
+ assert(fatom3.min.4 == 0, halide_error_constraint_violated("fatom3.min.4", fatom3.min.4, "0", 0))
+ assert(fatom3.extent.4 == (adegreep + 1), halide_error_constraint_violated("fatom3.extent.4", fatom3.extent.4, "(adegreep + 1)", adegreep + 1))
+ assert(fatom3.min.5 == 0, halide_error_constraint_violated("fatom3.min.5", fatom3.min.5, "0", 0))
+ assert(fatom3.extent.5 == tdegree2, halide_error_constraint_violated("fatom3.extent.5", fatom3.extent.5, "tdegree2", tdegree2))
+ assert(interactions.stride.0 == 1, halide_error_constraint_violated("interactions.stride.0", interactions.stride.0, "1", 1))
+ assert(interactions.min.0 == 0, halide_error_constraint_violated("interactions.min.0", interactions.min.0, "0", 0))
+ assert(interactions.extent.0 == nelems, halide_error_constraint_violated("interactions.extent.0", interactions.extent.0, "nelems", nelems))
+ assert(interactions.min.1 == 0, halide_error_constraint_violated("interactions.min.1", interactions.min.1, "0", 0))
+ assert(interactions.extent.1 == nelems, halide_error_constraint_violated("interactions.extent.1", interactions.extent.1, "nelems", nelems))
+ assert(pairlist.stride.0 == 1, halide_error_constraint_violated("pairlist.stride.0", pairlist.stride.0, "1", 1))
+ assert(pairlist.min.0 == 0, halide_error_constraint_violated("pairlist.min.0", pairlist.min.0, "0", 0))
+ assert(pairlist.extent.0 == npairs, halide_error_constraint_violated("pairlist.extent.0", pairlist.extent.0, "npairs", npairs))
+ assert(pairnumsum.stride.0 == 1, halide_error_constraint_violated("pairnumsum.stride.0", pairnumsum.stride.0, "1", 1))
+ assert(pairnumsum.min.0 == 0, halide_error_constraint_violated("pairnumsum.min.0", pairnumsum.min.0, "0", 0))
+ assert(pairnumsum.extent.0 == (natom + 1), halide_error_constraint_violated("pairnumsum.extent.0", pairnumsum.extent.0, "(natom + 1)", natom + 1))
+ assert(y.stride.0 == 1, halide_error_constraint_violated("y.stride.0", y.stride.0, "1", 1))
+ assert(y.min.0 == 0, halide_error_constraint_violated("y.min.0", y.min.0, "0", 0))
+ assert(y.extent.0 == (natom*nl), halide_error_constraint_violated("y.extent.0", y.extent.0, "(nl*natom)", natom*nl))
+ assert(y.min.1 == 0, halide_error_constraint_violated("y.min.1", y.min.1, "0", 0))
+ assert(y.extent.1 == 3, halide_error_constraint_violated("y.extent.1", y.extent.1, "3", 3))
+ let Phi1.total_extent.1 = int64(bdegree)*int64(nbesselparams)
+ let Phi1.total_extent.2 = Phi1.total_extent.1*int64(forceij_f.s2.basis function index.max.s)
+ let Phi2.total_extent.1 = int64(forceij_f.s2.basis function index.max.s)*int64(adegree)
+ let eatom1.total_extent.1 = int64(nelems)*int64(natom)
+ let eatom2.total_extent.1 = int64(nelemsCombos)*int64(natom)
+ let eatom2.total_extent.2 = eatom2.total_extent.1*int64(tdegree1)
+ let eatom3.total_extent.2 = eatom2.total_extent.1*int64(nelems)
+ let eatom3.total_extent.3 = eatom3.total_extent.2*int64(eatom3.extent.3)
+ let eatom3.total_extent.4 = eatom3.total_extent.3*int64(tdegree2)
+ let fatom2.total_extent.2.s = int64(natom)*int64(nelemsCombos)
+ let fatom2.total_extent.3.s = fatom2.total_extent.2.s*int64(tdegree1)
+ let fatom3.total_extent.3.s = fatom2.total_extent.2.s*int64(nelems)
+ let fatom3.total_extent.4.s = fatom3.total_extent.3.s*int64(fatom3.extent.4)
+ let fatom3.total_extent.5.s = fatom3.total_extent.4.s*int64(tdegree2)
+ let interactions.total_extent.1 = int64(nelems)*int64(nelems)
+ assert((uint64)abs(int64(nbesselparams)) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("Phi1", (uint64)abs(int64(nbesselparams)), (uint64)2147483647))
+ assert((uint64)abs(int64(bdegree)*int64(Phi1.stride.1)) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("Phi1", (uint64)abs(int64(bdegree)*int64(Phi1.stride.1)), (uint64)2147483647))
+ assert(Phi1.total_extent.1 <= (int64)2147483647, halide_error_buffer_extents_too_large("Phi1", Phi1.total_extent.1, (int64)2147483647))
+ assert((uint64)abs(int64(forceij_f.s2.basis function index.max.s)*int64(Phi1.stride.2)) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("Phi1", (uint64)abs(int64(forceij_f.s2.basis function index.max.s)*int64(Phi1.stride.2)), (uint64)2147483647))
+ assert(Phi1.total_extent.2 <= (int64)2147483647, halide_error_buffer_extents_too_large("Phi1", Phi1.total_extent.2, (int64)2147483647))
+ assert((uint64)abs(int64(adegree)) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("Phi2", (uint64)abs(int64(adegree)), (uint64)2147483647))
+ assert((uint64)abs(int64(forceij_f.s2.basis function index.max.s)*int64(Phi2.stride.1)) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("Phi2", (uint64)abs(int64(forceij_f.s2.basis function index.max.s)*int64(Phi2.stride.1)), (uint64)2147483647))
+ assert(Phi2.total_extent.1 <= (int64)2147483647, halide_error_buffer_extents_too_large("Phi2", Phi2.total_extent.1, (int64)2147483647))
+ assert(uint64(alist.extent.0) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("alist", uint64(alist.extent.0), (uint64)2147483647))
+ assert((uint64)abs(int64(natom)) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("atomtype", (uint64)abs(int64(natom)), (uint64)2147483647))
+ assert((uint64)abs(int64(nbesselparams)) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("besselparams", (uint64)abs(int64(nbesselparams)), (uint64)2147483647))
+ assert((uint64)abs(int64(natom)) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("eatom1", (uint64)abs(int64(natom)), (uint64)2147483647))
+ assert((uint64)abs(int64(nelems)*int64(eatom1.stride.1)) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("eatom1", (uint64)abs(int64(nelems)*int64(eatom1.stride.1)), (uint64)2147483647))
+ assert(eatom1.total_extent.1 <= (int64)2147483647, halide_error_buffer_extents_too_large("eatom1", eatom1.total_extent.1, (int64)2147483647))
+ assert((uint64)abs(int64(natom)) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("eatom2", (uint64)abs(int64(natom)), (uint64)2147483647))
+ assert((uint64)abs(int64(nelemsCombos)*int64(eatom2.stride.1)) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("eatom2", (uint64)abs(int64(nelemsCombos)*int64(eatom2.stride.1)), (uint64)2147483647))
+ assert(eatom2.total_extent.1 <= (int64)2147483647, halide_error_buffer_extents_too_large("eatom2", eatom2.total_extent.1, (int64)2147483647))
+ assert((uint64)abs(int64(tdegree1)*int64(eatom2.stride.2)) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("eatom2", (uint64)abs(int64(tdegree1)*int64(eatom2.stride.2)), (uint64)2147483647))
+ assert(eatom2.total_extent.2 <= (int64)2147483647, halide_error_buffer_extents_too_large("eatom2", eatom2.total_extent.2, (int64)2147483647))
+ assert((uint64)abs(int64(natom)) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("eatom3", (uint64)abs(int64(natom)), (uint64)2147483647))
+ assert((uint64)abs(int64(nelemsCombos)*int64(eatom3.stride.1)) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("eatom3", (uint64)abs(int64(nelemsCombos)*int64(eatom3.stride.1)), (uint64)2147483647))
+ assert((uint64)abs(int64(nelems)*int64(eatom3.stride.2)) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("eatom3", (uint64)abs(int64(nelems)*int64(eatom3.stride.2)), (uint64)2147483647))
+ assert(eatom3.total_extent.2 <= (int64)2147483647, halide_error_buffer_extents_too_large("eatom3", eatom3.total_extent.2, (int64)2147483647))
+ assert((uint64)abs(int64(eatom3.extent.3)*int64(eatom3.stride.3)) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("eatom3", (uint64)abs(int64(eatom3.extent.3)*int64(eatom3.stride.3)), (uint64)2147483647))
+ assert(eatom3.total_extent.3 <= (int64)2147483647, halide_error_buffer_extents_too_large("eatom3", eatom3.total_extent.3, (int64)2147483647))
+ assert((uint64)abs(int64(tdegree2)*int64(eatom3.stride.4)) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("eatom3", (uint64)abs(int64(tdegree2)*int64(eatom3.stride.4)), (uint64)2147483647))
+ assert(eatom3.total_extent.4 <= (int64)2147483647, halide_error_buffer_extents_too_large("eatom3", eatom3.total_extent.4, (int64)2147483647))
+ assert((uint64)abs(int64(nelems)*int64(fatom1.stride.1)) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("fatom1", (uint64)abs(int64(nelems)*int64(fatom1.stride.1)), (uint64)2147483647))
+ assert((uint64)abs(int64(fatom1.stride.2)*(int64)3) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("fatom1", (uint64)abs(int64(fatom1.stride.2)*(int64)3), (uint64)2147483647))
+ assert(eatom1.total_extent.1 <= (int64)715827882, halide_error_buffer_extents_too_large("fatom1", eatom1.total_extent.1*(int64)3, (int64)2147483647))
+ assert((uint64)abs(int64(natom)*int64(fatom2.stride.1)) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("fatom2", (uint64)abs(int64(natom)*int64(fatom2.stride.1)), (uint64)2147483647))
+ assert(int64(natom) <= (int64)715827882, halide_error_buffer_extents_too_large("fatom2", int64(natom)*(int64)3, (int64)2147483647))
+ assert((uint64)abs(int64(nelemsCombos)*int64(fatom2.stride.2)) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("fatom2", (uint64)abs(int64(nelemsCombos)*int64(fatom2.stride.2)), (uint64)2147483647))
+ assert(fatom2.total_extent.2.s <= (int64)715827882, halide_error_buffer_extents_too_large("fatom2", fatom2.total_extent.2.s*(int64)3, (int64)2147483647))
+ assert((uint64)abs(int64(tdegree1)*int64(fatom2.stride.3)) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("fatom2", (uint64)abs(int64(tdegree1)*int64(fatom2.stride.3)), (uint64)2147483647))
+ assert(fatom2.total_extent.3.s <= (int64)715827882, halide_error_buffer_extents_too_large("fatom2", fatom2.total_extent.3.s*(int64)3, (int64)2147483647))
+ assert((uint64)abs(int64(natom)*int64(fatom3.stride.1)) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("fatom3", (uint64)abs(int64(natom)*int64(fatom3.stride.1)), (uint64)2147483647))
+ assert((uint64)abs(int64(nelemsCombos)*int64(fatom3.stride.2)) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("fatom3", (uint64)abs(int64(nelemsCombos)*int64(fatom3.stride.2)), (uint64)2147483647))
+ assert((uint64)abs(int64(nelems)*int64(fatom3.stride.3)) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("fatom3", (uint64)abs(int64(nelems)*int64(fatom3.stride.3)), (uint64)2147483647))
+ assert(fatom3.total_extent.3.s <= (int64)715827882, halide_error_buffer_extents_too_large("fatom3", fatom3.total_extent.3.s*(int64)3, (int64)2147483647))
+ assert((uint64)abs(int64(fatom3.extent.4)*int64(fatom3.stride.4)) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("fatom3", (uint64)abs(int64(fatom3.extent.4)*int64(fatom3.stride.4)), (uint64)2147483647))
+ assert(fatom3.total_extent.4.s <= (int64)715827882, halide_error_buffer_extents_too_large("fatom3", fatom3.total_extent.4.s*(int64)3, (int64)2147483647))
+ assert((uint64)abs(int64(tdegree2)*int64(fatom3.stride.5)) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("fatom3", (uint64)abs(int64(tdegree2)*int64(fatom3.stride.5)), (uint64)2147483647))
+ assert(fatom3.total_extent.5.s <= (int64)715827882, halide_error_buffer_extents_too_large("fatom3", fatom3.total_extent.5.s*(int64)3, (int64)2147483647))
+ assert((uint64)abs(int64(nelems)) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("interactions", (uint64)abs(int64(nelems)), (uint64)2147483647))
+ assert((uint64)abs(int64(nelems)*int64(interactions.stride.1)) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("interactions", (uint64)abs(int64(nelems)*int64(interactions.stride.1)), (uint64)2147483647))
+ assert(interactions.total_extent.1 <= (int64)2147483647, halide_error_buffer_extents_too_large("interactions", interactions.total_extent.1, (int64)2147483647))
+ assert((uint64)abs(int64(npairs)) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("pairlist", (uint64)abs(int64(npairs)), (uint64)2147483647))
+ assert(uint64(pairnumsum.extent.0) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("pairnumsum", uint64(pairnumsum.extent.0), (uint64)2147483647))
+ assert(uint64(y.extent.0) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("y", uint64(y.extent.0), (uint64)2147483647))
+ assert((uint64)abs(int64(y.stride.1)*(int64)3) <= (uint64)2147483647, halide_error_buffer_allocation_too_large("y", (uint64)abs(int64(y.stride.1)*(int64)3), (uint64)2147483647))
+ assert(int64(y.extent.0) <= (int64)715827882, halide_error_buffer_extents_too_large("y", int64(y.extent.0)*(int64)3, (int64)2147483647))
+ assert(!Phi1.device_dirty, halide_error_device_dirty_with_no_device_support("Input buffer Phi1"))
+ assert(!Phi2.device_dirty, halide_error_device_dirty_with_no_device_support("Input buffer Phi2"))
+ assert(!alist.device_dirty, halide_error_device_dirty_with_no_device_support("Input buffer alist"))
+ assert(!atomtype.device_dirty, halide_error_device_dirty_with_no_device_support("Input buffer atomtype"))
+ assert(!besselparams.device_dirty, halide_error_device_dirty_with_no_device_support("Input buffer besselparams"))
+ assert(!eatom1.device_dirty, halide_error_device_dirty_with_no_device_support("Output buffer eatom1"))
+ assert(!eatom2.device_dirty, halide_error_device_dirty_with_no_device_support("Output buffer eatom2"))
+ assert(!eatom3.device_dirty, halide_error_device_dirty_with_no_device_support("Output buffer eatom3"))
+ assert(!fatom1.device_dirty, halide_error_device_dirty_with_no_device_support("Output buffer fatom1"))
+ assert(!fatom2.device_dirty, halide_error_device_dirty_with_no_device_support("Output buffer fatom2"))
+ assert(!fatom3.device_dirty, halide_error_device_dirty_with_no_device_support("Output buffer fatom3"))
+ assert(!interactions.device_dirty, halide_error_device_dirty_with_no_device_support("Input buffer interactions"))
+ assert(!pairlist.device_dirty, halide_error_device_dirty_with_no_device_support("Input buffer pairlist"))
+ assert(!pairnumsum.device_dirty, halide_error_device_dirty_with_no_device_support("Input buffer pairnumsum"))
+ assert(!y.device_dirty, halide_error_device_dirty_with_no_device_support("Input buffer y"))
+ assert(Phi1 != (void *)reinterpret((uint64)0), halide_error_host_is_null("Input buffer Phi1"))
+ assert(Phi2 != (void *)reinterpret((uint64)0), halide_error_host_is_null("Input buffer Phi2"))
+ assert(alist != (void *)reinterpret((uint64)0), halide_error_host_is_null("Input buffer alist"))
+ assert(atomtype != (void *)reinterpret((uint64)0), halide_error_host_is_null("Input buffer atomtype"))
+ assert(besselparams != (void *)reinterpret((uint64)0), halide_error_host_is_null("Input buffer besselparams"))
+ assert(eatom1 != (void *)reinterpret((uint64)0), halide_error_host_is_null("Output buffer eatom1"))
+ assert(eatom2 != (void *)reinterpret((uint64)0), halide_error_host_is_null("Output buffer eatom2"))
+ assert(eatom3 != (void *)reinterpret((uint64)0), halide_error_host_is_null("Output buffer eatom3"))
+ assert(fatom1 != (void *)reinterpret((uint64)0), halide_error_host_is_null("Output buffer fatom1"))
+ assert(fatom2 != (void *)reinterpret((uint64)0), halide_error_host_is_null("Output buffer fatom2"))
+ assert(fatom3 != (void *)reinterpret((uint64)0), halide_error_host_is_null("Output buffer fatom3"))
+ assert(interactions != (void *)reinterpret((uint64)0), halide_error_host_is_null("Input buffer interactions"))
+ assert(pairlist != (void *)reinterpret((uint64)0), halide_error_host_is_null("Input buffer pairlist"))
+ assert(pairnumsum != (void *)reinterpret((uint64)0), halide_error_host_is_null("Input buffer pairnumsum"))
+ assert(y != (void *)reinterpret((uint64)0), halide_error_host_is_null("Input buffer y"))
+ produce eatom1 {
+  for (eatom1.s0.oy, 0, nelems) {
+   let t3873 = eatom1.s0.oy*eatom1.stride.1
+   for (eatom1.s0.ox, 0, natom) {
+    eatom1[eatom1.s0.ox + t3873] = select(atomtype[eatom1.s0.ox] == (eatom1.s0.oy + 1), 1.000000, 0.000000)
+   }
+  }
+ }
+ produce fatom1 {
+  for (fatom1.s0.oz, 0, 3) {
+   let t3874 = fatom1.s0.oz*fatom1.stride.2
+   for (fatom1.s0.oy, 0, nelems) {
+    let t3875 = (fatom1.s0.oy*fatom1.stride.1) + t3874
+    for (fatom1.s0.ox, 0, natom) {
+     fatom1[fatom1.s0.ox + t3875] = 0.000000
+    }
+   }
+  }
+ }
+ allocate rijs_f[float64 * npairs * 3]
+ produce rijs_f {
+  for (rijs_f.s0.dim, 0, 3) {
+   for (rijs_f.s0.pairindex, 0, npairs) {
+    rijs_f[(rijs_f.s0.pairindex*3) + rijs_f.s0.dim] = 0.000000
+   }
+  }
+  let t3876 = natom*nl
+  for (rijs_f.s1.r22$x, 0, natom) {
+   let rijs_f.s1.r22$y.new_min.s = min(pairnumsum[rijs_f.s1.r22$x], npairs)
+   let rijs_f.s1.r22$y.new_max.s = max(min(pairnumsum[rijs_f.s1.r22$x + 1], npairs), rijs_f.s1.r22$y.new_min.s)
+   let t3879 = max(rijs_f.s1.r22$y.new_min.s, 0)
+   let t3877 = max(rijs_f.s1.r22$y.new_max.s, 0) - t3879
+   for (rijs_f.s1.r22$y.rebased, 0, t3877) {
+    let t3880 = rijs_f.s1.r22$y.rebased + t3879
+    for (rijs_f.s1.dim, 0, 3) {
+     let t3796 = rijs_f.s1.dim*y.stride.1
+     rijs_f[(t3880*3) + rijs_f.s1.dim] = y[max(min(pairlist[t3880], t3876 + -1), 0) + t3796] - y[rijs_f.s1.r22$x + t3796]
+    }
+   }
+  }
+ }
+ allocate abf_f[float64 * adegree * npairs]
+ produce abf_f {
+  consume rijs_f {
+   let t3882 = (float64)exp_f64(-1.000000)
+   let t3881 = (float64)rcut - (float64)rin
+   for (abf_f.s0.pairindex, 0, npairs) {
+    let t3884 = abf_f.s0.pairindex*adegree
+    let t3883 = abf_f.s0.pairindex*3
+    for (abf_f.s0.basis function index, 0, adegree) {
+     let t3627 = rijs_f[t3883 + 2]
+     let t3628 = rijs_f[t3883]
+     let t3629 = rijs_f[t3883 + 1]
+     let t3630 = (float64)sqrt_f64((t3627*t3627) + ((t3628*t3628) + (t3629*t3629)))
+     let t3631 = (t3630 - (float64)rin)/t3881
+     let t3797 = (t3631*t3631)*t3631
+     abf_f[abf_f.s0.basis function index + t3884] = ((float64)exp_f64(-1.000000/(float64)sqrt_f64(((1.000000 - t3797)*(1.000000 - t3797)) + 0.000001))/t3882)/(float64)pow_f64(t3630, float64(abf_f.s0.basis function index) + 1.000000)
+    }
+   }
+  }
+ }
+ allocate rbf_f[float64 * nbesselparams * bdegree * npairs]
+ produce rbf_f {
+  consume rijs_f {
+   let t3886 = (float64)exp_f64(-1.000000)
+   let t3885 = (float64)rcut - (float64)rin
+   for (rbf_f.s0.pairindex, 0, npairs) {
+    let t3889 = (float64)sqrt_f64(2.000000/t3885)
+    let t3890 = (bdegree*nbesselparams)*rbf_f.s0.pairindex
+    let t3888 = rbf_f.s0.pairindex*3
+    for (rbf_f.s0.basis function index, 0, bdegree) {
+     let t3891 = t3889/float64((rbf_f.s0.basis function index + 1))
+     let t3892 = (nbesselparams*rbf_f.s0.basis function index) + t3890
+     for (rbf_f.s0.basis function param, 0, nbesselparams) {
+      let t3633.s = besselparams[rbf_f.s0.basis function param]
+      let t3634 = rijs_f[t3888 + 2]
+      let t3635 = rijs_f[t3888]
+      let t3636 = rijs_f[t3888 + 1]
+      let t3637.s = (float64)sqrt_f64((t3634*t3634) + ((t3635*t3635) + (t3636*t3636)))
+      let t3639 = (t3637.s - (float64)rin)/t3885
+      let t3798 = max(t3633.s, 0.001000)
+      let t3799 = t3637.s - (float64)rin
+      let t3801 = (t3639*t3639)*t3639
+      rbf_f[rbf_f.s0.basis function param + t3892] = ((float64)sin_f64((((1.000000 - (float64)exp_f64((0.000000 - (t3798*t3799))/t3885))/(1.000000 - (float64)exp_f64(0.000000 - t3798)))*float64((rbf_f.s0.basis function index + 1)))*3.141593)*(((float64)exp_f64(-1.000000/(float64)sqrt_f64(((1.000000 - t3801)*(1.000000 - t3801)) + 0.000001))/t3886)*t3891))/t3799
+     }
+    }
+   }
+  }
+ }
+ assert(max(max(forceij_f.s2.basis function index.max.s, tdegree1), tdegree2) <= forceij_f.s2.basis function index.max.s, halide_error_explicit_bounds_too_small("basis function index", "energyij_f", 0, forceij_f.s2.basis function index.max.s + -1, 0, max(max(forceij_f.s2.basis function index.max.s, tdegree1), tdegree2) + -1))
+ allocate energyij_f[float64 * forceij_f.s2.basis function index.max.s * npairs]
+ produce energyij_f {
+  for (energyij_f.s0.pairindex, 0, npairs) {
+   let t3893 = energyij_f.s0.pairindex*forceij_f.s2.basis function index.max.s
+   for (energyij_f.s0.basis function index, 0, forceij_f.s2.basis function index.max.s) {
+    energyij_f[energyij_f.s0.basis function index + t3893] = 0.000000
+   }
+  }
+  consume rbf_f {
+   for (energyij_f.s1.pairindex, 0, npairs) {
+    let t3896 = (bdegree*nbesselparams)*energyij_f.s1.pairindex
+    let t3895 = energyij_f.s1.pairindex*forceij_f.s2.basis function index.max.s
+    for (energyij_f.s1.basis function index, 0, forceij_f.s2.basis function index.max.s) {
+     let t3898 = Phi1.stride.2*energyij_f.s1.basis function index
+     let t3897 = energyij_f.s1.basis function index + t3895
+     for (energyij_f.s1.r48$y, 0, nbesselparams) {
+      let t3900 = (Phi1.stride.1*energyij_f.s1.r48$y) + t3898
+      let t3899 = energyij_f.s1.r48$y + t3896
+      for (energyij_f.s1.r48$x, 0, bdegree) {
+       energyij_f[t3897] = energyij_f[t3897] + (rbf_f[(energyij_f.s1.r48$x*nbesselparams) + t3899]*Phi1[energyij_f.s1.r48$x + t3900])
+      }
+     }
+    }
+   }
+  }
+  free rbf_f
+  consume abf_f {
+   for (energyij_f.s2.pairindex, 0, npairs) {
+    let t3901 = energyij_f.s2.pairindex*forceij_f.s2.basis function index.max.s
+    let t3902 = adegree*energyij_f.s2.pairindex
+    for (energyij_f.s2.basis function index, 0, forceij_f.s2.basis function index.max.s) {
+     let t3904 = Phi2.stride.1*energyij_f.s2.basis function index
+     let t3903 = energyij_f.s2.basis function index + t3901
+     for (energyij_f.s2.r58$x, 0, adegree) {
+      energyij_f[t3903] = energyij_f[t3903] + (abf_f[energyij_f.s2.r58$x + t3902]*Phi2[energyij_f.s2.r58$x + t3904])
+     }
+    }
+   }
+  }
+  free abf_f
+ }
+ allocate ijs_f[int32 * npairs * 4]
+ produce ijs_f {
+  for (ijs_f.s0.numOuts, 0, 4) {
+   let t3905 = mux(ijs_f.s0.numOuts, -1, -1, -1, -1)
+   let t3906 = ijs_f.s0.numOuts*npairs
+   for (ijs_f.s0.pairindex, 0, npairs) {
+    ijs_f[ijs_f.s0.pairindex + t3906] = t3905
+   }
+  }
+  let t3907 = natom*nl
+  for (ijs_f.s1.r22$x, 0, natom) {
+   let ijs_f.s1.r22$y.new_min.s = min(pairnumsum[ijs_f.s1.r22$x], npairs)
+   let ijs_f.s1.r22$y.new_max.s = max(min(pairnumsum[ijs_f.s1.r22$x + 1], npairs), ijs_f.s1.r22$y.new_min.s)
+   let t3910 = max(ijs_f.s1.r22$y.new_min.s, 0)
+   let t3908 = max(ijs_f.s1.r22$y.new_max.s, 0) - t3910
+   for (ijs_f.s1.r22$y.rebased, 0, t3908) {
+    let t3911 = ijs_f.s1.r22$y.rebased + t3910
+    for (ijs_f.s1.numOuts, 0, 4) {
+     let t3643.s = min(alist[max(min(pairlist[t3911], t3907 + -1), 0)], natom + -1)
+     let t3804 = max(t3643.s, 0)
+     ijs_f[(ijs_f.s1.numOuts*npairs) + t3911] = mux(ijs_f.s1.numOuts, ijs_f.s1.r22$x, t3804, atomtype[ijs_f.s1.r22$x], atomtype[t3804])
+    }
+   }
+  }
+ }
+ assert(1 <= nelemsCombos, halide_error_explicit_bounds_too_small("inter", "eatom2_f", 0, nelemsCombos + -1, 0, 0))
+ assert(1 <= natom, halide_error_explicit_bounds_too_small("atom", "eatom2_f", 0, natom + -1, 0, 0))
+ allocate eatom2_f[float64 * natom * nelemsCombos * tdegree1]
+ produce eatom2_f {
+  for (eatom2_f.s0.basis function index, 0, tdegree1) {
+   let t3913 = (natom*nelemsCombos)*eatom2_f.s0.basis function index
+   for (eatom2_f.s0.inter, 0, nelemsCombos) {
+    let t3914 = (eatom2_f.s0.inter*natom) + t3913
+    for (eatom2_f.s0.atom, 0, natom) {
+     eatom2_f[eatom2_f.s0.atom + t3914] = 0.000000
+    }
+   }
+  }
+  consume ijs_f {
+   consume energyij_f {
+    for (eatom2_f.s1.r80$y, 0, tdegree1) {
+     let t3918 = (natom*nelemsCombos)*eatom2_f.s1.r80$y
+     for (eatom2_f.s1.r80$x, 0, npairs) {
+      let t3644.s = (max(min(interactions[((max(min(ijs_f[(npairs*3) + eatom2_f.s1.r80$x], nelems), 1)*interactions.stride.1) + (max(min(ijs_f[(npairs*2) + eatom2_f.s1.r80$x], nelems), 1) - interactions.stride.1)) + -1], nelemsCombos), 1)*natom) + (max(min(ijs_f[eatom2_f.s1.r80$x], natom + -1), 0) + t3918)
+      let t3805 = t3644.s - natom
+      eatom2_f[t3805] = eatom2_f[t3805] + energyij_f[(eatom2_f.s1.r80$x*forceij_f.s2.basis function index.max.s) + eatom2_f.s1.r80$y]
+     }
+    }
+   }
+  }
+ }
+ produce eatom2 {
+  consume eatom2_f {
+   for (eatom2.s0.oz, 0, tdegree1) {
+    let t3922 = (natom*nelemsCombos)*eatom2.s0.oz
+    let t3923 = eatom2.s0.oz*eatom2.stride.2
+    for (eatom2.s0.oy, 0, nelemsCombos) {
+     let t3924 = (eatom2.s0.oy*natom) + t3922
+     let t3925 = (eatom2.s0.oy*eatom2.stride.1) + t3923
+     for (eatom2.s0.ox, 0, natom) {
+      eatom2[eatom2.s0.ox + t3925] = eatom2_f[eatom2.s0.ox + t3924]
+     }
+    }
+   }
+  }
+ }
+ free eatom2_f
+ allocate dabf_f[float64 * adegree * npairs * 3]
+ produce dabf_f {
+  consume rijs_f {
+   let t3926 = (float64)exp_f64(-1.000000)
+   let t3927 = (float64)rcut - (float64)rin
+   for (dabf_f.s0.dim, 0, 3) {
+    let t3929 = 3.000000/(t3926*t3927)
+    let t3930 = (adegree*npairs)*dabf_f.s0.dim
+    for (dabf_f.s0.pairindex, 0, npairs) {
+     let t3934 = dabf_f.s0.pairindex*3
+     let t3932 = dabf_f.s0.dim + t3934
+     let t3933 = (adegree*dabf_f.s0.pairindex) + t3930
+     for (dabf_f.s0.basis function index, 0, adegree) {
+      let t3645 = rijs_f[t3934 + 2]
+      let t3646 = rijs_f[t3934]
+      let t3647 = rijs_f[t3934 + 1]
+      let t3648 = (float64)sqrt_f64((t3645*t3645) + ((t3646*t3646) + (t3647*t3647)))
+      let t3651 = (t3648 - (float64)rin)/t3927
+      let t3654 = let t4236 = ((t3651*t3651)*t3651) in ((1.000000 - t4236)*(1.000000 - t4236))
+      let t3655 = (float64)exp_f64(-1.000000/(float64)sqrt_f64(t3654 + 0.000001))
+      let t3656 = (float64)pow_f64(t3648, float64((dabf_f.s0.basis function index + 1)))
+      let t3807 = t3651*t3651
+      dabf_f[dabf_f.s0.basis function index + t3933] = (rijs_f[t3932]/t3648)*((((((t3807*t3929)*t3655)*((t3651*t3807) + -1.000000))/(float64)pow_f64(t3654 + 0.000001, 1.500000))/t3656) - (((t3655/t3926)*(float64(dabf_f.s0.basis function index) + 1.000000))/(t3648*t3656)))
+     }
+    }
+   }
+  }
+ }
+ allocate drbf_f[float64 * nbesselparams * bdegree * npairs * 3]
+ produce drbf_f {
+  consume rijs_f {
+   let t3936 = (float64)exp_f64(-1.000000)
+   let t3935 = (float64)rcut - (float64)rin
+   for (drbf_f.s0.dim, 0, 3) {
+    let t3942 = bdegree*nbesselparams
+    let t3938 = (float64)sqrt_f64(2.000000/t3935)
+    let t3939 = 3.000000/(t3935*t3936)
+    let t3940 = (npairs*t3942)*drbf_f.s0.dim
+    for (drbf_f.s0.pairindex, 0, npairs) {
+     let t3946 = drbf_f.s0.pairindex*3
+     let t3945 = (drbf_f.s0.pairindex*t3942) + t3940
+     let t3944 = drbf_f.s0.dim + t3946
+     for (drbf_f.s0.basis function index, 0, bdegree) {
+      let t3947 = t3938/float64((drbf_f.s0.basis function index + 1))
+      let t3948 = (drbf_f.s0.basis function index*nbesselparams) + t3945
+      for (drbf_f.s0.basis function param, 0, nbesselparams) {
+       let t3657 = rijs_f[t3946 + 2]
+       let t3658 = rijs_f[t3946]
+       let t3659 = rijs_f[t3946 + 1]
+       let t3660 = (float64)sqrt_f64((t3657*t3657) + ((t3658*t3658) + (t3659*t3659)))
+       let t3662.s = besselparams[drbf_f.s0.basis function param]
+       let t3664 = max(t3662.s, 0.001000)*(t3660 - (float64)rin)
+       let t3665 = (float64)exp_f64(0.000000 - max(t3662.s, 0.001000))
+       let t3666 = ((1.000000 - (float64)exp_f64((0.000000 - t3664)/t3935))/(1.000000 - t3665))*float64((drbf_f.s0.basis function index + 1))
+       let t3667 = (t3660 - (float64)rin)/t3935
+       let t3670 = let t4237 = ((t3667*t3667)*t3667) in ((1.000000 - t4237)*(1.000000 - t4237))
+       let t3671 = (float64)exp_f64(-1.000000/(float64)sqrt_f64(t3670 + 0.000001))
+       let t3673 = t3671/t3936
+       let t3674 = (float64)sin_f64(t3666*3.141593)
+       let t3810 = t3660 - (float64)rin
+       let t3811 = t3667*t3667
+       drbf_f[drbf_f.s0.basis function param + t3948] = (rijs_f[t3944]/t3660)*((((((((float64)exp_f64(0.000000 - (t3664/t3935))*(max(t3662.s, 0.001000)/t3935))/(1.000000 - t3665))*(((float64)cos_f64(t3666*3.141593)*float64((drbf_f.s0.basis function index + 1)))*t3673))*3.141593)/t3810) + (((((((t3811*t3939)*t3671)*((t3667*t3811) + -1.000000))/(float64)pow_f64(t3670 + 0.000001, 1.500000))*t3674)/t3810) - ((t3673*t3674)/(t3810*t3810))))*t3947)
+      }
+     }
+    }
+   }
+  }
+ }
+ free rijs_f
+ allocate forceij_f[float64 * forceij_f.s2.basis function index.max.s * npairs * 3]
+ produce forceij_f {
+  for (forceij_f.s0.dim, 0, 3) {
+   let t3950 = (forceij_f.s2.basis function index.max.s*npairs)*forceij_f.s0.dim
+   for (forceij_f.s0.pairindex, 0, npairs) {
+    let t3951 = (forceij_f.s0.pairindex*forceij_f.s2.basis function index.max.s) + t3950
+    for (forceij_f.s0.basis function index, 0, forceij_f.s2.basis function index.max.s) {
+     forceij_f[forceij_f.s0.basis function index + t3951] = 0.000000
+    }
+   }
+  }
+  consume drbf_f {
+   for (forceij_f.s1.dim, 0, 3) {
+    let t3957 = bdegree*nbesselparams
+    let t3955 = (npairs*t3957)*forceij_f.s1.dim
+    let t3954 = (forceij_f.s2.basis function index.max.s*npairs)*forceij_f.s1.dim
+    for (forceij_f.s1.pairindex, 0, npairs) {
+     let t3959 = (forceij_f.s1.pairindex*t3957) + t3955
+     let t3958 = (forceij_f.s1.pairindex*forceij_f.s2.basis function index.max.s) + t3954
+     for (forceij_f.s1.basis function index, 0, forceij_f.s2.basis function index.max.s) {
+      let t3961 = Phi1.stride.2*forceij_f.s1.basis function index
+      let t3960 = forceij_f.s1.basis function index + t3958
+      for (forceij_f.s1.r48$y, 0, nbesselparams) {
+       let t3963 = (Phi1.stride.1*forceij_f.s1.r48$y) + t3961
+       let t3962 = forceij_f.s1.r48$y + t3959
+       for (forceij_f.s1.r48$x, 0, bdegree) {
+        forceij_f[t3960] = forceij_f[t3960] + (drbf_f[(forceij_f.s1.r48$x*nbesselparams) + t3962]*Phi1[forceij_f.s1.r48$x + t3963])
+       }
+      }
+     }
+    }
+   }
+  }
+  free drbf_f
+  consume dabf_f {
+   for (forceij_f.s2.dim, 0, 3) {
+    let t3966 = (forceij_f.s2.basis function index.max.s*npairs)*forceij_f.s2.dim
+    let t3967 = (adegree*npairs)*forceij_f.s2.dim
+    for (forceij_f.s2.pairindex, 0, npairs) {
+     let t3968 = (forceij_f.s2.basis function index.max.s*forceij_f.s2.pairindex) + t3966
+     let t3969 = (adegree*forceij_f.s2.pairindex) + t3967
+     for (forceij_f.s2.basis function index, 0, forceij_f.s2.basis function index.max.s) {
+      let t3971 = Phi2.stride.1*forceij_f.s2.basis function index
+      let t3970 = forceij_f.s2.basis function index + t3968
+      for (forceij_f.s2.r58$x, 0, adegree) {
+       forceij_f[t3970] = forceij_f[t3970] + (dabf_f[forceij_f.s2.r58$x + t3969]*Phi2[forceij_f.s2.r58$x + t3971])
+      }
+     }
+    }
+   }
+  }
+  free dabf_f
+ }
+ allocate fatom2_f[float64 * 3 * natom * nelemsCombos * tdegree1]
+ produce fatom2_f {
+  for (fatom2_f.s0.basis function index, 0, tdegree1) {
+   let t3973 = ((natom*nelemsCombos)*fatom2_f.s0.basis function index)*3
+   for (fatom2_f.s0.inter, 0, nelemsCombos) {
+    let t3974 = ((fatom2_f.s0.inter*natom)*3) + t3973
+    for (fatom2_f.s0.atom, 0, natom) {
+     let t3975 = (fatom2_f.s0.atom*3) + t3974
+     for (fatom2_f.s0.dim, 0, 3) {
+      fatom2_f[fatom2_f.s0.dim + t3975] = 0.000000
+     }
+    }
+   }
+  }
+  consume forceij_f {
+   consume ijs_f {
+    for (fatom2_f.s1.dim, 0, 3) {
+     let t3985 = (forceij_f.s2.basis function index.max.s*npairs)*fatom2_f.s1.dim
+     let t3981 = (natom*-3) + fatom2_f.s1.dim
+     for (fatom2_f.s1.r80$y, 0, tdegree1) {
+      let t3986 = (((natom*nelemsCombos)*fatom2_f.s1.r80$y)*3) + t3981
+      let t3989 = fatom2_f.s1.r80$y + t3985
+      for (fatom2_f.s1.r80$x, 0, npairs) {
+       let t3679 = (max(min(ijs_f[fatom2_f.s1.r80$x], natom + -1), 0)*3) + (((max(min(interactions[((max(min(ijs_f[(npairs*3) + fatom2_f.s1.r80$x], nelems), 1)*interactions.stride.1) + (max(min(ijs_f[(npairs*2) + fatom2_f.s1.r80$x], nelems), 1) - interactions.stride.1)) + -1], nelemsCombos), 1)*natom)*3) + t3986)
+       fatom2_f[t3679] = fatom2_f[t3679] + forceij_f[(fatom2_f.s1.r80$x*forceij_f.s2.basis function index.max.s) + t3989]
+      }
+     }
+    }
+   }
+  }
+  consume forceij_f {
+   consume ijs_f {
+    for (fatom2_f.s2.dim, 0, 3) {
+     let t3999 = (forceij_f.s2.basis function index.max.s*npairs)*fatom2_f.s2.dim
+     let t3995 = (natom*-3) + fatom2_f.s2.dim
+     for (fatom2_f.s2.r80$y, 0, tdegree1) {
+      let t4000 = (((natom*nelemsCombos)*fatom2_f.s2.r80$y)*3) + t3995
+      let t4003 = fatom2_f.s2.r80$y + t3999
+      for (fatom2_f.s2.r80$x, 0, npairs) {
+       let t3680 = (max(min(ijs_f[fatom2_f.s2.r80$x + npairs], natom + -1), 0)*3) + (((max(min(interactions[((max(min(ijs_f[(npairs*3) + fatom2_f.s2.r80$x], nelems), 1)*interactions.stride.1) + (max(min(ijs_f[(npairs*2) + fatom2_f.s2.r80$x], nelems), 1) - interactions.stride.1)) + -1], nelemsCombos), 1)*natom)*3) + t4000)
+       fatom2_f[t3680] = fatom2_f[t3680] - forceij_f[(fatom2_f.s2.r80$x*forceij_f.s2.basis function index.max.s) + t4003]
+      }
+     }
+    }
+   }
+  }
+  free ijs_f
+ }
+ produce fatom2 {
+  consume fatom2_f {
+   for (fatom2.s0.ozz, 0, tdegree1) {
+    let t4005 = ((natom*nelemsCombos)*fatom2.s0.ozz)*3
+    let t4006 = fatom2.s0.ozz*fatom2.stride.3
+    for (fatom2.s0.oz, 0, nelemsCombos) {
+     let t4007 = ((fatom2.s0.oz*natom)*3) + t4005
+     let t4008 = (fatom2.s0.oz*fatom2.stride.2) + t4006
+     for (fatom2.s0.oy, 0, natom) {
+      let t4010 = (fatom2.s0.oy*fatom2.stride.1) + t4008
+      let t4009 = (fatom2.s0.oy*3) + t4007
+      for (fatom2.s0.ox, 0, 3) {
+       fatom2[fatom2.s0.ox + t4010] = fatom2_f[fatom2.s0.ox + t4009]
+      }
+     }
+    }
+   }
+  }
+ }
+ free fatom2_f
+ assert((eatom3_f.s0.inverse basis function index.max + 1) <= natom, halide_error_explicit_bounds_too_small("atom", "eatom3_f", 0, natom + -1, 0, eatom3_f.s0.inverse basis function index.max))
+ assert(eatom3_f.s0.rbf_v.max.s <= nelemsCombos, halide_error_explicit_bounds_too_small("inter", "eatom3_f", 0, nelemsCombos + -1, 0, eatom3_f.s0.rbf_v.max.s + -1))
+ assert(1 <= nelems, halide_error_explicit_bounds_too_small("type", "eatom3_f", 0, nelems + -1, 0, 0))
+ assert(eatom3_f.s0.inverse basis function index.max <= adegreep, halide_error_explicit_bounds_too_small("inverse basis function index", "eatom3_f", 0, adegreep, 0, eatom3_f.s0.inverse basis function index.max))
+ assert(max(eatom3_f.s0.rbf_v.max.s, 1) <= tdegree2, halide_error_explicit_bounds_too_small("rbf_v", "eatom3_f", 0, tdegree2 + -1, 0, max(eatom3_f.s0.rbf_v.max.s, 1) + -1))
+ assert((natom + -1) <= adegreep, halide_error_explicit_bounds_too_small("inverse basis function index", "eatom3_f", 0, adegreep, 0, eatom3_f.s0.inverse basis function index.max))
+ assert(nelemsCombos <= tdegree2, halide_error_explicit_bounds_too_small("rbf_v", "eatom3_f", 0, tdegree2 + -1, 0, eatom3_f.s0.rbf_v.max.s + -1))
+ assert(tdegree2 <= nelemsCombos, halide_error_explicit_bounds_too_small("inter", "eatom3_f", 0, nelemsCombos + -1, 0, eatom3_f.s0.rbf_v.max.s + -1))
+ assert((adegreep + 1) <= natom, halide_error_explicit_bounds_too_small("atom", "eatom3_f", 0, natom + -1, 0, eatom3_f.s0.inverse basis function index.max))
+ allocate eatom3_f[float64 * natom * nelemsCombos * nelems * tdegree2 * (adegreep + 1)]
+ produce eatom3_f {
+  for (eatom3_f.s0.inverse basis function index, 0, adegreep + 1) {
+   let t4014 = natom*nelemsCombos
+   for (eatom3_f.s0.rbf_v, 0, tdegree2) {
+    let t4016 = nelems*t4014
+    let t4015 = ((t4016*tdegree2)*eatom3_f.s0.inverse basis function index) + (eatom3_f.s0.rbf_v*t4016)
+    for (eatom3_f.s0.type, 0, nelems) {
+     let t4017 = (eatom3_f.s0.type*t4014) + t4015
+     for (eatom3_f.s0.inter, 0, nelemsCombos) {
+      let t4018 = (eatom3_f.s0.inter*natom) + t4017
+      for (eatom3_f.s0.atom, 0, natom) {
+       eatom3_f[eatom3_f.s0.atom + t4018] = 0.000000
+      }
+     }
+    }
+   }
+  }
+  consume energyij_f {
+   let t4019 = natom*nl
+   for (eatom3_f.s1.r98$4, 0, natom) {
+    let eatom3_f.s1.r98$w.new_min.s = min(pairnumsum[eatom3_f.s1.r98$4], npairs)
+    let eatom3_f.s1.r98$w.new_max.s = let t4238 = pairnumsum[eatom3_f.s1.r98$4 + 1] in max(min(min(max(min(npairs, t4238), 0) + -1, t4238), npairs), eatom3_f.s1.r98$w.new_min.s)
+    let t4031 = y.stride.1*2
+    let t4032 = max(eatom3_f.s1.r98$w.new_min.s, 0)
+    let t4033 = natom*nelemsCombos
+    let t4026 = (-1 - nelems)*t4033
+    let t4023 = max(eatom3_f.s1.r98$w.new_max.s, 0) - t4032
+    for (eatom3_f.s1.r98$w.rebased, 0, t4023) {
+     let eatom3_f.s1.r98$z.new_max.s = min(pairnumsum[eatom3_f.s1.r98$4 + 1], npairs)
+     let t4041 = eatom3_f.s1.r98$w.rebased + t4032
+     let t4042 = nelems*t4033
+     let t4034 = max(eatom3_f.s1.r98$z.new_max.s, 0)
+     let t4036 = ((t4042*tdegree2)*eatom3_f.s1.r98$4) + t4026
+     for (eatom3_f.s1.r98$z, 0, t4034) {
+      if (let t4239 = pairnumsum[eatom3_f.s1.r98$4 + 1] in ((t4041 < min(t4239, eatom3_f.s1.r98$z)) && (t4041 < t4239))) {
+       if (t4041 < pairnumsum[eatom3_f.s1.r98$4 + 1]) {
+        let t4045 = forceij_f.s2.basis function index.max.s*t4041
+        let t4046 = eatom3_f.s1.r98$z*forceij_f.s2.basis function index.max.s
+        for (eatom3_f.s1.r98$y, 0, tdegree2) {
+         let t4047 = eatom3_f.s1.r98$y*natom
+         let t4051 = eatom3_f.s1.r98$y + t4046
+         let t4050 = eatom3_f.s1.r98$y + t4045
+         for (eatom3_f.s1.r98$x, 0, adegreep + 1) {
+          let t3687.s = min(pairlist[eatom3_f.s1.r98$z], t4019 + -1)
+          let t3688.s = min(pairlist[t4041], t4019 + -1)
+          let t3689 = (((max(min(interactions[(max(min(atomtype[max(min(alist[max(t3687.s, 0)], natom + -1), 0)], nelems), 1) + ((max(min(atomtype[max(min(alist[max(t3688.s, 0)], natom + -1), 0)], nelems), 1) + -1)*interactions.stride.1)) + -1], nelemsCombos), 1)*t4042) + ((max(min(atomtype[eatom3_f.s1.r98$4], nelems), 1)*t4033) + t4036)) + t4047) + eatom3_f.s1.r98$x
+          let t3690 = y[eatom3_f.s1.r98$4 + t4031]
+          let t3691.s = y[max(t3688.s, 0) + t4031]
+          let t3692.s = y[max(t3687.s, 0) + t4031]
+          let t3693 = y[eatom3_f.s1.r98$4]
+          let t3694.s = y[max(t3688.s, 0)]
+          let t3695.s = y[max(t3687.s, 0)]
+          let t3696 = y[eatom3_f.s1.r98$4 + y.stride.1]
+          let t3697.s = y[max(t3688.s, 0) + y.stride.1]
+          let t3698.s = y[max(t3687.s, 0) + y.stride.1]
+          let t3819 = t3691.s - t3690
+          let t3820 = t3692.s - t3690
+          let t3821 = t3694.s - t3693
+          let t3822 = t3695.s - t3693
+          let t3823 = t3697.s - t3696
+          let t3824 = t3698.s - t3696
+          eatom3_f[t3689] = eatom3_f[t3689] + ((float64)cos_f64((float64)acos_f64(max(min(((t3819*t3820) + ((t3821*t3822) + (t3823*t3824)))/((float64)sqrt_f64((t3819*t3819) + ((t3821*t3821) + (t3823*t3823)))*(float64)sqrt_f64((t3820*t3820) + ((t3822*t3822) + (t3824*t3824)))), 1.000000), -1.000000))*float64(eatom3_f.s1.r98$x))*(energyij_f[t4050]*energyij_f[t4051]))
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ }
+ produce eatom3 {
+  consume eatom3_f {
+   for (eatom3.s0.ozzz, 0, tdegree2) {
+    let t4056 = natom*nelemsCombos
+    let t4055 = eatom3.s0.ozzz*eatom3.stride.4
+    for (eatom3.s0.ozz, 0, adegreep + 1) {
+     let t4059 = nelems*t4056
+     let t4057 = (eatom3.s0.ozzz*t4059) + ((t4059*tdegree2)*eatom3.s0.ozz)
+     let t4058 = (eatom3.s0.ozz*eatom3.stride.3) + t4055
+     for (eatom3.s0.oz, 0, nelems) {
+      let t4060 = (eatom3.s0.oz*t4056) + t4057
+      let t4061 = (eatom3.s0.oz*eatom3.stride.2) + t4058
+      for (eatom3.s0.oy, 0, nelemsCombos) {
+       let t4062 = (eatom3.s0.oy*natom) + t4060
+       let t4063 = (eatom3.s0.oy*eatom3.stride.1) + t4061
+       for (eatom3.s0.ox, 0, natom) {
+        eatom3[eatom3.s0.ox + t4063] = eatom3_f[eatom3.s0.ox + t4062]
+       }
+      }
+     }
+    }
+   }
+  }
+ }
+ free eatom3_f
+ allocate fatom3_f[float64 * 3 * natom * nelemsCombos * nelems * tdegree2 * (adegreep + 1)]
+ produce fatom3_f {
+  for (fatom3_f.s0.inverse basis function index, 0, adegreep + 1) {
+   let t4067 = natom*nelemsCombos
+   for (fatom3_f.s0.rbf_v, 0, tdegree2) {
+    let t4069 = nelems*t4067
+    let t4068 = (((t4069*tdegree2)*fatom3_f.s0.inverse basis function index) + (fatom3_f.s0.rbf_v*t4069))*3
+    for (fatom3_f.s0.type, 0, nelems) {
+     let t4070 = ((fatom3_f.s0.type*t4067)*3) + t4068
+     for (fatom3_f.s0.inter, 0, nelemsCombos) {
+      let t4071 = ((fatom3_f.s0.inter*natom)*3) + t4070
+      for (fatom3_f.s0.atom, 0, natom) {
+       let t4072 = (fatom3_f.s0.atom*3) + t4071
+       for (fatom3_f.s0.dim, 0, 3) {
+        fatom3_f[fatom3_f.s0.dim + t4072] = 0.000000
+       }
+      }
+     }
+    }
+   }
+  }
+  consume forceij_f {
+   consume energyij_f {
+    let t4075 = ((nelemsCombos + 1)*natom)*-3
+    let t4073 = natom*nl
+    for (fatom3_f.s1.dim, 0, 3) {
+     let t4084 = natom*nelemsCombos
+     let t4083 = (forceij_f.s2.basis function index.max.s*npairs)*fatom3_f.s1.dim
+     let t4082 = fatom3_f.s1.dim*y.stride.1
+     let t4079 = fatom3_f.s1.dim + t4075
+     for (fatom3_f.s1.r98$4, 0, natom) {
+      let fatom3_f.s1.r98$w.new_min.s = min(pairnumsum[fatom3_f.s1.r98$4], npairs)
+      let fatom3_f.s1.r98$w.new_max.s = let t4240 = pairnumsum[fatom3_f.s1.r98$4 + 1] in max(min(min(max(min(npairs, t4240), 0) + -1, t4240), npairs), fatom3_f.s1.r98$w.new_min.s)
+      let t4094 = y.stride.1*2
+      let t4095 = max(fatom3_f.s1.r98$w.new_min.s, 0)
+      let t4096 = nelems*t4084
+      let t4085 = max(fatom3_f.s1.r98$w.new_max.s, 0) - t4095
+      for (fatom3_f.s1.r98$w.rebased, 0, t4085) {
+       let fatom3_f.s1.r98$z.new_max.s = min(pairnumsum[fatom3_f.s1.r98$4 + 1], npairs)
+       let t4106 = fatom3_f.s1.r98$w.rebased + t4095
+       let t4107 = forceij_f.s2.basis function index.max.s*t4106
+       let t4097 = max(fatom3_f.s1.r98$z.new_max.s, 0)
+       for (fatom3_f.s1.r98$z, 0, t4097) {
+        if (let t4241 = pairnumsum[fatom3_f.s1.r98$4 + 1] in ((t4106 < min(t4241, fatom3_f.s1.r98$z)) && (t4106 < t4241))) {
+         if (t4106 < pairnumsum[fatom3_f.s1.r98$4 + 1]) {
+          let t4116 = fatom3_f.s1.r98$z*forceij_f.s2.basis function index.max.s
+          let t4114 = t4083 + t4116
+          let t4115 = t4083 + t4107
+          for (fatom3_f.s1.r98$y, 0, tdegree2) {
+           let t4118 = (fatom3_f.s1.r98$y*t4096)*3
+           let t4119 = t4096*tdegree2
+           let t4123 = fatom3_f.s1.r98$y + t4116
+           let t4126 = fatom3_f.s1.r98$y + t4115
+           let t4125 = fatom3_f.s1.r98$y + t4114
+           let t4122 = fatom3_f.s1.r98$y + t4107
+           for (fatom3_f.s1.r98$x, 0, adegreep + 1) {
+            let t3707.s = min(pairlist[fatom3_f.s1.r98$z], t4073 + -1)
+            let t3708.s = min(pairlist[t4106], t4073 + -1)
+            let t3709 = ((fatom3_f.s1.r98$x*t4119)*3) + ((((max(min(interactions[(max(min(atomtype[max(min(alist[max(t3707.s, 0)], natom + -1), 0)], nelems), 1) + ((max(min(atomtype[max(min(alist[max(t3708.s, 0)], natom + -1), 0)], nelems), 1) + -1)*interactions.stride.1)) + -1], nelemsCombos), 1)*natom)*3) + ((fatom3_f.s1.r98$4*3) + (((max(min(atomtype[fatom3_f.s1.r98$4], nelems), 1)*t4084)*3) + t4079))) + t4118)
+            let t3710 = y[fatom3_f.s1.r98$4 + t4094]
+            let t3711.s = y[max(t3707.s, 0) + t4094]
+            let t3712.s = y[max(t3708.s, 0) + t4094]
+            let t3713 = y[fatom3_f.s1.r98$4]
+            let t3714.s = y[max(t3707.s, 0)]
+            let t3715.s = y[max(t3708.s, 0)]
+            let t3716 = y[fatom3_f.s1.r98$4 + y.stride.1]
+            let t3717.s = y[max(t3707.s, 0) + y.stride.1]
+            let t3718.s = y[max(t3708.s, 0) + y.stride.1]
+            let t3719 = let t4242 = (t3711.s - t3710) in (let t4243 = (t3714.s - t3713) in (let t4244 = (t3717.s - t3716) in ((t4242*t4242) + ((t4243*t4243) + (t4244*t4244)))))
+            let t3720 = (float64)sqrt_f64(t3719)
+            let t3721 = let t4245 = (t3712.s - t3710) in (let t4246 = (t3715.s - t3713) in (let t4247 = (t3718.s - t3716) in ((t4245*t4245) + ((t4246*t4246) + (t4247*t4247)))))
+            let t3722 = (float64)sqrt_f64(t3721)
+            let t3724.s = (((t3711.s - t3710)*(t3712.s - t3710)) + (((t3714.s - t3713)*(t3715.s - t3713)) + ((t3717.s - t3716)*(t3718.s - t3716))))/(t3720*t3722)
+            let t3725 = (float64)acos_f64(max(min(t3724.s, 1.000000), -1.000000))*float64(fatom3_f.s1.r98$x)
+            let t3729 = energyij_f[t4122]
+            let t3730 = energyij_f[t4123]
+            let t3733 = y[fatom3_f.s1.r98$4 + t4082]
+            let t3734.s = y[max(t3708.s, 0) + t4082]
+            let t3735.s = y[max(t3707.s, 0) + t4082]
+            let t3736.s = (((t3712.s - t3710)*(t3711.s - t3710)) + (((t3715.s - t3713)*(t3714.s - t3713)) + ((t3718.s - t3716)*(t3717.s - t3716))))/(t3720*t3722)
+            let t3737 = (float64)acos_f64(max(min(t3736.s, 1.000000), -1.000000))*float64(fatom3_f.s1.r98$x)
+            let t3839 = t3729*t3730
+            let t3840 = max(min(t3724.s, 1.000000), -1.000000)
+            let t3841 = t3734.s - t3733
+            let t3842 = t3720*t3722
+            let t3843 = t3735.s - t3733
+            let t3844 = max(min(t3736.s, 1.000000), -1.000000)
+            fatom3_f[t3709] = fatom3_f[t3709] + ((((float64)cos_f64(t3725)*(forceij_f[t4125]*t3729)) + ((((-1.000000/max((float64)sqrt_f64(1.000000 - (t3840*t3840)), 0.000000))*((float64)sin_f64(t3725)*float64((0 - fatom3_f.s1.r98$x))))*((1.000000/((float64)pow_f64(t3720, 1.500000)*t3721))*((t3720*t3841) - ((t3840*t3842)*t3843))))*t3839)) + (((float64)cos_f64(t3737)*(forceij_f[t4126]*t3730)) + ((((-1.000000/max((float64)sqrt_f64(1.000000 - (t3844*t3844)), 0.000000))*((float64)sin_f64(t3737)*float64((0 - fatom3_f.s1.r98$x))))*((1.000000/((float64)pow_f64(t3722, 1.500000)*t3719))*((t3722*t3843) - ((t3842*t3844)*t3841))))*t3839)))
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+  consume forceij_f {
+   consume energyij_f {
+    let t4129 = ((nelemsCombos + 1)*natom)*-3
+    let t4127 = natom*nl
+    for (fatom3_f.s2.dim, 0, 3) {
+     let t4138 = natom*nelemsCombos
+     let t4137 = (forceij_f.s2.basis function index.max.s*npairs)*fatom3_f.s2.dim
+     let t4136 = fatom3_f.s2.dim*y.stride.1
+     let t4133 = fatom3_f.s2.dim + t4129
+     for (fatom3_f.s2.r98$4, 0, natom) {
+      let fatom3_f.s2.r98_w.new_min$1.s = min(pairnumsum[fatom3_f.s2.r98$4], npairs)
+      let fatom3_f.s2.r98$w.new_max.s = let t4248 = pairnumsum[fatom3_f.s2.r98$4 + 1] in max(min(min(max(min(npairs, t4248), 0) + -1, t4248), npairs), fatom3_f.s2.r98_w.new_min$1.s)
+      let t4147 = y.stride.1*2
+      let t4148 = max(fatom3_f.s2.r98_w.new_min$1.s, 0)
+      let t4149 = nelems*t4138
+      let t4139 = max(fatom3_f.s2.r98$w.new_max.s, 0) - t4148
+      for (fatom3_f.s2.r98$w.rebased, 0, t4139) {
+       let fatom3_f.s2.r98$z.new_max.s = min(pairnumsum[fatom3_f.s2.r98$4 + 1], npairs)
+       let t4157 = fatom3_f.s2.r98$w.rebased + t4148
+       let t4150 = max(fatom3_f.s2.r98$z.new_max.s, 0)
+       for (fatom3_f.s2.r98$z, 0, t4150) {
+        if (let t4249 = pairnumsum[fatom3_f.s2.r98$4 + 1] in ((t4157 < min(t4249, fatom3_f.s2.r98$z)) && (t4157 < t4249))) {
+         if (t4157 < pairnumsum[fatom3_f.s2.r98$4 + 1]) {
+          let t4161 = forceij_f.s2.basis function index.max.s*t4157
+          let t4163 = fatom3_f.s2.r98$z*forceij_f.s2.basis function index.max.s
+          for (fatom3_f.s2.r98$y, 0, tdegree2) {
+           let t4164 = (fatom3_f.s2.r98$y*t4149)*3
+           let t4165 = t4149*tdegree2
+           let t4170 = (t4137 + t4163) + fatom3_f.s2.r98$y
+           let t4171 = fatom3_f.s2.r98$y + t4163
+           let t4168 = fatom3_f.s2.r98$y + t4161
+           for (fatom3_f.s2.r98$x, 0, adegreep + 1) {
+            let t3742.s = min(pairlist[fatom3_f.s2.r98$z], t4127 + -1)
+            let t3743.s = min(alist[max(t3742.s, 0)], natom + -1)
+            let t3744.s = min(pairlist[t4157], t4127 + -1)
+            let t3745 = let t4250 = max(t3743.s, 0) in (((fatom3_f.s2.r98$x*t4165)*3) + (((t4250*3) + (((max(min(interactions[(max(min(atomtype[t4250], nelems), 1) + ((max(min(atomtype[max(min(alist[max(t3744.s, 0)], natom + -1), 0)], nelems), 1) + -1)*interactions.stride.1)) + -1], nelemsCombos), 1)*natom)*3) + (((max(min(atomtype[fatom3_f.s2.r98$4], nelems), 1)*t4138)*3) + t4133))) + t4164))
+            let t3746 = y[fatom3_f.s2.r98$4 + t4147]
+            let t3747.s = y[max(t3742.s, 0) + t4147]
+            let t3748.s = y[max(t3744.s, 0) + t4147]
+            let t3749 = y[fatom3_f.s2.r98$4]
+            let t3750.s = y[max(t3742.s, 0)]
+            let t3751.s = y[max(t3744.s, 0)]
+            let t3752 = y[fatom3_f.s2.r98$4 + y.stride.1]
+            let t3753.s = y[max(t3742.s, 0) + y.stride.1]
+            let t3754.s = y[max(t3744.s, 0) + y.stride.1]
+            let t3755 = let t4251 = (t3747.s - t3746) in (let t4252 = (t3750.s - t3749) in (let t4253 = (t3753.s - t3752) in (float64)sqrt_f64((t4251*t4251) + ((t4252*t4252) + (t4253*t4253)))))
+            let t3756 = let t4254 = (t3748.s - t3746) in (let t4255 = (t3751.s - t3749) in (let t4256 = (t3754.s - t3752) in ((t4254*t4254) + ((t4255*t4255) + (t4256*t4256)))))
+            let t3757.s = (float64)sqrt_f64(t3756)
+            let t3758.s = (((t3747.s - t3746)*(t3748.s - t3746)) + (((t3750.s - t3749)*(t3751.s - t3749)) + ((t3753.s - t3752)*(t3754.s - t3752))))/(t3755*t3757.s)
+            let t3759 = (float64)acos_f64(max(min(t3758.s, 1.000000), -1.000000))*float64(fatom3_f.s2.r98$x)
+            let t3761 = energyij_f[t4168]
+            let t3763 = y[fatom3_f.s2.r98$4 + t4136]
+            let t3856 = max(min(t3758.s, 1.000000), -1.000000)
+            fatom3_f[t3745] = fatom3_f[t3745] - (((float64)cos_f64(t3759)*(forceij_f[t4170]*t3761)) + ((energyij_f[t4171]*t3761)*(((-1.000000/max((float64)sqrt_f64(1.000000 - (t3856*t3856)), 0.000000))*((float64)sin_f64(t3759)*float64((0 - fatom3_f.s2.r98$x))))*((1.000000/((float64)pow_f64(t3755, 1.500000)*t3756))*(((y[max(t3744.s, 0) + t4136] - t3763)*t3755) - (((t3755*t3757.s)*t3856)*(y[max(t3742.s, 0) + t4136] - t3763)))))))
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+  consume forceij_f {
+   consume energyij_f {
+    let t4174 = ((nelemsCombos + 1)*natom)*-3
+    let t4172 = natom*nl
+    for (fatom3_f.s3.dim, 0, 3) {
+     let t4183 = natom*nelemsCombos
+     let t4182 = (forceij_f.s2.basis function index.max.s*npairs)*fatom3_f.s3.dim
+     let t4181 = fatom3_f.s3.dim*y.stride.1
+     let t4178 = fatom3_f.s3.dim + t4174
+     for (fatom3_f.s3.r98$4, 0, natom) {
+      let fatom3_f.s3.r98$w.new_min.s = min(pairnumsum[fatom3_f.s3.r98$4], npairs)
+      let fatom3_f.s3.r98$w.new_max.s = let t4257 = pairnumsum[fatom3_f.s3.r98$4 + 1] in max(min(min(max(min(npairs, t4257), 0) + -1, t4257), npairs), fatom3_f.s3.r98$w.new_min.s)
+      let t4192 = y.stride.1*2
+      let t4193 = max(fatom3_f.s3.r98$w.new_min.s, 0)
+      let t4194 = nelems*t4183
+      let t4184 = max(fatom3_f.s3.r98$w.new_max.s, 0) - t4193
+      for (fatom3_f.s3.r98$w.rebased, 0, t4184) {
+       let fatom3_f.s3.r98$z.new_max.s = min(pairnumsum[fatom3_f.s3.r98$4 + 1], npairs)
+       let t4202 = fatom3_f.s3.r98$w.rebased + t4193
+       let t4195 = max(fatom3_f.s3.r98$z.new_max.s, 0)
+       for (fatom3_f.s3.r98$z, 0, t4195) {
+        if (let t4258 = pairnumsum[fatom3_f.s3.r98$4 + 1] in ((t4202 < min(t4258, fatom3_f.s3.r98$z)) && (t4202 < t4258))) {
+         if (t4202 < pairnumsum[fatom3_f.s3.r98$4 + 1]) {
+          let t4210 = forceij_f.s2.basis function index.max.s*t4202
+          let t4206 = fatom3_f.s3.r98$z*forceij_f.s2.basis function index.max.s
+          let t4208 = t4182 + t4210
+          for (fatom3_f.s3.r98$y, 0, tdegree2) {
+           let t4211 = (fatom3_f.s3.r98$y*t4194)*3
+           let t4212 = t4194*tdegree2
+           let t4218 = fatom3_f.s3.r98$y + t4210
+           let t4217 = fatom3_f.s3.r98$y + t4208
+           let t4215 = fatom3_f.s3.r98$y + t4206
+           for (fatom3_f.s3.r98$x, 0, adegreep + 1) {
+            let t3768.s = min(pairlist[fatom3_f.s3.r98$z], t4172 + -1)
+            let t3769.s = min(pairlist[t4202], t4172 + -1)
+            let t3770.s = min(alist[max(t3769.s, 0)], natom + -1)
+            let t3771 = let t4259 = max(t3770.s, 0) in (((fatom3_f.s3.r98$x*t4212)*3) + ((((max(min(interactions[(max(min(atomtype[max(min(alist[max(t3768.s, 0)], natom + -1), 0)], nelems), 1) + ((max(min(atomtype[t4259], nelems), 1) + -1)*interactions.stride.1)) + -1], nelemsCombos), 1)*natom)*3) + ((t4259*3) + (((max(min(atomtype[fatom3_f.s3.r98$4], nelems), 1)*t4183)*3) + t4178))) + t4211))
+            let t3772 = y[fatom3_f.s3.r98$4 + t4192]
+            let t3773.s = y[max(t3769.s, 0) + t4192]
+            let t3774.s = y[max(t3768.s, 0) + t4192]
+            let t3775 = y[fatom3_f.s3.r98$4]
+            let t3776.s = y[max(t3769.s, 0)]
+            let t3777.s = y[max(t3768.s, 0)]
+            let t3778 = y[fatom3_f.s3.r98$4 + y.stride.1]
+            let t3779.s = y[max(t3769.s, 0) + y.stride.1]
+            let t3780.s = y[max(t3768.s, 0) + y.stride.1]
+            let t3781 = let t4260 = (t3773.s - t3772) in (let t4261 = (t3776.s - t3775) in (let t4262 = (t3779.s - t3778) in (float64)sqrt_f64((t4260*t4260) + ((t4261*t4261) + (t4262*t4262)))))
+            let t3782 = let t4263 = (t3774.s - t3772) in (let t4264 = (t3777.s - t3775) in (let t4265 = (t3780.s - t3778) in ((t4263*t4263) + ((t4264*t4264) + (t4265*t4265)))))
+            let t3783.s = (float64)sqrt_f64(t3782)
+            let t3784.s = (((t3773.s - t3772)*(t3774.s - t3772)) + (((t3776.s - t3775)*(t3777.s - t3775)) + ((t3779.s - t3778)*(t3780.s - t3778))))/(t3781*t3783.s)
+            let t3785 = (float64)acos_f64(max(min(t3784.s, 1.000000), -1.000000))*float64(fatom3_f.s3.r98$x)
+            let t3787 = energyij_f[t4215]
+            let t3789 = y[fatom3_f.s3.r98$4 + t4181]
+            let t3869 = max(min(t3784.s, 1.000000), -1.000000)
+            fatom3_f[t3771] = fatom3_f[t3771] - (((float64)cos_f64(t3785)*(forceij_f[t4217]*t3787)) + ((energyij_f[t4218]*t3787)*(((-1.000000/max((float64)sqrt_f64(1.000000 - (t3869*t3869)), 0.000000))*((float64)sin_f64(t3785)*float64((0 - fatom3_f.s3.r98$x))))*((1.000000/((float64)pow_f64(t3781, 1.500000)*t3782))*(((y[max(t3768.s, 0) + t4181] - t3789)*t3781) - (((t3781*t3783.s)*t3869)*(y[max(t3769.s, 0) + t4181] - t3789)))))))
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+  free energyij_f
+  free forceij_f
+ }
+ produce fatom3 {
+  consume fatom3_f {
+   for (fatom3.s0.ozzzz, 0, tdegree2) {
+    let t4223 = natom*nelemsCombos
+    let t4222 = fatom3.s0.ozzzz*fatom3.stride.5
+    for (fatom3.s0.ozzz, 0, adegreep + 1) {
+     let t4226 = nelems*t4223
+     let t4224 = ((fatom3.s0.ozzzz*t4226) + ((t4226*tdegree2)*fatom3.s0.ozzz))*3
+     let t4225 = (fatom3.s0.ozzz*fatom3.stride.4) + t4222
+     for (fatom3.s0.ozz, 0, nelems) {
+      let t4227 = ((fatom3.s0.ozz*t4223)*3) + t4224
+      let t4228 = (fatom3.s0.ozz*fatom3.stride.3) + t4225
+      for (fatom3.s0.oz, 0, nelemsCombos) {
+       let t4229 = ((fatom3.s0.oz*natom)*3) + t4227
+       let t4230 = (fatom3.s0.oz*fatom3.stride.2) + t4228
+       for (fatom3.s0.oy, 0, natom) {
+        let t4232 = (fatom3.s0.oy*fatom3.stride.1) + t4230
+        let t4231 = (fatom3.s0.oy*3) + t4229
+        for (fatom3.s0.ox, 0, 3) {
+         fatom3[fatom3.s0.ox + t4232] = fatom3_f[fatom3.s0.ox + t4231]
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ }
+ free fatom3_f
+}
+}
+
+

@@ -169,6 +169,7 @@ void pod3body(double *eatom, double *fatom, double *x, double *e2ij, double *f2i
         int i = ii;       // atom i
         int typei = atomtype[i] - 1;        
         int numneigh = pairnum[ii];      // number of pairs (i,j) around i         
+        // std::cout << "Numneigh is: " << numneigh << endl;
         int s = pairnumsum[ii];        
         for (int lj=0; lj<numneigh ; lj++) {   // loop over each atom j around atom i
             int gj = pairlist[lj + s];  // atom j    
@@ -189,6 +190,8 @@ void pod3body(double *eatom, double *fatom, double *x, double *e2ij, double *f2i
                 xik3 = x[2+dim*gk] - x[2+dim*i];  // xj - xi           s
                 riksq = xik1*xik1 + xik2*xik2 + xik3*xik3;                    
                 rik = pow(riksq, 0.5); 
+
+                // std::cout << "xik123( " << xik1 << ", " << xik2 << ", " << xik3 << ")" << endl;
                                 
                 xdot  = xij1*xik1 + xij2*xik2 + xij3*xik3;                
                 costhe = xdot/(rij*rik);    
@@ -201,6 +204,7 @@ void pod3body(double *eatom, double *fatom, double *x, double *e2ij, double *f2i
                 theta = acos(costhe);            
                 dtheta = -1.0/sinthe; 
 
+                // std::cout << "theta(" << i << ", " << lj << ", " << lk << "): " << theta << endl;
                 // std::cout << "dtheta(" << i << ", " << lj << ", " << lk << "): " << dtheta << endl;
 
                 tm1 = pow(rijsq,1.5) * rik;
@@ -215,8 +219,8 @@ void pod3body(double *eatom, double *fatom, double *x, double *e2ij, double *f2i
                 dct5 = (xij2*riksq - xik2*xdot)*tm2;
                 dct6 = (xij3*riksq - xik3*xdot)*tm2;
                 
-		/**
-                std::cout << "dct1(" << i << ", " << j << ", " << k << "): " << dct1 << endl;
+                /*
+		std::cout << "dct1(" << i << ", " << j << ", " << k << "): " << dct1 << endl;
                 std::cout << "dct2(" << i << ", " << j << ", " << k << "): " << dct2 << endl;
                 std::cout << "dct3(" << i << ", " << j << ", " << k << "): " << dct3 << endl;
                 std::cout << "dct4(" << i << ", " << j << ", " << k << "): " << dct4 << endl;
@@ -233,7 +237,7 @@ void pod3body(double *eatom, double *fatom, double *x, double *e2ij, double *f2i
                     dabf4[p] = tm*dct4;
                     dabf5[p] = tm*dct5;
                     dabf6[p] = tm*dct6;        
-		    /**
+		    /*
                     std::cout << "dabf1(" << i << ", " << j << ", " << k << ", " << p << "): " << dabf1[p] << endl;
                     std::cout << "dabf2(" << i << ", " << j << ", " << k << ", " << p << "): " << dabf2[p] << endl;
                     std::cout << "dabf3(" << i << ", " << j << ", " << k << ", " << p << "): " << dabf3[p] << endl;
@@ -253,7 +257,7 @@ void pod3body(double *eatom, double *fatom, double *x, double *e2ij, double *f2i
                     drbf4 = f2ij[0 + dim*(lk + s) + dim*Nij*m]*uj;
                     drbf5 = f2ij[1 + dim*(lk + s) + dim*Nij*m]*uj;
                     drbf6 = f2ij[2 + dim*(lk + s) + dim*Nij*m]*uj;     
-		    /**
+		    /*
                     std::cout << "drbf1(" << i << ", " << j << ", " << k << ", " << m << "): " << drbf1 << endl;
                     std::cout << "drbf2(" << i << ", " << j << ", " << k << ", " << m << "): " << drbf2 << endl;
                     std::cout << "drbf3(" << i << ", " << j << ", " << k << ", " << m << "): " << drbf3 << endl;
@@ -274,6 +278,7 @@ void pod3body(double *eatom, double *fatom, double *x, double *e2ij, double *f2i
                         n = p + (nabf1)*m;
                         nijk = natom*((elemindex[typej + typek*nelements] - 1) + nelements2*typei + nelements2*nelements*n);
                         eatom[i + nijk] += eijk;
+			// std::cout << eatom[i + nijk] << "- eatom params-- i: " << i << ", j: " << j << ", k: " << k << ", m: " << m << ", p: " << p << ", gk: " << gk << ", lks: " << lk + s << endl;
 
                         nijk3 = 3*i + 3*nijk;                        
                         fatom[0 + nijk3] += fj1 + fk1;
@@ -339,6 +344,7 @@ void poddesc_halide(double *eatom1, double *fatom1, double *eatom2, double *fato
   Halide::Runtime::Buffer<double> besseparams_buffer(besselparams, nbesselpars);
   Halide::Runtime::Buffer<double> Phi1_buffer(Phi1, nbesselpars, pdegree[0], nrbf);
   Halide::Runtime::Buffer<double> Phi2_buffer(Phi2, pdegree[1], nrbf);
+  // Halide::Runtime::Buffer<double> Phi2_buffer(Phi2, nabf, nrbf);
   double *y_p = new double[nl * natom * 3];
   for (int i = 0; i < 3; i++) {
       for (int j = 0; j < nl * natom; j++) {
@@ -356,13 +362,15 @@ void poddesc_halide(double *eatom1, double *fatom1, double *eatom2, double *fato
   Halide::Runtime::Buffer<double> eatom2_buffer(eatom2, natom, nelements2, nrbf2);
   Halide::Runtime::Buffer<double> fatom2_buffer(fatom2, 3, natom, nelements2, nrbf2);
   
-  Halide::Runtime::Buffer<double> eatom3_buffer(eatom3, natom, nelements2, nelements, pdegree[1] + 1, nrbf3);
-  Halide::Runtime::Buffer<double> fatom3_buffer(fatom3, 3, natom, nelements2, nelements, pdegree[1] + 1, nrbf3);
+  Halide::Runtime::Buffer<double> eatom3_buffer(eatom3, natom, nelements2, nelements, nabf + 1, nrbf3);
+  // Halide::Runtime::Buffer<double> eatom3_buffer(eatom3, natom, nelements2, nelements, pdegree[1] + 1, nrbf3);
+  Halide::Runtime::Buffer<double> fatom3_buffer(fatom3, 3, natom, nelements2, nelements, nabf + 1, nrbf3);
+  // Halide::Runtime::Buffer<double> fatom3_buffer(fatom3, 3, natom, nelements2, nelements, pdegree[1] + 1, nrbf3);
 
   
   // std::cout << "natom before poddesc1 constructor " << natom;
   poddesc1(pairlist_buffer, pairnumsum_buffer, atomtype_buffer, alist_buffer, interactions_buffer, besseparams_buffer, Phi1_buffer, Phi2_buffer, y_buffer, //inputs
-	   nl, Nij, natom, pdegree[0], pdegree[1], nrbf2, nrbf3, nbesselpars, nelements, nelements2, rin, rcut, //params
+	   nl, Nij, natom, pdegree[0], pdegree[1], nabf,  nrbf2, nrbf3, nbesselpars, nelements, nelements2, rin, rcut, //params
 	   eatom1_buffer, fatom1_buffer, eatom2_buffer, fatom2_buffer, eatom3_buffer, fatom3_buffer); //outputs
 
 }
