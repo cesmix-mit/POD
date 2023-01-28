@@ -1,4 +1,4 @@
-module name=poddesc1, target=x86-64-linux-avx-avx2-f16c-fma-sse41
+module name=poddesc1, target=x86-64-linux-avx-f16c-sse41
 external_plus_metadata func poddesc1 (pairlist, pairnumsum, atomtype, alist, interactions, besselparams, Phi1, Phi2, y, nl, npairs, natom, bdegree, adegree, adegreep, tdegree1, tdegree2, nbesselparams, nelems, nelemsCombos, rin, rcut, eatom1, fatom1, eatom2, fatom2, eatom3, fatom3) {
 assert((uint64)reinterpret((halide_buffer_t *)y.buffer) != (uint64)0, halide_error_buffer_argument_is_null("y"))
 assert((uint64)reinterpret((halide_buffer_t *)pairnumsum.buffer) != (uint64)0, halide_error_buffer_argument_is_null("pairnumsum"))
@@ -186,14 +186,12 @@ let y.stride.0 = _halide_buffer_get_stride((halide_buffer_t *)y.buffer, 0)
 let y.min.1 = _halide_buffer_get_min((halide_buffer_t *)y.buffer, 1)
 let y.extent.1 = _halide_buffer_get_extent((halide_buffer_t *)y.buffer, 1)
 let y.stride.1 = _halide_buffer_get_stride((halide_buffer_t *)y.buffer, 1)
-let eatom3_f.s0.inverse basis function index.max = max(natom + -1, adegreep)
-let eatom3_f.s0.rbf_v.max.s = max(nelemsCombos, tdegree2)
 let forceij_f.s2.basis function index.max.s = max(tdegree1, tdegree2)
 let eatom3.stride.4.required = ((natom*nelemsCombos)*nelems)*(adegreep + 1)
 let y.extent.0.required.s = max(natom*nl, natom)
 assert(!(uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)Phi1.buffer) || (bdegree <= nbesselparams), halide_error_constraints_make_required_region_smaller("Input buffer Phi1", 0, 0, nbesselparams + -1, 0, bdegree + -1))
 assert(!(uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)Phi1.buffer) || (nbesselparams <= bdegree), halide_error_constraints_make_required_region_smaller("Input buffer Phi1", 1, 0, bdegree + -1, 0, nbesselparams + -1))
-assert(!(uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)alist.buffer) || (1 <= (natom*nl)), let t4233 = (natom*nl) in halide_error_constraints_make_required_region_smaller("Input buffer alist", 0, 0, t4233 + -1, 0, max(t4233, 1) + -1))
+assert(!(uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)alist.buffer) || (1 <= (natom*nl)), let t4302 = (natom*nl) in halide_error_constraints_make_required_region_smaller("Input buffer alist", 0, 0, t4302 + -1, 0, max(t4302, 1) + -1))
 assert(!(uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)atomtype.buffer) || (1 <= natom), halide_error_constraints_make_required_region_smaller("Input buffer atomtype", 0, 0, natom + -1, 0, 0))
 assert(!(uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)interactions.buffer) || (1 <= nelems), halide_error_constraints_make_required_region_smaller("Input buffer interactions", 0, 0, nelems + -1, 0, 0))
 assert(!(uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)y.buffer) || (max(y.extent.0.required.s, 1) <= (natom*nl)), halide_error_constraints_make_required_region_smaller("Input buffer y", 0, 0, (natom*nl) + -1, 0, max(y.extent.0.required.s, 1) + -1))
@@ -219,7 +217,7 @@ if ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)eatom2.buffer)) {
  (halide_buffer_t *)_halide_buffer_init((halide_buffer_t *)eatom2.buffer, (halide_dimension_t *)_halide_buffer_get_shape((halide_buffer_t *)eatom2.buffer), (void *)reinterpret((uint64)0), (uint64)0, (halide_device_interface_t *)reinterpret((uint64)0), 2, 64, 3, (halide_dimension_t *)make_struct(0, natom, 1, 0, 0, nelemsCombos, natom, 0, 0, tdegree1, natom*nelemsCombos, 0), (uint64)0)
 }
 if ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)eatom3.buffer)) {
- let t4234 = (natom*nelemsCombos) in (halide_buffer_t *)_halide_buffer_init((halide_buffer_t *)eatom3.buffer, (halide_dimension_t *)_halide_buffer_get_shape((halide_buffer_t *)eatom3.buffer), (void *)reinterpret((uint64)0), (uint64)0, (halide_device_interface_t *)reinterpret((uint64)0), 2, 64, 5, (halide_dimension_t *)make_struct(0, natom, 1, 0, 0, nelemsCombos, natom, 0, 0, nelems, t4234, 0, 0, adegreep + 1, t4234*nelems, 0, 0, tdegree2, eatom3.stride.4.required, 0), (uint64)0)
+ let t4303 = (natom*nelemsCombos) in (halide_buffer_t *)_halide_buffer_init((halide_buffer_t *)eatom3.buffer, (halide_dimension_t *)_halide_buffer_get_shape((halide_buffer_t *)eatom3.buffer), (void *)reinterpret((uint64)0), (uint64)0, (halide_device_interface_t *)reinterpret((uint64)0), 2, 64, 5, (halide_dimension_t *)make_struct(0, natom, 1, 0, 0, nelemsCombos, natom, 0, 0, nelems, t4303, 0, 0, adegreep + 1, t4303*nelems, 0, 0, tdegree2, eatom3.stride.4.required, 0), (uint64)0)
 }
 if ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)fatom1.buffer)) {
  (halide_buffer_t *)_halide_buffer_init((halide_buffer_t *)fatom1.buffer, (halide_dimension_t *)_halide_buffer_get_shape((halide_buffer_t *)fatom1.buffer), (void *)reinterpret((uint64)0), (uint64)0, (halide_device_interface_t *)reinterpret((uint64)0), 2, 64, 3, (halide_dimension_t *)make_struct(0, natom, 1, 0, 0, nelems, natom, 0, 0, 3, natom*nelems, 0), (uint64)0)
@@ -228,7 +226,7 @@ if ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)fatom2.buffer)) {
  (halide_buffer_t *)_halide_buffer_init((halide_buffer_t *)fatom2.buffer, (halide_dimension_t *)_halide_buffer_get_shape((halide_buffer_t *)fatom2.buffer), (void *)reinterpret((uint64)0), (uint64)0, (halide_device_interface_t *)reinterpret((uint64)0), 2, 64, 4, (halide_dimension_t *)make_struct(0, 3, 1, 0, 0, natom, 3, 0, 0, nelemsCombos, natom*3, 0, 0, tdegree1, (natom*nelemsCombos)*3, 0), (uint64)0)
 }
 if ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)fatom3.buffer)) {
- let t4235 = (natom*nelemsCombos) in (halide_buffer_t *)_halide_buffer_init((halide_buffer_t *)fatom3.buffer, (halide_dimension_t *)_halide_buffer_get_shape((halide_buffer_t *)fatom3.buffer), (void *)reinterpret((uint64)0), (uint64)0, (halide_device_interface_t *)reinterpret((uint64)0), 2, 64, 6, (halide_dimension_t *)make_struct(0, 3, 1, 0, 0, natom, 3, 0, 0, nelemsCombos, natom*3, 0, 0, nelems, t4235*3, 0, 0, adegreep + 1, (t4235*nelems)*3, 0, 0, tdegree2, eatom3.stride.4.required*3, 0), (uint64)0)
+ let t4304 = (natom*nelemsCombos) in (halide_buffer_t *)_halide_buffer_init((halide_buffer_t *)fatom3.buffer, (halide_dimension_t *)_halide_buffer_get_shape((halide_buffer_t *)fatom3.buffer), (void *)reinterpret((uint64)0), (uint64)0, (halide_device_interface_t *)reinterpret((uint64)0), 2, 64, 6, (halide_dimension_t *)make_struct(0, 3, 1, 0, 0, natom, 3, 0, 0, nelemsCombos, natom*3, 0, 0, nelems, t4304*3, 0, 0, adegreep + 1, (t4304*nelems)*3, 0, 0, tdegree2, eatom3.stride.4.required*3, 0), (uint64)0)
 }
 if ((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)interactions.buffer)) {
  (halide_buffer_t *)_halide_buffer_init((halide_buffer_t *)interactions.buffer, (halide_dimension_t *)_halide_buffer_get_shape((halide_buffer_t *)interactions.buffer), (void *)reinterpret((uint64)0), (uint64)0, (halide_device_interface_t *)reinterpret((uint64)0), 0, 32, 2, (halide_dimension_t *)make_struct(0, nelems, 1, 0, 0, nelems, max(nelems, 1), 0), (uint64)0)
@@ -535,19 +533,19 @@ if (!((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)y.buffer) || ((ui
  assert(y != (void *)reinterpret((uint64)0), halide_error_host_is_null("Input buffer y"))
  produce eatom1 {
   for (eatom1.s0.oy, 0, nelems) {
-   let t3873 = eatom1.s0.oy*eatom1.stride.1
+   let t3941 = eatom1.s0.oy*eatom1.stride.1
    for (eatom1.s0.ox, 0, natom) {
-    eatom1[eatom1.s0.ox + t3873] = select(atomtype[eatom1.s0.ox] == (eatom1.s0.oy + 1), 1.000000, 0.000000)
+    eatom1[eatom1.s0.ox + t3941] = select(atomtype[eatom1.s0.ox] == (eatom1.s0.oy + 1), 1.000000, 0.000000)
    }
   }
  }
  produce fatom1 {
   for (fatom1.s0.oz, 0, 3) {
-   let t3874 = fatom1.s0.oz*fatom1.stride.2
+   let t3942 = fatom1.s0.oz*fatom1.stride.2
    for (fatom1.s0.oy, 0, nelems) {
-    let t3875 = (fatom1.s0.oy*fatom1.stride.1) + t3874
+    let t3943 = (fatom1.s0.oy*fatom1.stride.1) + t3942
     for (fatom1.s0.ox, 0, natom) {
-     fatom1[fatom1.s0.ox + t3875] = 0.000000
+     fatom1[fatom1.s0.ox + t3943] = 0.000000
     }
    }
   }
@@ -559,17 +557,17 @@ if (!((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)y.buffer) || ((ui
     rijs_f[(rijs_f.s0.pairindex*3) + rijs_f.s0.dim] = 0.000000
    }
   }
-  let t3876 = natom*nl
+  let t3944 = natom*nl
   for (rijs_f.s1.r22$x, 0, natom) {
    let rijs_f.s1.r22$y.new_min.s = min(pairnumsum[rijs_f.s1.r22$x], npairs)
    let rijs_f.s1.r22$y.new_max.s = max(min(pairnumsum[rijs_f.s1.r22$x + 1], npairs), rijs_f.s1.r22$y.new_min.s)
-   let t3879 = max(rijs_f.s1.r22$y.new_min.s, 0)
-   let t3877 = max(rijs_f.s1.r22$y.new_max.s, 0) - t3879
-   for (rijs_f.s1.r22$y.rebased, 0, t3877) {
-    let t3880 = rijs_f.s1.r22$y.rebased + t3879
+   let t3947 = max(rijs_f.s1.r22$y.new_min.s, 0)
+   let t3945 = max(rijs_f.s1.r22$y.new_max.s, 0) - t3947
+   for (rijs_f.s1.r22$y.rebased, 0, t3945) {
+    let t3948 = rijs_f.s1.r22$y.rebased + t3947
     for (rijs_f.s1.dim, 0, 3) {
-     let t3796 = rijs_f.s1.dim*y.stride.1
-     rijs_f[(t3880*3) + rijs_f.s1.dim] = y[max(min(pairlist[t3880], t3876 + -1), 0) + t3796] - y[rijs_f.s1.r22$x + t3796]
+     let t3862 = rijs_f.s1.dim*y.stride.1
+     rijs_f[(t3948*3) + rijs_f.s1.dim] = y[max(min(pairlist[t3948], t3944 + -1), 0) + t3862] - y[rijs_f.s1.r22$x + t3862]
     }
    }
   }
@@ -577,19 +575,19 @@ if (!((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)y.buffer) || ((ui
  allocate abf_f[float64 * adegree * npairs]
  produce abf_f {
   consume rijs_f {
-   let t3882 = (float64)exp_f64(-1.000000)
-   let t3881 = (float64)rcut - (float64)rin
+   let t3950 = (float64)exp_f64(-1.000000)
+   let t3949 = (float64)rcut - (float64)rin
    for (abf_f.s0.pairindex, 0, npairs) {
-    let t3884 = abf_f.s0.pairindex*adegree
-    let t3883 = abf_f.s0.pairindex*3
+    let t3952 = abf_f.s0.pairindex*adegree
+    let t3951 = abf_f.s0.pairindex*3
     for (abf_f.s0.basis function index, 0, adegree) {
-     let t3627 = rijs_f[t3883 + 2]
-     let t3628 = rijs_f[t3883]
-     let t3629 = rijs_f[t3883 + 1]
-     let t3630 = (float64)sqrt_f64((t3627*t3627) + ((t3628*t3628) + (t3629*t3629)))
-     let t3631 = (t3630 - (float64)rin)/t3881
-     let t3797 = (t3631*t3631)*t3631
-     abf_f[abf_f.s0.basis function index + t3884] = ((float64)exp_f64(-1.000000/(float64)sqrt_f64(((1.000000 - t3797)*(1.000000 - t3797)) + 0.000001))/t3882)/(float64)pow_f64(t3630, float64(abf_f.s0.basis function index) + 1.000000)
+     let t3695 = rijs_f[t3951 + 2]
+     let t3696 = rijs_f[t3951]
+     let t3697 = rijs_f[t3951 + 1]
+     let t3698 = (float64)sqrt_f64((t3695*t3695) + ((t3696*t3696) + (t3697*t3697)))
+     let t3699 = (t3698 - (float64)rin)/t3949
+     let t3863 = (t3699*t3699)*t3699
+     abf_f[abf_f.s0.basis function index + t3952] = ((float64)exp_f64(-1.000000/(float64)sqrt_f64(((1.000000 - t3863)*(1.000000 - t3863)) + 0.000001))/t3950)/(float64)pow_f64(t3698, float64(abf_f.s0.basis function index) + 1.000000)
     }
    }
   }
@@ -597,26 +595,26 @@ if (!((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)y.buffer) || ((ui
  allocate rbf_f[float64 * nbesselparams * bdegree * npairs]
  produce rbf_f {
   consume rijs_f {
-   let t3886 = (float64)exp_f64(-1.000000)
-   let t3885 = (float64)rcut - (float64)rin
+   let t3954 = (float64)exp_f64(-1.000000)
+   let t3953 = (float64)rcut - (float64)rin
    for (rbf_f.s0.pairindex, 0, npairs) {
-    let t3889 = (float64)sqrt_f64(2.000000/t3885)
-    let t3890 = (bdegree*nbesselparams)*rbf_f.s0.pairindex
-    let t3888 = rbf_f.s0.pairindex*3
+    let t3957 = (float64)sqrt_f64(2.000000/t3953)
+    let t3958 = (bdegree*nbesselparams)*rbf_f.s0.pairindex
+    let t3956 = rbf_f.s0.pairindex*3
     for (rbf_f.s0.basis function index, 0, bdegree) {
-     let t3891 = t3889/float64((rbf_f.s0.basis function index + 1))
-     let t3892 = (nbesselparams*rbf_f.s0.basis function index) + t3890
+     let t3959 = t3957/float64((rbf_f.s0.basis function index + 1))
+     let t3960 = (nbesselparams*rbf_f.s0.basis function index) + t3958
      for (rbf_f.s0.basis function param, 0, nbesselparams) {
-      let t3633.s = besselparams[rbf_f.s0.basis function param]
-      let t3634 = rijs_f[t3888 + 2]
-      let t3635 = rijs_f[t3888]
-      let t3636 = rijs_f[t3888 + 1]
-      let t3637.s = (float64)sqrt_f64((t3634*t3634) + ((t3635*t3635) + (t3636*t3636)))
-      let t3639 = (t3637.s - (float64)rin)/t3885
-      let t3798 = max(t3633.s, 0.001000)
-      let t3799 = t3637.s - (float64)rin
-      let t3801 = (t3639*t3639)*t3639
-      rbf_f[rbf_f.s0.basis function param + t3892] = ((float64)sin_f64((((1.000000 - (float64)exp_f64((0.000000 - (t3798*t3799))/t3885))/(1.000000 - (float64)exp_f64(0.000000 - t3798)))*float64((rbf_f.s0.basis function index + 1)))*3.141593)*(((float64)exp_f64(-1.000000/(float64)sqrt_f64(((1.000000 - t3801)*(1.000000 - t3801)) + 0.000001))/t3886)*t3891))/t3799
+      let t3701.s = besselparams[rbf_f.s0.basis function param]
+      let t3702 = rijs_f[t3956 + 2]
+      let t3703 = rijs_f[t3956]
+      let t3704 = rijs_f[t3956 + 1]
+      let t3705.s = (float64)sqrt_f64((t3702*t3702) + ((t3703*t3703) + (t3704*t3704)))
+      let t3707 = (t3705.s - (float64)rin)/t3953
+      let t3864 = max(t3701.s, 0.001000)
+      let t3865 = t3705.s - (float64)rin
+      let t3867 = (t3707*t3707)*t3707
+      rbf_f[rbf_f.s0.basis function param + t3960] = ((float64)sin_f64((((1.000000 - (float64)exp_f64((0.000000 - (t3864*t3865))/t3953))/(1.000000 - (float64)exp_f64(0.000000 - t3864)))*float64((rbf_f.s0.basis function index + 1)))*3.141593)*(((float64)exp_f64(-1.000000/(float64)sqrt_f64(((1.000000 - t3867)*(1.000000 - t3867)) + 0.000001))/t3954)*t3959))/t3865
      }
     }
    }
@@ -626,23 +624,23 @@ if (!((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)y.buffer) || ((ui
  allocate energyij_f[float64 * forceij_f.s2.basis function index.max.s * npairs]
  produce energyij_f {
   for (energyij_f.s0.pairindex, 0, npairs) {
-   let t3893 = energyij_f.s0.pairindex*forceij_f.s2.basis function index.max.s
+   let t3961 = energyij_f.s0.pairindex*forceij_f.s2.basis function index.max.s
    for (energyij_f.s0.basis function index, 0, forceij_f.s2.basis function index.max.s) {
-    energyij_f[energyij_f.s0.basis function index + t3893] = 0.000000
+    energyij_f[energyij_f.s0.basis function index + t3961] = 0.000000
    }
   }
   consume rbf_f {
    for (energyij_f.s1.pairindex, 0, npairs) {
-    let t3896 = (bdegree*nbesselparams)*energyij_f.s1.pairindex
-    let t3895 = energyij_f.s1.pairindex*forceij_f.s2.basis function index.max.s
+    let t3964 = (bdegree*nbesselparams)*energyij_f.s1.pairindex
+    let t3963 = energyij_f.s1.pairindex*forceij_f.s2.basis function index.max.s
     for (energyij_f.s1.basis function index, 0, forceij_f.s2.basis function index.max.s) {
-     let t3898 = Phi1.stride.2*energyij_f.s1.basis function index
-     let t3897 = energyij_f.s1.basis function index + t3895
+     let t3966 = Phi1.stride.2*energyij_f.s1.basis function index
+     let t3965 = energyij_f.s1.basis function index + t3963
      for (energyij_f.s1.r48$y, 0, nbesselparams) {
-      let t3900 = (Phi1.stride.1*energyij_f.s1.r48$y) + t3898
-      let t3899 = energyij_f.s1.r48$y + t3896
+      let t3968 = (Phi1.stride.1*energyij_f.s1.r48$y) + t3966
+      let t3967 = energyij_f.s1.r48$y + t3964
       for (energyij_f.s1.r48$x, 0, bdegree) {
-       energyij_f[t3897] = energyij_f[t3897] + (rbf_f[(energyij_f.s1.r48$x*nbesselparams) + t3899]*Phi1[energyij_f.s1.r48$x + t3900])
+       energyij_f[t3965] = energyij_f[t3965] + (rbf_f[(energyij_f.s1.r48$x*nbesselparams) + t3967]*Phi1[energyij_f.s1.r48$x + t3968])
       }
      }
     }
@@ -651,13 +649,13 @@ if (!((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)y.buffer) || ((ui
   free rbf_f
   consume abf_f {
    for (energyij_f.s2.pairindex, 0, npairs) {
-    let t3901 = energyij_f.s2.pairindex*forceij_f.s2.basis function index.max.s
-    let t3902 = adegree*energyij_f.s2.pairindex
+    let t3969 = energyij_f.s2.pairindex*forceij_f.s2.basis function index.max.s
+    let t3970 = adegree*energyij_f.s2.pairindex
     for (energyij_f.s2.basis function index, 0, forceij_f.s2.basis function index.max.s) {
-     let t3904 = Phi2.stride.1*energyij_f.s2.basis function index
-     let t3903 = energyij_f.s2.basis function index + t3901
+     let t3972 = Phi2.stride.1*energyij_f.s2.basis function index
+     let t3971 = energyij_f.s2.basis function index + t3969
      for (energyij_f.s2.r58$x, 0, adegree) {
-      energyij_f[t3903] = energyij_f[t3903] + (abf_f[energyij_f.s2.r58$x + t3902]*Phi2[energyij_f.s2.r58$x + t3904])
+      energyij_f[t3971] = energyij_f[t3971] + (abf_f[energyij_f.s2.r58$x + t3970]*Phi2[energyij_f.s2.r58$x + t3972])
      }
     }
    }
@@ -667,24 +665,24 @@ if (!((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)y.buffer) || ((ui
  allocate ijs_f[int32 * npairs * 4]
  produce ijs_f {
   for (ijs_f.s0.numOuts, 0, 4) {
-   let t3905 = mux(ijs_f.s0.numOuts, -1, -1, -1, -1)
-   let t3906 = ijs_f.s0.numOuts*npairs
+   let t3973 = mux(ijs_f.s0.numOuts, -1, -1, -1, -1)
+   let t3974 = ijs_f.s0.numOuts*npairs
    for (ijs_f.s0.pairindex, 0, npairs) {
-    ijs_f[ijs_f.s0.pairindex + t3906] = t3905
+    ijs_f[ijs_f.s0.pairindex + t3974] = t3973
    }
   }
-  let t3907 = natom*nl
+  let t3975 = natom*nl
   for (ijs_f.s1.r22$x, 0, natom) {
    let ijs_f.s1.r22$y.new_min.s = min(pairnumsum[ijs_f.s1.r22$x], npairs)
    let ijs_f.s1.r22$y.new_max.s = max(min(pairnumsum[ijs_f.s1.r22$x + 1], npairs), ijs_f.s1.r22$y.new_min.s)
-   let t3910 = max(ijs_f.s1.r22$y.new_min.s, 0)
-   let t3908 = max(ijs_f.s1.r22$y.new_max.s, 0) - t3910
-   for (ijs_f.s1.r22$y.rebased, 0, t3908) {
-    let t3911 = ijs_f.s1.r22$y.rebased + t3910
+   let t3978 = max(ijs_f.s1.r22$y.new_min.s, 0)
+   let t3976 = max(ijs_f.s1.r22$y.new_max.s, 0) - t3978
+   for (ijs_f.s1.r22$y.rebased, 0, t3976) {
+    let t3979 = ijs_f.s1.r22$y.rebased + t3978
     for (ijs_f.s1.numOuts, 0, 4) {
-     let t3643.s = min(alist[max(min(pairlist[t3911], t3907 + -1), 0)], natom + -1)
-     let t3804 = max(t3643.s, 0)
-     ijs_f[(ijs_f.s1.numOuts*npairs) + t3911] = mux(ijs_f.s1.numOuts, ijs_f.s1.r22$x, t3804, atomtype[ijs_f.s1.r22$x], atomtype[t3804])
+     let t3711.s = min(alist[max(min(pairlist[t3979], t3975 + -1), 0)], natom + -1)
+     let t3870 = max(t3711.s, 0)
+     ijs_f[(ijs_f.s1.numOuts*npairs) + t3979] = mux(ijs_f.s1.numOuts, ijs_f.s1.r22$x, t3870, atomtype[ijs_f.s1.r22$x], atomtype[t3870])
     }
    }
   }
@@ -694,22 +692,22 @@ if (!((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)y.buffer) || ((ui
  allocate eatom2_f[float64 * natom * nelemsCombos * tdegree1]
  produce eatom2_f {
   for (eatom2_f.s0.basis function index, 0, tdegree1) {
-   let t3913 = (natom*nelemsCombos)*eatom2_f.s0.basis function index
+   let t3981 = (natom*nelemsCombos)*eatom2_f.s0.basis function index
    for (eatom2_f.s0.inter, 0, nelemsCombos) {
-    let t3914 = (eatom2_f.s0.inter*natom) + t3913
+    let t3982 = (eatom2_f.s0.inter*natom) + t3981
     for (eatom2_f.s0.atom, 0, natom) {
-     eatom2_f[eatom2_f.s0.atom + t3914] = 0.000000
+     eatom2_f[eatom2_f.s0.atom + t3982] = 0.000000
     }
    }
   }
   consume ijs_f {
    consume energyij_f {
     for (eatom2_f.s1.r80$y, 0, tdegree1) {
-     let t3918 = (natom*nelemsCombos)*eatom2_f.s1.r80$y
+     let t3986 = (natom*nelemsCombos)*eatom2_f.s1.r80$y
      for (eatom2_f.s1.r80$x, 0, npairs) {
-      let t3644.s = (max(min(interactions[((max(min(ijs_f[(npairs*3) + eatom2_f.s1.r80$x], nelems), 1)*interactions.stride.1) + (max(min(ijs_f[(npairs*2) + eatom2_f.s1.r80$x], nelems), 1) - interactions.stride.1)) + -1], nelemsCombos), 1)*natom) + (max(min(ijs_f[eatom2_f.s1.r80$x], natom + -1), 0) + t3918)
-      let t3805 = t3644.s - natom
-      eatom2_f[t3805] = eatom2_f[t3805] + energyij_f[(eatom2_f.s1.r80$x*forceij_f.s2.basis function index.max.s) + eatom2_f.s1.r80$y]
+      let t3712.s = (max(min(interactions[((max(min(ijs_f[(npairs*3) + eatom2_f.s1.r80$x], nelems), 1)*interactions.stride.1) + (max(min(ijs_f[(npairs*2) + eatom2_f.s1.r80$x], nelems), 1) - interactions.stride.1)) + -1], nelemsCombos), 1)*natom) + (max(min(ijs_f[eatom2_f.s1.r80$x], natom + -1), 0) + t3986)
+      let t3871 = t3712.s - natom
+      eatom2_f[t3871] = eatom2_f[t3871] + energyij_f[(eatom2_f.s1.r80$x*forceij_f.s2.basis function index.max.s) + eatom2_f.s1.r80$y]
      }
     }
    }
@@ -718,13 +716,13 @@ if (!((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)y.buffer) || ((ui
  produce eatom2 {
   consume eatom2_f {
    for (eatom2.s0.oz, 0, tdegree1) {
-    let t3922 = (natom*nelemsCombos)*eatom2.s0.oz
-    let t3923 = eatom2.s0.oz*eatom2.stride.2
+    let t3990 = (natom*nelemsCombos)*eatom2.s0.oz
+    let t3991 = eatom2.s0.oz*eatom2.stride.2
     for (eatom2.s0.oy, 0, nelemsCombos) {
-     let t3924 = (eatom2.s0.oy*natom) + t3922
-     let t3925 = (eatom2.s0.oy*eatom2.stride.1) + t3923
+     let t3992 = (eatom2.s0.oy*natom) + t3990
+     let t3993 = (eatom2.s0.oy*eatom2.stride.1) + t3991
      for (eatom2.s0.ox, 0, natom) {
-      eatom2[eatom2.s0.ox + t3925] = eatom2_f[eatom2.s0.ox + t3924]
+      eatom2[eatom2.s0.ox + t3993] = eatom2_f[eatom2.s0.ox + t3992]
      }
     }
    }
@@ -734,26 +732,26 @@ if (!((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)y.buffer) || ((ui
  allocate dabf_f[float64 * adegree * npairs * 3]
  produce dabf_f {
   consume rijs_f {
-   let t3926 = (float64)exp_f64(-1.000000)
-   let t3927 = (float64)rcut - (float64)rin
+   let t3994 = (float64)exp_f64(-1.000000)
+   let t3995 = (float64)rcut - (float64)rin
    for (dabf_f.s0.dim, 0, 3) {
-    let t3929 = 3.000000/(t3926*t3927)
-    let t3930 = (adegree*npairs)*dabf_f.s0.dim
+    let t3997 = 3.000000/(t3994*t3995)
+    let t3998 = (adegree*npairs)*dabf_f.s0.dim
     for (dabf_f.s0.pairindex, 0, npairs) {
-     let t3934 = dabf_f.s0.pairindex*3
-     let t3932 = dabf_f.s0.dim + t3934
-     let t3933 = (adegree*dabf_f.s0.pairindex) + t3930
+     let t4002 = dabf_f.s0.pairindex*3
+     let t4000 = dabf_f.s0.dim + t4002
+     let t4001 = (adegree*dabf_f.s0.pairindex) + t3998
      for (dabf_f.s0.basis function index, 0, adegree) {
-      let t3645 = rijs_f[t3934 + 2]
-      let t3646 = rijs_f[t3934]
-      let t3647 = rijs_f[t3934 + 1]
-      let t3648 = (float64)sqrt_f64((t3645*t3645) + ((t3646*t3646) + (t3647*t3647)))
-      let t3651 = (t3648 - (float64)rin)/t3927
-      let t3654 = let t4236 = ((t3651*t3651)*t3651) in ((1.000000 - t4236)*(1.000000 - t4236))
-      let t3655 = (float64)exp_f64(-1.000000/(float64)sqrt_f64(t3654 + 0.000001))
-      let t3656 = (float64)pow_f64(t3648, float64((dabf_f.s0.basis function index + 1)))
-      let t3807 = t3651*t3651
-      dabf_f[dabf_f.s0.basis function index + t3933] = (rijs_f[t3932]/t3648)*((((((t3807*t3929)*t3655)*((t3651*t3807) + -1.000000))/(float64)pow_f64(t3654 + 0.000001, 1.500000))/t3656) - (((t3655/t3926)*(float64(dabf_f.s0.basis function index) + 1.000000))/(t3648*t3656)))
+      let t3713 = rijs_f[t4002 + 2]
+      let t3714 = rijs_f[t4002]
+      let t3715 = rijs_f[t4002 + 1]
+      let t3716 = (float64)sqrt_f64((t3713*t3713) + ((t3714*t3714) + (t3715*t3715)))
+      let t3719 = (t3716 - (float64)rin)/t3995
+      let t3722 = let t4305 = ((t3719*t3719)*t3719) in ((1.000000 - t4305)*(1.000000 - t4305))
+      let t3723 = (float64)exp_f64(-1.000000/(float64)sqrt_f64(t3722 + 0.000001))
+      let t3724 = (float64)pow_f64(t3716, float64((dabf_f.s0.basis function index + 1)))
+      let t3873 = t3719*t3719
+      dabf_f[dabf_f.s0.basis function index + t4001] = (rijs_f[t4000]/t3716)*((((((t3873*t3997)*t3723)*((t3719*t3873) + -1.000000))/(float64)pow_f64(t3722 + 0.000001, 1.500000))/t3724) - (((t3723/t3994)*(float64(dabf_f.s0.basis function index) + 1.000000))/(t3716*t3724)))
      }
     }
    }
@@ -762,37 +760,37 @@ if (!((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)y.buffer) || ((ui
  allocate drbf_f[float64 * nbesselparams * bdegree * npairs * 3]
  produce drbf_f {
   consume rijs_f {
-   let t3936 = (float64)exp_f64(-1.000000)
-   let t3935 = (float64)rcut - (float64)rin
+   let t4004 = (float64)exp_f64(-1.000000)
+   let t4003 = (float64)rcut - (float64)rin
    for (drbf_f.s0.dim, 0, 3) {
-    let t3942 = bdegree*nbesselparams
-    let t3938 = (float64)sqrt_f64(2.000000/t3935)
-    let t3939 = 3.000000/(t3935*t3936)
-    let t3940 = (npairs*t3942)*drbf_f.s0.dim
+    let t4010 = bdegree*nbesselparams
+    let t4006 = (float64)sqrt_f64(2.000000/t4003)
+    let t4007 = 3.000000/(t4003*t4004)
+    let t4008 = (npairs*t4010)*drbf_f.s0.dim
     for (drbf_f.s0.pairindex, 0, npairs) {
-     let t3946 = drbf_f.s0.pairindex*3
-     let t3945 = (drbf_f.s0.pairindex*t3942) + t3940
-     let t3944 = drbf_f.s0.dim + t3946
+     let t4014 = drbf_f.s0.pairindex*3
+     let t4013 = (drbf_f.s0.pairindex*t4010) + t4008
+     let t4012 = drbf_f.s0.dim + t4014
      for (drbf_f.s0.basis function index, 0, bdegree) {
-      let t3947 = t3938/float64((drbf_f.s0.basis function index + 1))
-      let t3948 = (drbf_f.s0.basis function index*nbesselparams) + t3945
+      let t4015 = t4006/float64((drbf_f.s0.basis function index + 1))
+      let t4016 = (drbf_f.s0.basis function index*nbesselparams) + t4013
       for (drbf_f.s0.basis function param, 0, nbesselparams) {
-       let t3657 = rijs_f[t3946 + 2]
-       let t3658 = rijs_f[t3946]
-       let t3659 = rijs_f[t3946 + 1]
-       let t3660 = (float64)sqrt_f64((t3657*t3657) + ((t3658*t3658) + (t3659*t3659)))
-       let t3662.s = besselparams[drbf_f.s0.basis function param]
-       let t3664 = max(t3662.s, 0.001000)*(t3660 - (float64)rin)
-       let t3665 = (float64)exp_f64(0.000000 - max(t3662.s, 0.001000))
-       let t3666 = ((1.000000 - (float64)exp_f64((0.000000 - t3664)/t3935))/(1.000000 - t3665))*float64((drbf_f.s0.basis function index + 1))
-       let t3667 = (t3660 - (float64)rin)/t3935
-       let t3670 = let t4237 = ((t3667*t3667)*t3667) in ((1.000000 - t4237)*(1.000000 - t4237))
-       let t3671 = (float64)exp_f64(-1.000000/(float64)sqrt_f64(t3670 + 0.000001))
-       let t3673 = t3671/t3936
-       let t3674 = (float64)sin_f64(t3666*3.141593)
-       let t3810 = t3660 - (float64)rin
-       let t3811 = t3667*t3667
-       drbf_f[drbf_f.s0.basis function param + t3948] = (rijs_f[t3944]/t3660)*((((((((float64)exp_f64(0.000000 - (t3664/t3935))*(max(t3662.s, 0.001000)/t3935))/(1.000000 - t3665))*(((float64)cos_f64(t3666*3.141593)*float64((drbf_f.s0.basis function index + 1)))*t3673))*3.141593)/t3810) + (((((((t3811*t3939)*t3671)*((t3667*t3811) + -1.000000))/(float64)pow_f64(t3670 + 0.000001, 1.500000))*t3674)/t3810) - ((t3673*t3674)/(t3810*t3810))))*t3947)
+       let t3725 = rijs_f[t4014 + 2]
+       let t3726 = rijs_f[t4014]
+       let t3727 = rijs_f[t4014 + 1]
+       let t3728 = (float64)sqrt_f64((t3725*t3725) + ((t3726*t3726) + (t3727*t3727)))
+       let t3730.s = besselparams[drbf_f.s0.basis function param]
+       let t3732 = max(t3730.s, 0.001000)*(t3728 - (float64)rin)
+       let t3733 = (float64)exp_f64(0.000000 - max(t3730.s, 0.001000))
+       let t3734 = ((1.000000 - (float64)exp_f64((0.000000 - t3732)/t4003))/(1.000000 - t3733))*float64((drbf_f.s0.basis function index + 1))
+       let t3735 = (t3728 - (float64)rin)/t4003
+       let t3738 = let t4306 = ((t3735*t3735)*t3735) in ((1.000000 - t4306)*(1.000000 - t4306))
+       let t3739 = (float64)exp_f64(-1.000000/(float64)sqrt_f64(t3738 + 0.000001))
+       let t3741 = t3739/t4004
+       let t3742 = (float64)sin_f64(t3734*3.141593)
+       let t3876 = t3728 - (float64)rin
+       let t3877 = t3735*t3735
+       drbf_f[drbf_f.s0.basis function param + t4016] = (rijs_f[t4012]/t3728)*((((((((float64)exp_f64(0.000000 - (t3732/t4003))*(max(t3730.s, 0.001000)/t4003))/(1.000000 - t3733))*(((float64)cos_f64(t3734*3.141593)*float64((drbf_f.s0.basis function index + 1)))*t3741))*3.141593)/t3876) + (((((((t3877*t4007)*t3739)*((t3735*t3877) + -1.000000))/(float64)pow_f64(t3738 + 0.000001, 1.500000))*t3742)/t3876) - ((t3741*t3742)/(t3876*t3876))))*t4015)
       }
      }
     }
@@ -803,30 +801,30 @@ if (!((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)y.buffer) || ((ui
  allocate forceij_f[float64 * forceij_f.s2.basis function index.max.s * npairs * 3]
  produce forceij_f {
   for (forceij_f.s0.dim, 0, 3) {
-   let t3950 = (forceij_f.s2.basis function index.max.s*npairs)*forceij_f.s0.dim
+   let t4018 = (forceij_f.s2.basis function index.max.s*npairs)*forceij_f.s0.dim
    for (forceij_f.s0.pairindex, 0, npairs) {
-    let t3951 = (forceij_f.s0.pairindex*forceij_f.s2.basis function index.max.s) + t3950
+    let t4019 = (forceij_f.s0.pairindex*forceij_f.s2.basis function index.max.s) + t4018
     for (forceij_f.s0.basis function index, 0, forceij_f.s2.basis function index.max.s) {
-     forceij_f[forceij_f.s0.basis function index + t3951] = 0.000000
+     forceij_f[forceij_f.s0.basis function index + t4019] = 0.000000
     }
    }
   }
   consume drbf_f {
    for (forceij_f.s1.dim, 0, 3) {
-    let t3957 = bdegree*nbesselparams
-    let t3955 = (npairs*t3957)*forceij_f.s1.dim
-    let t3954 = (forceij_f.s2.basis function index.max.s*npairs)*forceij_f.s1.dim
+    let t4025 = bdegree*nbesselparams
+    let t4023 = (npairs*t4025)*forceij_f.s1.dim
+    let t4022 = (forceij_f.s2.basis function index.max.s*npairs)*forceij_f.s1.dim
     for (forceij_f.s1.pairindex, 0, npairs) {
-     let t3959 = (forceij_f.s1.pairindex*t3957) + t3955
-     let t3958 = (forceij_f.s1.pairindex*forceij_f.s2.basis function index.max.s) + t3954
+     let t4027 = (forceij_f.s1.pairindex*t4025) + t4023
+     let t4026 = (forceij_f.s1.pairindex*forceij_f.s2.basis function index.max.s) + t4022
      for (forceij_f.s1.basis function index, 0, forceij_f.s2.basis function index.max.s) {
-      let t3961 = Phi1.stride.2*forceij_f.s1.basis function index
-      let t3960 = forceij_f.s1.basis function index + t3958
+      let t4029 = Phi1.stride.2*forceij_f.s1.basis function index
+      let t4028 = forceij_f.s1.basis function index + t4026
       for (forceij_f.s1.r48$y, 0, nbesselparams) {
-       let t3963 = (Phi1.stride.1*forceij_f.s1.r48$y) + t3961
-       let t3962 = forceij_f.s1.r48$y + t3959
+       let t4031 = (Phi1.stride.1*forceij_f.s1.r48$y) + t4029
+       let t4030 = forceij_f.s1.r48$y + t4027
        for (forceij_f.s1.r48$x, 0, bdegree) {
-        forceij_f[t3960] = forceij_f[t3960] + (drbf_f[(forceij_f.s1.r48$x*nbesselparams) + t3962]*Phi1[forceij_f.s1.r48$x + t3963])
+        forceij_f[t4028] = forceij_f[t4028] + (drbf_f[(forceij_f.s1.r48$x*nbesselparams) + t4030]*Phi1[forceij_f.s1.r48$x + t4031])
        }
       }
      }
@@ -836,16 +834,16 @@ if (!((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)y.buffer) || ((ui
   free drbf_f
   consume dabf_f {
    for (forceij_f.s2.dim, 0, 3) {
-    let t3966 = (forceij_f.s2.basis function index.max.s*npairs)*forceij_f.s2.dim
-    let t3967 = (adegree*npairs)*forceij_f.s2.dim
+    let t4034 = (forceij_f.s2.basis function index.max.s*npairs)*forceij_f.s2.dim
+    let t4035 = (adegree*npairs)*forceij_f.s2.dim
     for (forceij_f.s2.pairindex, 0, npairs) {
-     let t3968 = (forceij_f.s2.basis function index.max.s*forceij_f.s2.pairindex) + t3966
-     let t3969 = (adegree*forceij_f.s2.pairindex) + t3967
+     let t4036 = (forceij_f.s2.basis function index.max.s*forceij_f.s2.pairindex) + t4034
+     let t4037 = (adegree*forceij_f.s2.pairindex) + t4035
      for (forceij_f.s2.basis function index, 0, forceij_f.s2.basis function index.max.s) {
-      let t3971 = Phi2.stride.1*forceij_f.s2.basis function index
-      let t3970 = forceij_f.s2.basis function index + t3968
+      let t4039 = Phi2.stride.1*forceij_f.s2.basis function index
+      let t4038 = forceij_f.s2.basis function index + t4036
       for (forceij_f.s2.r58$x, 0, adegree) {
-       forceij_f[t3970] = forceij_f[t3970] + (dabf_f[forceij_f.s2.r58$x + t3969]*Phi2[forceij_f.s2.r58$x + t3971])
+       forceij_f[t4038] = forceij_f[t4038] + (dabf_f[forceij_f.s2.r58$x + t4037]*Phi2[forceij_f.s2.r58$x + t4039])
       }
      }
     }
@@ -856,13 +854,13 @@ if (!((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)y.buffer) || ((ui
  allocate fatom2_f[float64 * 3 * natom * nelemsCombos * tdegree1]
  produce fatom2_f {
   for (fatom2_f.s0.basis function index, 0, tdegree1) {
-   let t3973 = ((natom*nelemsCombos)*fatom2_f.s0.basis function index)*3
+   let t4041 = ((natom*nelemsCombos)*fatom2_f.s0.basis function index)*3
    for (fatom2_f.s0.inter, 0, nelemsCombos) {
-    let t3974 = ((fatom2_f.s0.inter*natom)*3) + t3973
+    let t4042 = ((fatom2_f.s0.inter*natom)*3) + t4041
     for (fatom2_f.s0.atom, 0, natom) {
-     let t3975 = (fatom2_f.s0.atom*3) + t3974
+     let t4043 = (fatom2_f.s0.atom*3) + t4042
      for (fatom2_f.s0.dim, 0, 3) {
-      fatom2_f[fatom2_f.s0.dim + t3975] = 0.000000
+      fatom2_f[fatom2_f.s0.dim + t4043] = 0.000000
      }
     }
    }
@@ -870,14 +868,14 @@ if (!((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)y.buffer) || ((ui
   consume forceij_f {
    consume ijs_f {
     for (fatom2_f.s1.dim, 0, 3) {
-     let t3985 = (forceij_f.s2.basis function index.max.s*npairs)*fatom2_f.s1.dim
-     let t3981 = (natom*-3) + fatom2_f.s1.dim
+     let t4053 = (forceij_f.s2.basis function index.max.s*npairs)*fatom2_f.s1.dim
+     let t4049 = (natom*-3) + fatom2_f.s1.dim
      for (fatom2_f.s1.r80$y, 0, tdegree1) {
-      let t3986 = (((natom*nelemsCombos)*fatom2_f.s1.r80$y)*3) + t3981
-      let t3989 = fatom2_f.s1.r80$y + t3985
+      let t4054 = (((natom*nelemsCombos)*fatom2_f.s1.r80$y)*3) + t4049
+      let t4057 = fatom2_f.s1.r80$y + t4053
       for (fatom2_f.s1.r80$x, 0, npairs) {
-       let t3679 = (max(min(ijs_f[fatom2_f.s1.r80$x], natom + -1), 0)*3) + (((max(min(interactions[((max(min(ijs_f[(npairs*3) + fatom2_f.s1.r80$x], nelems), 1)*interactions.stride.1) + (max(min(ijs_f[(npairs*2) + fatom2_f.s1.r80$x], nelems), 1) - interactions.stride.1)) + -1], nelemsCombos), 1)*natom)*3) + t3986)
-       fatom2_f[t3679] = fatom2_f[t3679] + forceij_f[(fatom2_f.s1.r80$x*forceij_f.s2.basis function index.max.s) + t3989]
+       let t3747 = (max(min(ijs_f[fatom2_f.s1.r80$x], natom + -1), 0)*3) + (((max(min(interactions[((max(min(ijs_f[(npairs*3) + fatom2_f.s1.r80$x], nelems), 1)*interactions.stride.1) + (max(min(ijs_f[(npairs*2) + fatom2_f.s1.r80$x], nelems), 1) - interactions.stride.1)) + -1], nelemsCombos), 1)*natom)*3) + t4054)
+       fatom2_f[t3747] = fatom2_f[t3747] + forceij_f[(fatom2_f.s1.r80$x*forceij_f.s2.basis function index.max.s) + t4057]
       }
      }
     }
@@ -886,14 +884,14 @@ if (!((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)y.buffer) || ((ui
   consume forceij_f {
    consume ijs_f {
     for (fatom2_f.s2.dim, 0, 3) {
-     let t3999 = (forceij_f.s2.basis function index.max.s*npairs)*fatom2_f.s2.dim
-     let t3995 = (natom*-3) + fatom2_f.s2.dim
+     let t4067 = (forceij_f.s2.basis function index.max.s*npairs)*fatom2_f.s2.dim
+     let t4063 = (natom*-3) + fatom2_f.s2.dim
      for (fatom2_f.s2.r80$y, 0, tdegree1) {
-      let t4000 = (((natom*nelemsCombos)*fatom2_f.s2.r80$y)*3) + t3995
-      let t4003 = fatom2_f.s2.r80$y + t3999
+      let t4068 = (((natom*nelemsCombos)*fatom2_f.s2.r80$y)*3) + t4063
+      let t4071 = fatom2_f.s2.r80$y + t4067
       for (fatom2_f.s2.r80$x, 0, npairs) {
-       let t3680 = (max(min(ijs_f[fatom2_f.s2.r80$x + npairs], natom + -1), 0)*3) + (((max(min(interactions[((max(min(ijs_f[(npairs*3) + fatom2_f.s2.r80$x], nelems), 1)*interactions.stride.1) + (max(min(ijs_f[(npairs*2) + fatom2_f.s2.r80$x], nelems), 1) - interactions.stride.1)) + -1], nelemsCombos), 1)*natom)*3) + t4000)
-       fatom2_f[t3680] = fatom2_f[t3680] - forceij_f[(fatom2_f.s2.r80$x*forceij_f.s2.basis function index.max.s) + t4003]
+       let t3748 = (max(min(ijs_f[fatom2_f.s2.r80$x + npairs], natom + -1), 0)*3) + (((max(min(interactions[((max(min(ijs_f[(npairs*3) + fatom2_f.s2.r80$x], nelems), 1)*interactions.stride.1) + (max(min(ijs_f[(npairs*2) + fatom2_f.s2.r80$x], nelems), 1) - interactions.stride.1)) + -1], nelemsCombos), 1)*natom)*3) + t4068)
+       fatom2_f[t3748] = fatom2_f[t3748] - forceij_f[(fatom2_f.s2.r80$x*forceij_f.s2.basis function index.max.s) + t4071]
       }
      }
     }
@@ -904,16 +902,16 @@ if (!((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)y.buffer) || ((ui
  produce fatom2 {
   consume fatom2_f {
    for (fatom2.s0.ozz, 0, tdegree1) {
-    let t4005 = ((natom*nelemsCombos)*fatom2.s0.ozz)*3
-    let t4006 = fatom2.s0.ozz*fatom2.stride.3
+    let t4073 = ((natom*nelemsCombos)*fatom2.s0.ozz)*3
+    let t4074 = fatom2.s0.ozz*fatom2.stride.3
     for (fatom2.s0.oz, 0, nelemsCombos) {
-     let t4007 = ((fatom2.s0.oz*natom)*3) + t4005
-     let t4008 = (fatom2.s0.oz*fatom2.stride.2) + t4006
+     let t4075 = ((fatom2.s0.oz*natom)*3) + t4073
+     let t4076 = (fatom2.s0.oz*fatom2.stride.2) + t4074
      for (fatom2.s0.oy, 0, natom) {
-      let t4010 = (fatom2.s0.oy*fatom2.stride.1) + t4008
-      let t4009 = (fatom2.s0.oy*3) + t4007
+      let t4078 = (fatom2.s0.oy*fatom2.stride.1) + t4076
+      let t4077 = (fatom2.s0.oy*3) + t4075
       for (fatom2.s0.ox, 0, 3) {
-       fatom2[fatom2.s0.ox + t4010] = fatom2_f[fatom2.s0.ox + t4009]
+       fatom2[fatom2.s0.ox + t4078] = fatom2_f[fatom2.s0.ox + t4077]
       }
      }
     }
@@ -921,78 +919,70 @@ if (!((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)y.buffer) || ((ui
   }
  }
  free fatom2_f
- assert((eatom3_f.s0.inverse basis function index.max + 1) <= natom, halide_error_explicit_bounds_too_small("atom", "eatom3_f", 0, natom + -1, 0, eatom3_f.s0.inverse basis function index.max))
- assert(eatom3_f.s0.rbf_v.max.s <= nelemsCombos, halide_error_explicit_bounds_too_small("inter", "eatom3_f", 0, nelemsCombos + -1, 0, eatom3_f.s0.rbf_v.max.s + -1))
  assert(1 <= nelems, halide_error_explicit_bounds_too_small("type", "eatom3_f", 0, nelems + -1, 0, 0))
- assert(eatom3_f.s0.inverse basis function index.max <= adegreep, halide_error_explicit_bounds_too_small("inverse basis function index", "eatom3_f", 0, adegreep, 0, eatom3_f.s0.inverse basis function index.max))
- assert(max(eatom3_f.s0.rbf_v.max.s, 1) <= tdegree2, halide_error_explicit_bounds_too_small("rbf_v", "eatom3_f", 0, tdegree2 + -1, 0, max(eatom3_f.s0.rbf_v.max.s, 1) + -1))
- assert((natom + -1) <= adegreep, halide_error_explicit_bounds_too_small("inverse basis function index", "eatom3_f", 0, adegreep, 0, eatom3_f.s0.inverse basis function index.max))
- assert(nelemsCombos <= tdegree2, halide_error_explicit_bounds_too_small("rbf_v", "eatom3_f", 0, tdegree2 + -1, 0, eatom3_f.s0.rbf_v.max.s + -1))
- assert(tdegree2 <= nelemsCombos, halide_error_explicit_bounds_too_small("inter", "eatom3_f", 0, nelemsCombos + -1, 0, eatom3_f.s0.rbf_v.max.s + -1))
- assert((adegreep + 1) <= natom, halide_error_explicit_bounds_too_small("atom", "eatom3_f", 0, natom + -1, 0, eatom3_f.s0.inverse basis function index.max))
  allocate eatom3_f[float64 * natom * nelemsCombos * nelems * tdegree2 * (adegreep + 1)]
  produce eatom3_f {
   for (eatom3_f.s0.inverse basis function index, 0, adegreep + 1) {
-   let t4014 = natom*nelemsCombos
+   let t4082 = natom*nelemsCombos
    for (eatom3_f.s0.rbf_v, 0, tdegree2) {
-    let t4016 = nelems*t4014
-    let t4015 = ((t4016*tdegree2)*eatom3_f.s0.inverse basis function index) + (eatom3_f.s0.rbf_v*t4016)
+    let t4084 = nelems*t4082
+    let t4083 = ((t4084*tdegree2)*eatom3_f.s0.inverse basis function index) + (eatom3_f.s0.rbf_v*t4084)
     for (eatom3_f.s0.type, 0, nelems) {
-     let t4017 = (eatom3_f.s0.type*t4014) + t4015
+     let t4085 = (eatom3_f.s0.type*t4082) + t4083
      for (eatom3_f.s0.inter, 0, nelemsCombos) {
-      let t4018 = (eatom3_f.s0.inter*natom) + t4017
+      let t4086 = (eatom3_f.s0.inter*natom) + t4085
       for (eatom3_f.s0.atom, 0, natom) {
-       eatom3_f[eatom3_f.s0.atom + t4018] = 0.000000
+       eatom3_f[eatom3_f.s0.atom + t4086] = 0.000000
       }
      }
     }
    }
   }
   consume energyij_f {
-   let t4019 = natom*nl
+   let t4089 = (-1 - nelemsCombos)*natom
+   let t4087 = natom*nl
    for (eatom3_f.s1.r98$4, 0, natom) {
     let eatom3_f.s1.r98$w.new_min.s = min(pairnumsum[eatom3_f.s1.r98$4], npairs)
-    let eatom3_f.s1.r98$w.new_max.s = let t4238 = pairnumsum[eatom3_f.s1.r98$4 + 1] in max(min(min(max(min(npairs, t4238), 0) + -1, t4238), npairs), eatom3_f.s1.r98$w.new_min.s)
-    let t4031 = y.stride.1*2
-    let t4032 = max(eatom3_f.s1.r98$w.new_min.s, 0)
-    let t4033 = natom*nelemsCombos
-    let t4026 = (-1 - nelems)*t4033
-    let t4023 = max(eatom3_f.s1.r98$w.new_max.s, 0) - t4032
-    for (eatom3_f.s1.r98$w.rebased, 0, t4023) {
+    let eatom3_f.s1.r98$w.new_max.s = let t4307 = pairnumsum[eatom3_f.s1.r98$4 + 1] in max(min(min(max(min(npairs, t4307), 0) + -1, t4307), npairs), eatom3_f.s1.r98$w.new_min.s)
+    let t4098 = y.stride.1*2
+    let t4099 = max(eatom3_f.s1.r98$w.new_min.s, 0)
+    let t4100 = natom*nelemsCombos
+    let t4091 = max(eatom3_f.s1.r98$w.new_max.s, 0) - t4099
+    for (eatom3_f.s1.r98$w.rebased, 0, t4091) {
      let eatom3_f.s1.r98$z.new_max.s = min(pairnumsum[eatom3_f.s1.r98$4 + 1], npairs)
-     let t4041 = eatom3_f.s1.r98$w.rebased + t4032
-     let t4042 = nelems*t4033
-     let t4034 = max(eatom3_f.s1.r98$z.new_max.s, 0)
-     let t4036 = ((t4042*tdegree2)*eatom3_f.s1.r98$4) + t4026
-     for (eatom3_f.s1.r98$z, 0, t4034) {
-      if (let t4239 = pairnumsum[eatom3_f.s1.r98$4 + 1] in ((t4041 < min(t4239, eatom3_f.s1.r98$z)) && (t4041 < t4239))) {
-       if (t4041 < pairnumsum[eatom3_f.s1.r98$4 + 1]) {
-        let t4045 = forceij_f.s2.basis function index.max.s*t4041
-        let t4046 = eatom3_f.s1.r98$z*forceij_f.s2.basis function index.max.s
+     let t4108 = eatom3_f.s1.r98$w.rebased + t4099
+     let t4109 = nelems*t4100
+     let t4101 = max(eatom3_f.s1.r98$z.new_max.s, 0)
+     for (eatom3_f.s1.r98$z, 0, t4101) {
+      if (let t4308 = pairnumsum[eatom3_f.s1.r98$4 + 1] in ((t4108 < min(t4308, eatom3_f.s1.r98$z)) && (t4108 < t4308))) {
+       if (t4108 < pairnumsum[eatom3_f.s1.r98$4 + 1]) {
+        let t4113 = forceij_f.s2.basis function index.max.s*t4108
+        let t4114 = eatom3_f.s1.r98$z*forceij_f.s2.basis function index.max.s
         for (eatom3_f.s1.r98$y, 0, tdegree2) {
-         let t4047 = eatom3_f.s1.r98$y*natom
-         let t4051 = eatom3_f.s1.r98$y + t4046
-         let t4050 = eatom3_f.s1.r98$y + t4045
+         let t4116 = t4109*tdegree2
+         let t4115 = eatom3_f.s1.r98$y*t4109
+         let t4120 = eatom3_f.s1.r98$y + t4114
+         let t4119 = eatom3_f.s1.r98$y + t4113
          for (eatom3_f.s1.r98$x, 0, adegreep + 1) {
-          let t3687.s = min(pairlist[eatom3_f.s1.r98$z], t4019 + -1)
-          let t3688.s = min(pairlist[t4041], t4019 + -1)
-          let t3689 = (((max(min(interactions[(max(min(atomtype[max(min(alist[max(t3687.s, 0)], natom + -1), 0)], nelems), 1) + ((max(min(atomtype[max(min(alist[max(t3688.s, 0)], natom + -1), 0)], nelems), 1) + -1)*interactions.stride.1)) + -1], nelemsCombos), 1)*t4042) + ((max(min(atomtype[eatom3_f.s1.r98$4], nelems), 1)*t4033) + t4036)) + t4047) + eatom3_f.s1.r98$x
-          let t3690 = y[eatom3_f.s1.r98$4 + t4031]
-          let t3691.s = y[max(t3688.s, 0) + t4031]
-          let t3692.s = y[max(t3687.s, 0) + t4031]
-          let t3693 = y[eatom3_f.s1.r98$4]
-          let t3694.s = y[max(t3688.s, 0)]
-          let t3695.s = y[max(t3687.s, 0)]
-          let t3696 = y[eatom3_f.s1.r98$4 + y.stride.1]
-          let t3697.s = y[max(t3688.s, 0) + y.stride.1]
-          let t3698.s = y[max(t3687.s, 0) + y.stride.1]
-          let t3819 = t3691.s - t3690
-          let t3820 = t3692.s - t3690
-          let t3821 = t3694.s - t3693
-          let t3822 = t3695.s - t3693
-          let t3823 = t3697.s - t3696
-          let t3824 = t3698.s - t3696
-          eatom3_f[t3689] = eatom3_f[t3689] + ((float64)cos_f64((float64)acos_f64(max(min(((t3819*t3820) + ((t3821*t3822) + (t3823*t3824)))/((float64)sqrt_f64((t3819*t3819) + ((t3821*t3821) + (t3823*t3823)))*(float64)sqrt_f64((t3820*t3820) + ((t3822*t3822) + (t3824*t3824)))), 1.000000), -1.000000))*float64(eatom3_f.s1.r98$x))*(energyij_f[t4050]*energyij_f[t4051]))
+          let t3755.s = min(pairlist[eatom3_f.s1.r98$z], t4087 + -1)
+          let t3756.s = min(pairlist[t4108], t4087 + -1)
+          let t3757 = (eatom3_f.s1.r98$x*t4116) + (((max(min(interactions[(max(min(atomtype[max(min(alist[max(t3755.s, 0)], natom + -1), 0)], nelems), 1) + ((max(min(atomtype[max(min(alist[max(t3756.s, 0)], natom + -1), 0)], nelems), 1) + -1)*interactions.stride.1)) + -1], nelemsCombos), 1)*natom) + (((max(min(atomtype[eatom3_f.s1.r98$4], nelems), 1)*t4100) + t4089) + eatom3_f.s1.r98$4)) + t4115)
+          let t3758 = y[eatom3_f.s1.r98$4 + t4098]
+          let t3759.s = y[max(t3756.s, 0) + t4098]
+          let t3760.s = y[max(t3755.s, 0) + t4098]
+          let t3761 = y[eatom3_f.s1.r98$4]
+          let t3762.s = y[max(t3756.s, 0)]
+          let t3763.s = y[max(t3755.s, 0)]
+          let t3764 = y[eatom3_f.s1.r98$4 + y.stride.1]
+          let t3765.s = y[max(t3756.s, 0) + y.stride.1]
+          let t3766.s = y[max(t3755.s, 0) + y.stride.1]
+          let t3885 = t3759.s - t3758
+          let t3886 = t3760.s - t3758
+          let t3887 = t3762.s - t3761
+          let t3888 = t3763.s - t3761
+          let t3889 = t3765.s - t3764
+          let t3890 = t3766.s - t3764
+          eatom3_f[t3757] = eatom3_f[t3757] + ((float64)cos_f64((float64)acos_f64(max(min(((t3885*t3886) + ((t3887*t3888) + (t3889*t3890)))/((float64)sqrt_f64((t3885*t3885) + ((t3887*t3887) + (t3889*t3889)))*(float64)sqrt_f64((t3886*t3886) + ((t3888*t3888) + (t3890*t3890)))), 1.000000), -1.000000))*float64(eatom3_f.s1.r98$x))*(energyij_f[t4119]*energyij_f[t4120]))
          }
         }
        }
@@ -1005,20 +995,20 @@ if (!((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)y.buffer) || ((ui
  produce eatom3 {
   consume eatom3_f {
    for (eatom3.s0.ozzz, 0, tdegree2) {
-    let t4056 = natom*nelemsCombos
-    let t4055 = eatom3.s0.ozzz*eatom3.stride.4
+    let t4125 = natom*nelemsCombos
+    let t4124 = eatom3.s0.ozzz*eatom3.stride.4
     for (eatom3.s0.ozz, 0, adegreep + 1) {
-     let t4059 = nelems*t4056
-     let t4057 = (eatom3.s0.ozzz*t4059) + ((t4059*tdegree2)*eatom3.s0.ozz)
-     let t4058 = (eatom3.s0.ozz*eatom3.stride.3) + t4055
+     let t4128 = nelems*t4125
+     let t4126 = (eatom3.s0.ozzz*t4128) + ((t4128*tdegree2)*eatom3.s0.ozz)
+     let t4127 = (eatom3.s0.ozz*eatom3.stride.3) + t4124
      for (eatom3.s0.oz, 0, nelems) {
-      let t4060 = (eatom3.s0.oz*t4056) + t4057
-      let t4061 = (eatom3.s0.oz*eatom3.stride.2) + t4058
+      let t4129 = (eatom3.s0.oz*t4125) + t4126
+      let t4130 = (eatom3.s0.oz*eatom3.stride.2) + t4127
       for (eatom3.s0.oy, 0, nelemsCombos) {
-       let t4062 = (eatom3.s0.oy*natom) + t4060
-       let t4063 = (eatom3.s0.oy*eatom3.stride.1) + t4061
+       let t4131 = (eatom3.s0.oy*natom) + t4129
+       let t4132 = (eatom3.s0.oy*eatom3.stride.1) + t4130
        for (eatom3.s0.ox, 0, natom) {
-        eatom3[eatom3.s0.ox + t4063] = eatom3_f[eatom3.s0.ox + t4062]
+        eatom3[eatom3.s0.ox + t4132] = eatom3_f[eatom3.s0.ox + t4131]
        }
       }
      }
@@ -1030,18 +1020,18 @@ if (!((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)y.buffer) || ((ui
  allocate fatom3_f[float64 * 3 * natom * nelemsCombos * nelems * tdegree2 * (adegreep + 1)]
  produce fatom3_f {
   for (fatom3_f.s0.inverse basis function index, 0, adegreep + 1) {
-   let t4067 = natom*nelemsCombos
+   let t4136 = natom*nelemsCombos
    for (fatom3_f.s0.rbf_v, 0, tdegree2) {
-    let t4069 = nelems*t4067
-    let t4068 = (((t4069*tdegree2)*fatom3_f.s0.inverse basis function index) + (fatom3_f.s0.rbf_v*t4069))*3
+    let t4138 = nelems*t4136
+    let t4137 = (((t4138*tdegree2)*fatom3_f.s0.inverse basis function index) + (fatom3_f.s0.rbf_v*t4138))*3
     for (fatom3_f.s0.type, 0, nelems) {
-     let t4070 = ((fatom3_f.s0.type*t4067)*3) + t4068
+     let t4139 = ((fatom3_f.s0.type*t4136)*3) + t4137
      for (fatom3_f.s0.inter, 0, nelemsCombos) {
-      let t4071 = ((fatom3_f.s0.inter*natom)*3) + t4070
+      let t4140 = ((fatom3_f.s0.inter*natom)*3) + t4139
       for (fatom3_f.s0.atom, 0, natom) {
-       let t4072 = (fatom3_f.s0.atom*3) + t4071
+       let t4141 = (fatom3_f.s0.atom*3) + t4140
        for (fatom3_f.s0.dim, 0, 3) {
-        fatom3_f[fatom3_f.s0.dim + t4072] = 0.000000
+        fatom3_f[fatom3_f.s0.dim + t4141] = 0.000000
        }
       }
      }
@@ -1050,71 +1040,71 @@ if (!((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)y.buffer) || ((ui
   }
   consume forceij_f {
    consume energyij_f {
-    let t4075 = ((nelemsCombos + 1)*natom)*-3
-    let t4073 = natom*nl
+    let t4144 = ((nelemsCombos + 1)*natom)*-3
+    let t4142 = natom*nl
     for (fatom3_f.s1.dim, 0, 3) {
-     let t4084 = natom*nelemsCombos
-     let t4083 = (forceij_f.s2.basis function index.max.s*npairs)*fatom3_f.s1.dim
-     let t4082 = fatom3_f.s1.dim*y.stride.1
-     let t4079 = fatom3_f.s1.dim + t4075
+     let t4153 = natom*nelemsCombos
+     let t4152 = (forceij_f.s2.basis function index.max.s*npairs)*fatom3_f.s1.dim
+     let t4151 = fatom3_f.s1.dim*y.stride.1
+     let t4148 = fatom3_f.s1.dim + t4144
      for (fatom3_f.s1.r98$4, 0, natom) {
       let fatom3_f.s1.r98$w.new_min.s = min(pairnumsum[fatom3_f.s1.r98$4], npairs)
-      let fatom3_f.s1.r98$w.new_max.s = let t4240 = pairnumsum[fatom3_f.s1.r98$4 + 1] in max(min(min(max(min(npairs, t4240), 0) + -1, t4240), npairs), fatom3_f.s1.r98$w.new_min.s)
-      let t4094 = y.stride.1*2
-      let t4095 = max(fatom3_f.s1.r98$w.new_min.s, 0)
-      let t4096 = nelems*t4084
-      let t4085 = max(fatom3_f.s1.r98$w.new_max.s, 0) - t4095
-      for (fatom3_f.s1.r98$w.rebased, 0, t4085) {
+      let fatom3_f.s1.r98$w.new_max.s = let t4309 = pairnumsum[fatom3_f.s1.r98$4 + 1] in max(min(min(max(min(npairs, t4309), 0) + -1, t4309), npairs), fatom3_f.s1.r98$w.new_min.s)
+      let t4163 = y.stride.1*2
+      let t4164 = max(fatom3_f.s1.r98$w.new_min.s, 0)
+      let t4165 = nelems*t4153
+      let t4154 = max(fatom3_f.s1.r98$w.new_max.s, 0) - t4164
+      for (fatom3_f.s1.r98$w.rebased, 0, t4154) {
        let fatom3_f.s1.r98$z.new_max.s = min(pairnumsum[fatom3_f.s1.r98$4 + 1], npairs)
-       let t4106 = fatom3_f.s1.r98$w.rebased + t4095
-       let t4107 = forceij_f.s2.basis function index.max.s*t4106
-       let t4097 = max(fatom3_f.s1.r98$z.new_max.s, 0)
-       for (fatom3_f.s1.r98$z, 0, t4097) {
-        if (let t4241 = pairnumsum[fatom3_f.s1.r98$4 + 1] in ((t4106 < min(t4241, fatom3_f.s1.r98$z)) && (t4106 < t4241))) {
-         if (t4106 < pairnumsum[fatom3_f.s1.r98$4 + 1]) {
-          let t4116 = fatom3_f.s1.r98$z*forceij_f.s2.basis function index.max.s
-          let t4114 = t4083 + t4116
-          let t4115 = t4083 + t4107
+       let t4175 = fatom3_f.s1.r98$w.rebased + t4164
+       let t4176 = forceij_f.s2.basis function index.max.s*t4175
+       let t4166 = max(fatom3_f.s1.r98$z.new_max.s, 0)
+       for (fatom3_f.s1.r98$z, 0, t4166) {
+        if (let t4310 = pairnumsum[fatom3_f.s1.r98$4 + 1] in ((t4175 < min(t4310, fatom3_f.s1.r98$z)) && (t4175 < t4310))) {
+         if (t4175 < pairnumsum[fatom3_f.s1.r98$4 + 1]) {
+          let t4185 = fatom3_f.s1.r98$z*forceij_f.s2.basis function index.max.s
+          let t4183 = t4152 + t4185
+          let t4184 = t4152 + t4176
           for (fatom3_f.s1.r98$y, 0, tdegree2) {
-           let t4118 = (fatom3_f.s1.r98$y*t4096)*3
-           let t4119 = t4096*tdegree2
-           let t4123 = fatom3_f.s1.r98$y + t4116
-           let t4126 = fatom3_f.s1.r98$y + t4115
-           let t4125 = fatom3_f.s1.r98$y + t4114
-           let t4122 = fatom3_f.s1.r98$y + t4107
+           let t4187 = (fatom3_f.s1.r98$y*t4165)*3
+           let t4188 = t4165*tdegree2
+           let t4192 = fatom3_f.s1.r98$y + t4185
+           let t4195 = fatom3_f.s1.r98$y + t4184
+           let t4194 = fatom3_f.s1.r98$y + t4183
+           let t4191 = fatom3_f.s1.r98$y + t4176
            for (fatom3_f.s1.r98$x, 0, adegreep + 1) {
-            let t3707.s = min(pairlist[fatom3_f.s1.r98$z], t4073 + -1)
-            let t3708.s = min(pairlist[t4106], t4073 + -1)
-            let t3709 = ((fatom3_f.s1.r98$x*t4119)*3) + ((((max(min(interactions[(max(min(atomtype[max(min(alist[max(t3707.s, 0)], natom + -1), 0)], nelems), 1) + ((max(min(atomtype[max(min(alist[max(t3708.s, 0)], natom + -1), 0)], nelems), 1) + -1)*interactions.stride.1)) + -1], nelemsCombos), 1)*natom)*3) + ((fatom3_f.s1.r98$4*3) + (((max(min(atomtype[fatom3_f.s1.r98$4], nelems), 1)*t4084)*3) + t4079))) + t4118)
-            let t3710 = y[fatom3_f.s1.r98$4 + t4094]
-            let t3711.s = y[max(t3707.s, 0) + t4094]
-            let t3712.s = y[max(t3708.s, 0) + t4094]
-            let t3713 = y[fatom3_f.s1.r98$4]
-            let t3714.s = y[max(t3707.s, 0)]
-            let t3715.s = y[max(t3708.s, 0)]
-            let t3716 = y[fatom3_f.s1.r98$4 + y.stride.1]
-            let t3717.s = y[max(t3707.s, 0) + y.stride.1]
-            let t3718.s = y[max(t3708.s, 0) + y.stride.1]
-            let t3719 = let t4242 = (t3711.s - t3710) in (let t4243 = (t3714.s - t3713) in (let t4244 = (t3717.s - t3716) in ((t4242*t4242) + ((t4243*t4243) + (t4244*t4244)))))
-            let t3720 = (float64)sqrt_f64(t3719)
-            let t3721 = let t4245 = (t3712.s - t3710) in (let t4246 = (t3715.s - t3713) in (let t4247 = (t3718.s - t3716) in ((t4245*t4245) + ((t4246*t4246) + (t4247*t4247)))))
-            let t3722 = (float64)sqrt_f64(t3721)
-            let t3724.s = (((t3711.s - t3710)*(t3712.s - t3710)) + (((t3714.s - t3713)*(t3715.s - t3713)) + ((t3717.s - t3716)*(t3718.s - t3716))))/(t3720*t3722)
-            let t3725 = (float64)acos_f64(max(min(t3724.s, 1.000000), -1.000000))*float64(fatom3_f.s1.r98$x)
-            let t3729 = energyij_f[t4122]
-            let t3730 = energyij_f[t4123]
-            let t3733 = y[fatom3_f.s1.r98$4 + t4082]
-            let t3734.s = y[max(t3708.s, 0) + t4082]
-            let t3735.s = y[max(t3707.s, 0) + t4082]
-            let t3736.s = (((t3712.s - t3710)*(t3711.s - t3710)) + (((t3715.s - t3713)*(t3714.s - t3713)) + ((t3718.s - t3716)*(t3717.s - t3716))))/(t3720*t3722)
-            let t3737 = (float64)acos_f64(max(min(t3736.s, 1.000000), -1.000000))*float64(fatom3_f.s1.r98$x)
-            let t3839 = t3729*t3730
-            let t3840 = max(min(t3724.s, 1.000000), -1.000000)
-            let t3841 = t3734.s - t3733
-            let t3842 = t3720*t3722
-            let t3843 = t3735.s - t3733
-            let t3844 = max(min(t3736.s, 1.000000), -1.000000)
-            fatom3_f[t3709] = fatom3_f[t3709] + ((((float64)cos_f64(t3725)*(forceij_f[t4125]*t3729)) + ((((-1.000000/max((float64)sqrt_f64(1.000000 - (t3840*t3840)), 0.000000))*((float64)sin_f64(t3725)*float64((0 - fatom3_f.s1.r98$x))))*((1.000000/((float64)pow_f64(t3720, 1.500000)*t3721))*((t3720*t3841) - ((t3840*t3842)*t3843))))*t3839)) + (((float64)cos_f64(t3737)*(forceij_f[t4126]*t3730)) + ((((-1.000000/max((float64)sqrt_f64(1.000000 - (t3844*t3844)), 0.000000))*((float64)sin_f64(t3737)*float64((0 - fatom3_f.s1.r98$x))))*((1.000000/((float64)pow_f64(t3722, 1.500000)*t3719))*((t3722*t3843) - ((t3842*t3844)*t3841))))*t3839)))
+            let t3775.s = min(pairlist[fatom3_f.s1.r98$z], t4142 + -1)
+            let t3776.s = min(pairlist[t4175], t4142 + -1)
+            let t3777 = ((fatom3_f.s1.r98$x*t4188)*3) + ((((max(min(interactions[(max(min(atomtype[max(min(alist[max(t3775.s, 0)], natom + -1), 0)], nelems), 1) + ((max(min(atomtype[max(min(alist[max(t3776.s, 0)], natom + -1), 0)], nelems), 1) + -1)*interactions.stride.1)) + -1], nelemsCombos), 1)*natom)*3) + ((fatom3_f.s1.r98$4*3) + (((max(min(atomtype[fatom3_f.s1.r98$4], nelems), 1)*t4153)*3) + t4148))) + t4187)
+            let t3778 = y[fatom3_f.s1.r98$4 + t4163]
+            let t3779.s = y[max(t3776.s, 0) + t4163]
+            let t3780.s = y[max(t3775.s, 0) + t4163]
+            let t3781 = y[fatom3_f.s1.r98$4]
+            let t3782.s = y[max(t3776.s, 0)]
+            let t3783.s = y[max(t3775.s, 0)]
+            let t3784 = y[fatom3_f.s1.r98$4 + y.stride.1]
+            let t3785.s = y[max(t3776.s, 0) + y.stride.1]
+            let t3786.s = y[max(t3775.s, 0) + y.stride.1]
+            let t3787 = let t4311 = (t3779.s - t3778) in (let t4312 = (t3782.s - t3781) in (let t4313 = (t3785.s - t3784) in ((t4311*t4311) + ((t4312*t4312) + (t4313*t4313)))))
+            let t3788 = (float64)sqrt_f64(t3787)
+            let t3789 = let t4314 = (t3780.s - t3778) in (let t4315 = (t3783.s - t3781) in (let t4316 = (t3786.s - t3784) in ((t4314*t4314) + ((t4315*t4315) + (t4316*t4316)))))
+            let t3790 = (float64)sqrt_f64(t3789)
+            let t3792.s = (((t3779.s - t3778)*(t3780.s - t3778)) + (((t3782.s - t3781)*(t3783.s - t3781)) + ((t3785.s - t3784)*(t3786.s - t3784))))/(t3788*t3790)
+            let t3793 = (float64)acos_f64(max(min(t3792.s, 1.000000), -1.000000))*float64(fatom3_f.s1.r98$x)
+            let t3797 = energyij_f[t4191]
+            let t3798 = energyij_f[t4192]
+            let t3800.s = (((t3780.s - t3778)*(t3779.s - t3778)) + (((t3783.s - t3781)*(t3782.s - t3781)) + ((t3786.s - t3784)*(t3785.s - t3784))))/(t3788*t3790)
+            let t3801 = (float64)acos_f64(max(min(t3800.s, 1.000000), -1.000000))*float64(fatom3_f.s1.r98$x)
+            let t3803 = y[fatom3_f.s1.r98$4 + t4151]
+            let t3804.s = y[max(t3776.s, 0) + t4151]
+            let t3805.s = y[max(t3775.s, 0) + t4151]
+            let t3905 = t3797*t3798
+            let t3906 = max(min(t3800.s, 1.000000), -1.000000)
+            let t3907 = t3804.s - t3803
+            let t3908 = t3788*t3790
+            let t3909 = t3805.s - t3803
+            let t3910 = max(min(t3792.s, 1.000000), -1.000000)
+            fatom3_f[t3777] = fatom3_f[t3777] + ((((float64)cos_f64(t3793)*(forceij_f[t4194]*t3797)) + ((((-1.000000/max((float64)sqrt_f64(1.000000 - (t3906*t3906)), 0.000000))*((float64)sin_f64(t3801)*float64((0 - fatom3_f.s1.r98$x))))*((1.000000/((float64)pow_f64(t3789, 1.500000)*t3788))*((t3789*t3907) - ((t3906*t3908)*t3909))))*t3905)) + (((float64)cos_f64(t3801)*(forceij_f[t4195]*t3798)) + ((((-1.000000/max((float64)sqrt_f64(1.000000 - (t3910*t3910)), 0.000000))*((float64)sin_f64(t3793)*float64((0 - fatom3_f.s1.r98$x))))*((1.000000/((float64)pow_f64(t3787, 1.500000)*t3790))*((t3787*t3909) - ((t3908*t3910)*t3907))))*t3905)))
            }
           }
          }
@@ -1127,58 +1117,58 @@ if (!((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)y.buffer) || ((ui
   }
   consume forceij_f {
    consume energyij_f {
-    let t4129 = ((nelemsCombos + 1)*natom)*-3
-    let t4127 = natom*nl
+    let t4198 = ((nelemsCombos + 1)*natom)*-3
+    let t4196 = natom*nl
     for (fatom3_f.s2.dim, 0, 3) {
-     let t4138 = natom*nelemsCombos
-     let t4137 = (forceij_f.s2.basis function index.max.s*npairs)*fatom3_f.s2.dim
-     let t4136 = fatom3_f.s2.dim*y.stride.1
-     let t4133 = fatom3_f.s2.dim + t4129
+     let t4207 = natom*nelemsCombos
+     let t4206 = (forceij_f.s2.basis function index.max.s*npairs)*fatom3_f.s2.dim
+     let t4205 = fatom3_f.s2.dim*y.stride.1
+     let t4202 = fatom3_f.s2.dim + t4198
      for (fatom3_f.s2.r98$4, 0, natom) {
-      let fatom3_f.s2.r98_w.new_min$1.s = min(pairnumsum[fatom3_f.s2.r98$4], npairs)
-      let fatom3_f.s2.r98$w.new_max.s = let t4248 = pairnumsum[fatom3_f.s2.r98$4 + 1] in max(min(min(max(min(npairs, t4248), 0) + -1, t4248), npairs), fatom3_f.s2.r98_w.new_min$1.s)
-      let t4147 = y.stride.1*2
-      let t4148 = max(fatom3_f.s2.r98_w.new_min$1.s, 0)
-      let t4149 = nelems*t4138
-      let t4139 = max(fatom3_f.s2.r98$w.new_max.s, 0) - t4148
-      for (fatom3_f.s2.r98$w.rebased, 0, t4139) {
+      let fatom3_f.s2.r98$w.new_min.s = min(pairnumsum[fatom3_f.s2.r98$4], npairs)
+      let fatom3_f.s2.r98$w.new_max.s = let t4317 = pairnumsum[fatom3_f.s2.r98$4 + 1] in max(min(min(max(min(npairs, t4317), 0) + -1, t4317), npairs), fatom3_f.s2.r98$w.new_min.s)
+      let t4216 = y.stride.1*2
+      let t4217 = max(fatom3_f.s2.r98$w.new_min.s, 0)
+      let t4218 = nelems*t4207
+      let t4208 = max(fatom3_f.s2.r98$w.new_max.s, 0) - t4217
+      for (fatom3_f.s2.r98$w.rebased, 0, t4208) {
        let fatom3_f.s2.r98$z.new_max.s = min(pairnumsum[fatom3_f.s2.r98$4 + 1], npairs)
-       let t4157 = fatom3_f.s2.r98$w.rebased + t4148
-       let t4150 = max(fatom3_f.s2.r98$z.new_max.s, 0)
-       for (fatom3_f.s2.r98$z, 0, t4150) {
-        if (let t4249 = pairnumsum[fatom3_f.s2.r98$4 + 1] in ((t4157 < min(t4249, fatom3_f.s2.r98$z)) && (t4157 < t4249))) {
-         if (t4157 < pairnumsum[fatom3_f.s2.r98$4 + 1]) {
-          let t4161 = forceij_f.s2.basis function index.max.s*t4157
-          let t4163 = fatom3_f.s2.r98$z*forceij_f.s2.basis function index.max.s
+       let t4226 = fatom3_f.s2.r98$w.rebased + t4217
+       let t4219 = max(fatom3_f.s2.r98$z.new_max.s, 0)
+       for (fatom3_f.s2.r98$z, 0, t4219) {
+        if (let t4318 = pairnumsum[fatom3_f.s2.r98$4 + 1] in ((t4226 < min(t4318, fatom3_f.s2.r98$z)) && (t4226 < t4318))) {
+         if (t4226 < pairnumsum[fatom3_f.s2.r98$4 + 1]) {
+          let t4230 = forceij_f.s2.basis function index.max.s*t4226
+          let t4232 = fatom3_f.s2.r98$z*forceij_f.s2.basis function index.max.s
           for (fatom3_f.s2.r98$y, 0, tdegree2) {
-           let t4164 = (fatom3_f.s2.r98$y*t4149)*3
-           let t4165 = t4149*tdegree2
-           let t4170 = (t4137 + t4163) + fatom3_f.s2.r98$y
-           let t4171 = fatom3_f.s2.r98$y + t4163
-           let t4168 = fatom3_f.s2.r98$y + t4161
+           let t4233 = (fatom3_f.s2.r98$y*t4218)*3
+           let t4234 = t4218*tdegree2
+           let t4239 = (t4206 + t4232) + fatom3_f.s2.r98$y
+           let t4240 = fatom3_f.s2.r98$y + t4232
+           let t4237 = fatom3_f.s2.r98$y + t4230
            for (fatom3_f.s2.r98$x, 0, adegreep + 1) {
-            let t3742.s = min(pairlist[fatom3_f.s2.r98$z], t4127 + -1)
-            let t3743.s = min(alist[max(t3742.s, 0)], natom + -1)
-            let t3744.s = min(pairlist[t4157], t4127 + -1)
-            let t3745 = let t4250 = max(t3743.s, 0) in (((fatom3_f.s2.r98$x*t4165)*3) + (((t4250*3) + (((max(min(interactions[(max(min(atomtype[t4250], nelems), 1) + ((max(min(atomtype[max(min(alist[max(t3744.s, 0)], natom + -1), 0)], nelems), 1) + -1)*interactions.stride.1)) + -1], nelemsCombos), 1)*natom)*3) + (((max(min(atomtype[fatom3_f.s2.r98$4], nelems), 1)*t4138)*3) + t4133))) + t4164))
-            let t3746 = y[fatom3_f.s2.r98$4 + t4147]
-            let t3747.s = y[max(t3742.s, 0) + t4147]
-            let t3748.s = y[max(t3744.s, 0) + t4147]
-            let t3749 = y[fatom3_f.s2.r98$4]
-            let t3750.s = y[max(t3742.s, 0)]
-            let t3751.s = y[max(t3744.s, 0)]
-            let t3752 = y[fatom3_f.s2.r98$4 + y.stride.1]
-            let t3753.s = y[max(t3742.s, 0) + y.stride.1]
-            let t3754.s = y[max(t3744.s, 0) + y.stride.1]
-            let t3755 = let t4251 = (t3747.s - t3746) in (let t4252 = (t3750.s - t3749) in (let t4253 = (t3753.s - t3752) in (float64)sqrt_f64((t4251*t4251) + ((t4252*t4252) + (t4253*t4253)))))
-            let t3756 = let t4254 = (t3748.s - t3746) in (let t4255 = (t3751.s - t3749) in (let t4256 = (t3754.s - t3752) in ((t4254*t4254) + ((t4255*t4255) + (t4256*t4256)))))
-            let t3757.s = (float64)sqrt_f64(t3756)
-            let t3758.s = (((t3747.s - t3746)*(t3748.s - t3746)) + (((t3750.s - t3749)*(t3751.s - t3749)) + ((t3753.s - t3752)*(t3754.s - t3752))))/(t3755*t3757.s)
-            let t3759 = (float64)acos_f64(max(min(t3758.s, 1.000000), -1.000000))*float64(fatom3_f.s2.r98$x)
-            let t3761 = energyij_f[t4168]
-            let t3763 = y[fatom3_f.s2.r98$4 + t4136]
-            let t3856 = max(min(t3758.s, 1.000000), -1.000000)
-            fatom3_f[t3745] = fatom3_f[t3745] - (((float64)cos_f64(t3759)*(forceij_f[t4170]*t3761)) + ((energyij_f[t4171]*t3761)*(((-1.000000/max((float64)sqrt_f64(1.000000 - (t3856*t3856)), 0.000000))*((float64)sin_f64(t3759)*float64((0 - fatom3_f.s2.r98$x))))*((1.000000/((float64)pow_f64(t3755, 1.500000)*t3756))*(((y[max(t3744.s, 0) + t4136] - t3763)*t3755) - (((t3755*t3757.s)*t3856)*(y[max(t3742.s, 0) + t4136] - t3763)))))))
+            let t3810.s = min(pairlist[fatom3_f.s2.r98$z], t4196 + -1)
+            let t3811.s = min(alist[max(t3810.s, 0)], natom + -1)
+            let t3812.s = min(pairlist[t4226], t4196 + -1)
+            let t3813 = let t4319 = max(t3811.s, 0) in (((fatom3_f.s2.r98$x*t4234)*3) + (((t4319*3) + (((max(min(interactions[(max(min(atomtype[t4319], nelems), 1) + ((max(min(atomtype[max(min(alist[max(t3812.s, 0)], natom + -1), 0)], nelems), 1) + -1)*interactions.stride.1)) + -1], nelemsCombos), 1)*natom)*3) + (((max(min(atomtype[fatom3_f.s2.r98$4], nelems), 1)*t4207)*3) + t4202))) + t4233))
+            let t3814 = y[fatom3_f.s2.r98$4 + t4216]
+            let t3815.s = y[max(t3812.s, 0) + t4216]
+            let t3816.s = y[max(t3810.s, 0) + t4216]
+            let t3817 = y[fatom3_f.s2.r98$4]
+            let t3818.s = y[max(t3812.s, 0)]
+            let t3819.s = y[max(t3810.s, 0)]
+            let t3820 = y[fatom3_f.s2.r98$4 + y.stride.1]
+            let t3821.s = y[max(t3812.s, 0) + y.stride.1]
+            let t3822.s = y[max(t3810.s, 0) + y.stride.1]
+            let t3823 = let t4320 = (t3815.s - t3814) in (let t4321 = (t3818.s - t3817) in (let t4322 = (t3821.s - t3820) in (float64)sqrt_f64((t4320*t4320) + ((t4321*t4321) + (t4322*t4322)))))
+            let t3824 = let t4323 = (t3816.s - t3814) in (let t4324 = (t3819.s - t3817) in (let t4325 = (t3822.s - t3820) in ((t4323*t4323) + ((t4324*t4324) + (t4325*t4325)))))
+            let t3825.s = (float64)sqrt_f64(t3824)
+            let t3827 = energyij_f[t4237]
+            let t3828.s = (((t3816.s - t3814)*(t3815.s - t3814)) + (((t3819.s - t3817)*(t3818.s - t3817)) + ((t3822.s - t3820)*(t3821.s - t3820))))/(t3823*t3825.s)
+            let t3830 = y[fatom3_f.s2.r98$4 + t4205]
+            let t3921 = t3823*t3825.s
+            let t3923 = max(min(t3828.s, 1.000000), -1.000000)
+            fatom3_f[t3813] = fatom3_f[t3813] - (((float64)cos_f64((float64)acos_f64(max(min((((t3815.s - t3814)*(t3816.s - t3814)) + (((t3818.s - t3817)*(t3819.s - t3817)) + ((t3821.s - t3820)*(t3822.s - t3820))))/t3921, 1.000000), -1.000000))*float64(fatom3_f.s2.r98$x))*(forceij_f[t4239]*t3827)) + ((energyij_f[t4240]*t3827)*(((-1.000000/max((float64)sqrt_f64(1.000000 - (t3923*t3923)), 0.000000))*((float64)sin_f64((float64)acos_f64(t3923)*float64(fatom3_f.s2.r98$x))*float64((0 - fatom3_f.s2.r98$x))))*((1.000000/((float64)pow_f64(t3824, 1.500000)*t3823))*(((y[max(t3812.s, 0) + t4205] - t3830)*t3824) - ((t3921*t3923)*(y[max(t3810.s, 0) + t4205] - t3830)))))))
            }
           }
          }
@@ -1191,59 +1181,59 @@ if (!((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)y.buffer) || ((ui
   }
   consume forceij_f {
    consume energyij_f {
-    let t4174 = ((nelemsCombos + 1)*natom)*-3
-    let t4172 = natom*nl
+    let t4243 = ((nelemsCombos + 1)*natom)*-3
+    let t4241 = natom*nl
     for (fatom3_f.s3.dim, 0, 3) {
-     let t4183 = natom*nelemsCombos
-     let t4182 = (forceij_f.s2.basis function index.max.s*npairs)*fatom3_f.s3.dim
-     let t4181 = fatom3_f.s3.dim*y.stride.1
-     let t4178 = fatom3_f.s3.dim + t4174
+     let t4252 = natom*nelemsCombos
+     let t4251 = (forceij_f.s2.basis function index.max.s*npairs)*fatom3_f.s3.dim
+     let t4250 = fatom3_f.s3.dim*y.stride.1
+     let t4247 = fatom3_f.s3.dim + t4243
      for (fatom3_f.s3.r98$4, 0, natom) {
       let fatom3_f.s3.r98$w.new_min.s = min(pairnumsum[fatom3_f.s3.r98$4], npairs)
-      let fatom3_f.s3.r98$w.new_max.s = let t4257 = pairnumsum[fatom3_f.s3.r98$4 + 1] in max(min(min(max(min(npairs, t4257), 0) + -1, t4257), npairs), fatom3_f.s3.r98$w.new_min.s)
-      let t4192 = y.stride.1*2
-      let t4193 = max(fatom3_f.s3.r98$w.new_min.s, 0)
-      let t4194 = nelems*t4183
-      let t4184 = max(fatom3_f.s3.r98$w.new_max.s, 0) - t4193
-      for (fatom3_f.s3.r98$w.rebased, 0, t4184) {
+      let fatom3_f.s3.r98$w.new_max.s = let t4326 = pairnumsum[fatom3_f.s3.r98$4 + 1] in max(min(min(max(min(npairs, t4326), 0) + -1, t4326), npairs), fatom3_f.s3.r98$w.new_min.s)
+      let t4261 = y.stride.1*2
+      let t4262 = max(fatom3_f.s3.r98$w.new_min.s, 0)
+      let t4263 = nelems*t4252
+      let t4253 = max(fatom3_f.s3.r98$w.new_max.s, 0) - t4262
+      for (fatom3_f.s3.r98$w.rebased, 0, t4253) {
        let fatom3_f.s3.r98$z.new_max.s = min(pairnumsum[fatom3_f.s3.r98$4 + 1], npairs)
-       let t4202 = fatom3_f.s3.r98$w.rebased + t4193
-       let t4195 = max(fatom3_f.s3.r98$z.new_max.s, 0)
-       for (fatom3_f.s3.r98$z, 0, t4195) {
-        if (let t4258 = pairnumsum[fatom3_f.s3.r98$4 + 1] in ((t4202 < min(t4258, fatom3_f.s3.r98$z)) && (t4202 < t4258))) {
-         if (t4202 < pairnumsum[fatom3_f.s3.r98$4 + 1]) {
-          let t4210 = forceij_f.s2.basis function index.max.s*t4202
-          let t4206 = fatom3_f.s3.r98$z*forceij_f.s2.basis function index.max.s
-          let t4208 = t4182 + t4210
+       let t4271 = fatom3_f.s3.r98$w.rebased + t4262
+       let t4264 = max(fatom3_f.s3.r98$z.new_max.s, 0)
+       for (fatom3_f.s3.r98$z, 0, t4264) {
+        if (let t4327 = pairnumsum[fatom3_f.s3.r98$4 + 1] in ((t4271 < min(t4327, fatom3_f.s3.r98$z)) && (t4271 < t4327))) {
+         if (t4271 < pairnumsum[fatom3_f.s3.r98$4 + 1]) {
+          let t4279 = forceij_f.s2.basis function index.max.s*t4271
+          let t4275 = fatom3_f.s3.r98$z*forceij_f.s2.basis function index.max.s
+          let t4277 = t4251 + t4279
           for (fatom3_f.s3.r98$y, 0, tdegree2) {
-           let t4211 = (fatom3_f.s3.r98$y*t4194)*3
-           let t4212 = t4194*tdegree2
-           let t4218 = fatom3_f.s3.r98$y + t4210
-           let t4217 = fatom3_f.s3.r98$y + t4208
-           let t4215 = fatom3_f.s3.r98$y + t4206
+           let t4280 = (fatom3_f.s3.r98$y*t4263)*3
+           let t4281 = t4263*tdegree2
+           let t4287 = fatom3_f.s3.r98$y + t4279
+           let t4286 = fatom3_f.s3.r98$y + t4277
+           let t4284 = fatom3_f.s3.r98$y + t4275
            for (fatom3_f.s3.r98$x, 0, adegreep + 1) {
-            let t3768.s = min(pairlist[fatom3_f.s3.r98$z], t4172 + -1)
-            let t3769.s = min(pairlist[t4202], t4172 + -1)
-            let t3770.s = min(alist[max(t3769.s, 0)], natom + -1)
-            let t3771 = let t4259 = max(t3770.s, 0) in (((fatom3_f.s3.r98$x*t4212)*3) + ((((max(min(interactions[(max(min(atomtype[max(min(alist[max(t3768.s, 0)], natom + -1), 0)], nelems), 1) + ((max(min(atomtype[t4259], nelems), 1) + -1)*interactions.stride.1)) + -1], nelemsCombos), 1)*natom)*3) + ((t4259*3) + (((max(min(atomtype[fatom3_f.s3.r98$4], nelems), 1)*t4183)*3) + t4178))) + t4211))
-            let t3772 = y[fatom3_f.s3.r98$4 + t4192]
-            let t3773.s = y[max(t3769.s, 0) + t4192]
-            let t3774.s = y[max(t3768.s, 0) + t4192]
-            let t3775 = y[fatom3_f.s3.r98$4]
-            let t3776.s = y[max(t3769.s, 0)]
-            let t3777.s = y[max(t3768.s, 0)]
-            let t3778 = y[fatom3_f.s3.r98$4 + y.stride.1]
-            let t3779.s = y[max(t3769.s, 0) + y.stride.1]
-            let t3780.s = y[max(t3768.s, 0) + y.stride.1]
-            let t3781 = let t4260 = (t3773.s - t3772) in (let t4261 = (t3776.s - t3775) in (let t4262 = (t3779.s - t3778) in (float64)sqrt_f64((t4260*t4260) + ((t4261*t4261) + (t4262*t4262)))))
-            let t3782 = let t4263 = (t3774.s - t3772) in (let t4264 = (t3777.s - t3775) in (let t4265 = (t3780.s - t3778) in ((t4263*t4263) + ((t4264*t4264) + (t4265*t4265)))))
-            let t3783.s = (float64)sqrt_f64(t3782)
-            let t3784.s = (((t3773.s - t3772)*(t3774.s - t3772)) + (((t3776.s - t3775)*(t3777.s - t3775)) + ((t3779.s - t3778)*(t3780.s - t3778))))/(t3781*t3783.s)
-            let t3785 = (float64)acos_f64(max(min(t3784.s, 1.000000), -1.000000))*float64(fatom3_f.s3.r98$x)
-            let t3787 = energyij_f[t4215]
-            let t3789 = y[fatom3_f.s3.r98$4 + t4181]
-            let t3869 = max(min(t3784.s, 1.000000), -1.000000)
-            fatom3_f[t3771] = fatom3_f[t3771] - (((float64)cos_f64(t3785)*(forceij_f[t4217]*t3787)) + ((energyij_f[t4218]*t3787)*(((-1.000000/max((float64)sqrt_f64(1.000000 - (t3869*t3869)), 0.000000))*((float64)sin_f64(t3785)*float64((0 - fatom3_f.s3.r98$x))))*((1.000000/((float64)pow_f64(t3781, 1.500000)*t3782))*(((y[max(t3768.s, 0) + t4181] - t3789)*t3781) - (((t3781*t3783.s)*t3869)*(y[max(t3769.s, 0) + t4181] - t3789)))))))
+            let t3835.s = min(pairlist[fatom3_f.s3.r98$z], t4241 + -1)
+            let t3836.s = min(pairlist[t4271], t4241 + -1)
+            let t3837.s = min(alist[max(t3836.s, 0)], natom + -1)
+            let t3838 = let t4328 = max(t3837.s, 0) in (((fatom3_f.s3.r98$x*t4281)*3) + ((((max(min(interactions[(max(min(atomtype[max(min(alist[max(t3835.s, 0)], natom + -1), 0)], nelems), 1) + ((max(min(atomtype[t4328], nelems), 1) + -1)*interactions.stride.1)) + -1], nelemsCombos), 1)*natom)*3) + ((t4328*3) + (((max(min(atomtype[fatom3_f.s3.r98$4], nelems), 1)*t4252)*3) + t4247))) + t4280))
+            let t3839 = y[fatom3_f.s3.r98$4 + t4261]
+            let t3840.s = y[max(t3835.s, 0) + t4261]
+            let t3841.s = y[max(t3836.s, 0) + t4261]
+            let t3842 = y[fatom3_f.s3.r98$4]
+            let t3843.s = y[max(t3835.s, 0)]
+            let t3844.s = y[max(t3836.s, 0)]
+            let t3845 = y[fatom3_f.s3.r98$4 + y.stride.1]
+            let t3846.s = y[max(t3835.s, 0) + y.stride.1]
+            let t3847.s = y[max(t3836.s, 0) + y.stride.1]
+            let t3848 = let t4329 = (t3840.s - t3839) in (let t4330 = (t3843.s - t3842) in (let t4331 = (t3846.s - t3845) in (float64)sqrt_f64((t4329*t4329) + ((t4330*t4330) + (t4331*t4331)))))
+            let t3849 = let t4332 = (t3841.s - t3839) in (let t4333 = (t3844.s - t3842) in (let t4334 = (t3847.s - t3845) in ((t4332*t4332) + ((t4333*t4333) + (t4334*t4334)))))
+            let t3850.s = (float64)sqrt_f64(t3849)
+            let t3852 = energyij_f[t4284]
+            let t3853.s = (((t3841.s - t3839)*(t3840.s - t3839)) + (((t3844.s - t3842)*(t3843.s - t3842)) + ((t3847.s - t3845)*(t3846.s - t3845))))/(t3848*t3850.s)
+            let t3855 = y[fatom3_f.s3.r98$4 + t4250]
+            let t3935 = t3848*t3850.s
+            let t3937 = max(min(t3853.s, 1.000000), -1.000000)
+            fatom3_f[t3838] = fatom3_f[t3838] - (((float64)cos_f64((float64)acos_f64(max(min((((t3840.s - t3839)*(t3841.s - t3839)) + (((t3843.s - t3842)*(t3844.s - t3842)) + ((t3846.s - t3845)*(t3847.s - t3845))))/t3935, 1.000000), -1.000000))*float64(fatom3_f.s3.r98$x))*(forceij_f[t4286]*t3852)) + ((energyij_f[t4287]*t3852)*(((-1.000000/max((float64)sqrt_f64(1.000000 - (t3937*t3937)), 0.000000))*((float64)sin_f64((float64)acos_f64(t3937)*float64(fatom3_f.s3.r98$x))*float64((0 - fatom3_f.s3.r98$x))))*((1.000000/((float64)pow_f64(t3849, 1.500000)*t3848))*(((y[max(t3835.s, 0) + t4250] - t3855)*t3849) - ((t3935*t3937)*(y[max(t3836.s, 0) + t4250] - t3855)))))))
            }
           }
          }
@@ -1260,23 +1250,23 @@ if (!((uint1)_halide_buffer_is_bounds_query((halide_buffer_t *)y.buffer) || ((ui
  produce fatom3 {
   consume fatom3_f {
    for (fatom3.s0.ozzzz, 0, tdegree2) {
-    let t4223 = natom*nelemsCombos
-    let t4222 = fatom3.s0.ozzzz*fatom3.stride.5
+    let t4292 = natom*nelemsCombos
+    let t4291 = fatom3.s0.ozzzz*fatom3.stride.5
     for (fatom3.s0.ozzz, 0, adegreep + 1) {
-     let t4226 = nelems*t4223
-     let t4224 = ((fatom3.s0.ozzzz*t4226) + ((t4226*tdegree2)*fatom3.s0.ozzz))*3
-     let t4225 = (fatom3.s0.ozzz*fatom3.stride.4) + t4222
+     let t4295 = nelems*t4292
+     let t4293 = ((fatom3.s0.ozzzz*t4295) + ((t4295*tdegree2)*fatom3.s0.ozzz))*3
+     let t4294 = (fatom3.s0.ozzz*fatom3.stride.4) + t4291
      for (fatom3.s0.ozz, 0, nelems) {
-      let t4227 = ((fatom3.s0.ozz*t4223)*3) + t4224
-      let t4228 = (fatom3.s0.ozz*fatom3.stride.3) + t4225
+      let t4296 = ((fatom3.s0.ozz*t4292)*3) + t4293
+      let t4297 = (fatom3.s0.ozz*fatom3.stride.3) + t4294
       for (fatom3.s0.oz, 0, nelemsCombos) {
-       let t4229 = ((fatom3.s0.oz*natom)*3) + t4227
-       let t4230 = (fatom3.s0.oz*fatom3.stride.2) + t4228
+       let t4298 = ((fatom3.s0.oz*natom)*3) + t4296
+       let t4299 = (fatom3.s0.oz*fatom3.stride.2) + t4297
        for (fatom3.s0.oy, 0, natom) {
-        let t4232 = (fatom3.s0.oy*fatom3.stride.1) + t4230
-        let t4231 = (fatom3.s0.oy*3) + t4229
+        let t4301 = (fatom3.s0.oy*fatom3.stride.1) + t4299
+        let t4300 = (fatom3.s0.oy*3) + t4298
         for (fatom3.s0.ox, 0, 3) {
-         fatom3[fatom3.s0.ox + t4232] = fatom3_f[fatom3.s0.ox + t4231]
+         fatom3[fatom3.s0.ox + t4301] = fatom3_f[fatom3.s0.ox + t4300]
         }
        }
       }

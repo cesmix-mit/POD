@@ -2,19 +2,19 @@
 ----------------------------------------------------------------------------------------
   File      | # configs | # atoms  | MAE energy | RMSE energy | MAE force | RMSE force |
 ----------------------------------------------------------------------------------------
-Displaced_A15.xyz     9        576       nan          nan          nan          -nan      
-Displaced_BCC.xyz     9        486       nan          nan          nan          -nan      
-Displaced_FCC.xyz     9        432       nan          nan          nan          -nan      
-Elastic_BCC.xyz       100      200       nan          nan          nan          -nan      
-Elastic_FCC.xyz       100      400       nan          nan          nan          -nan      
-GSF_110.xyz           22       528       nan          nan          nan          -nan      
-GSF_112.xyz           22       660       nan          nan          nan          -nan      
-Liquid.xyz            3        300       nan          nan          nan          -nan      
-Surface.xyz           7        236       nan          nan          nan          -nan      
-Volume_A15.xyz        30       240       nan          nan          nan          -nan      
-Volume_BCC.xyz        21       42        nan          nan          nan          -nan      
-Volume_FCC.xyz        31       124       nan          nan          nan          -nan      
+Displaced_A15.xyz     9        576       0.000181     0.000197     0.027801     0.035216  
+Displaced_BCC.xyz     9        486       0.000252     0.000340     0.053117     0.067235  
+Displaced_FCC.xyz     9        432       0.000125     0.000154     0.017718     0.022407  
+Elastic_BCC.xyz       100      200       0.000190     0.000235     0.000453     0.000625  
+Elastic_FCC.xyz       100      400       0.000218     0.000267     0.000159     0.000204  
+GSF_110.xyz           22       528       0.000186     0.000244     0.006628     0.010665  
+GSF_112.xyz           22       660       0.000201     0.000243     0.011889     0.019998  
+Liquid.xyz            3        300       0.000234     0.000248     0.149119     0.189143  
+Surface.xyz           7        236       0.000552     0.000985     0.007155     0.020168  
+Volume_A15.xyz        30       240       0.000059     0.000076     0.000000     0.000000  
+Volume_BCC.xyz        21       42        0.000313     0.001322     0.000000     0.000000  
+Volume_FCC.xyz        31       124       0.000157     0.000446     0.000000     0.000000  
 ----------------------------------------------------------------------------------------
-All files             363      4224      nan          nan          nan          -nan      
+All files             363      4224      0.000199     0.000429     0.025428     0.058145  
 ----------------------------------------------------------------------------------------
 **************** End of Error Analysis for the Training Data Set ****************

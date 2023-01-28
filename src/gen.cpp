@@ -303,16 +303,15 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   //  comp.where(lk < pairnumsum(i + 1));
 
  
-
   Func xij_inter("xij_inter");
   xij_inter(atom_o, atom_i, dim) = xij(clamp(pairlist(atom_o), 0, nl * natom - 1), dim) - xij(atom_i, dim);
   // xij_inter(atom_o, atom_i, dim) = print(xij(clamp(pairlist(atom_o), 0, nl * natom - 1), dim) - xij(atom_i, dim), "<- is xij_inter");
+  xij_inter.bound(atom_o, 0, nl * natom);
   xij_inter.bound(atom_i, 0, natom);
   // xij_inter.bound(atom_o, 0, nij);
-  xij_inter.bound(atom_o, 0, nl * natom);
   xij_inter.bound(dim, 0, 3);
 
-  Func rij_inter("rij_inter");
+  Func rij_inter("rij_inter"); // 1st xdot in original code
   Func rij_sq_inter("rij_sq_inter");
   rij_inter(atom, atom_o) = xij_inter(atom, atom_o, 0) * xij_inter(atom,atom_o, 0) + xij_inter(atom, atom_o, 1) * xij_inter(atom, atom_o, 1) + xij_inter(atom, atom_o, 2) * xij_inter(atom, atom_o, 2);
   rij_inter.bound(atom, 0, nij);
@@ -368,7 +367,7 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   // dtheta.bound(atom_k, 0, nl * natom);
 
   Func dct("dct");
-  dct(atom_i, atom_j, atom_k, dim) = (xij_inter(atom_k, atom_i, dim) * rij_sq_inter(atom_j, atom_i) - xij_inter(atom_j, atom_i, dim) * xdot(atom_i, atom_j, atom_k)) * (one/(pow(rij_sq_inter(atom_j, atom_i), Expr((double) 1.5)) * rij_inter(atom_k, atom_i)));
+  dct(atom_i, atom_j, atom_k, dim) = (xij_inter(atom_k, atom_i, dim) * rij_inter(atom_j, atom_i) - xij_inter(atom_j, atom_i, dim) * xdot(atom_i, atom_j, atom_k)) * (one/(pow(rij_inter(atom_j, atom_i), Expr((double) 1.5)) * rij_sq_inter(atom_k, atom_i)));
   // dct(atom_i, atom_j, atom_k, dim) = print((xij_inter(atom_k, atom_i, dim) * rij_sq_inter(atom_j, atom_i) - xij_inter(atom_j, atom_i, dim) * xdot(atom_i, atom_j, atom_k)) * (one/(pow(rij_sq_inter(atom_j, atom_i), Expr((double) 1.5)) * rij_inter(atom_k, atom_i))), "<- dct", atom_i, atom_j, atom_k, dim);
   // dct.trace_stores();
   // dct.trace_loads();
@@ -380,8 +379,21 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   dct.bound(dim, 0, 3);
   
 
+  /*
+  Func dct123("dct123");
+  Func dct456("dct456");
+  dct123(atom_i, atom_j, atom_k, dim) = (xij_inter(atom_k, atom_i, dim) * rij_inter(atom_j, atom_i) - xij_inter(atom_j, atom_i, dim) * xdot(atom_i, atom_j, atom_k)) * (one/(pow(rij_inter(atom_j, atom_i), Expr((double) 1.5)) * rij_sq_inter(atom_k, atom_i)));
+  dct456(atom_i, atom_j, atom_k, dim) = (xij_inter(atom_j, atom_i, dim) * rij_inter(atom_k, atom_i) - xij_inter(atom_k, atom_i, dim) * xdot(atom_i, atom_j, atom_k)) * (one/pow(rij_inter(atom_k, atom_i), Expr((double) 1.5)) * rij_sq_inter(atom_j, atom_i));
+  dct123.bound(atom_i, 0, nl * natom);
+  dct123.bound(atom_j, 0, nij);
+  dct123.bound(atom_k, 0, nij);
+  dct456.bound(atom_i, 0, nl * natom);
+  dct456.bound(atom_j, 0, nij);
+  dct456.bound(atom_k, 0, nij);
+  */
+  
+
   Func pre_abf("pre_abf");
-  Func pre_dabf("pre_dabf");
   pre_abf(atom_i, atom_j, atom_k, abf) = cos(abf * theta(atom_i, atom_j, atom_k));
   
   pre_abf.bound(abf, 0, nabf);
@@ -390,7 +402,8 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   pre_abf.bound(atom_j, 0, nij);
   pre_abf.bound(atom_k, 0, nij);
   
-  pre_dabf(atom_i, atom_j, atom_k, abf, dim) = -abf * sin(abf * theta(atom_i, atom_j, atom_k)) * dtheta(atom_i, atom_j, atom_k) * dct(atom_i, atom_j, atom_k, dim);
+  Func pre_dabf("pre_dabf");
+  pre_dabf(atom_i, atom_j, atom_k, abf, dim) = -abf * sin(abf * theta(atom_i, atom_j, atom_k)) * dtheta(atom_i, atom_j, atom_k) * dct(atom_i, atom_j, atom_k, dim); // switched k and j in dct -- changed back
   // pre_dabf(atom_i, atom_j, atom_k, abf, dim) = print(-abf * sin(abf * theta(atom_i, atom_j, atom_k)) * dtheta(atom_i, atom_j, atom_k) * dct(atom_i, atom_j, atom_k, dim), "<- dabf");
   pre_dabf.bound(abf, 0, nabf);
   // pre_dabf.bound(atom_i, 0, natom);
@@ -398,6 +411,20 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   pre_dabf.bound(atom_j, 0, nij);
   pre_dabf.bound(atom_k, 0, nij);
   pre_dabf.bound(dim, 0, 3);
+
+  /*
+  Func pre_dabf123("pre_dabf123");
+  Func pre_dabf456("pre_dabf456");
+  pre_dabf123(atom_i, atom_j, atom_k, abf, dim) = -abf * sin(abf * theta(atom_i, atom_j, atom_k)) * dtheta(atom_i, atom_j, atom_k) * dct123(atom_i, atom_j, atom_k, dim);
+  pre_dabf456(atom_i, atom_j, atom_k, abf, dim) = -abf * sin(abf * theta(atom_i, atom_j, atom_k)) * dtheta(atom_i, atom_j, atom_k) * dct456(atom_i, atom_j, atom_k, dim);
+  pre_dabf123.bound(atom_i, 0, nl * natom);
+  pre_dabf123.bound(atom_j, 0, nij);
+  pre__dabf123.bound(atom_k, 0, nij);
+  pre_dabf456.bound(atom_i, 0, nl * natom);
+  pre_dabf456.bound(atom_j, 0, nij);
+  pre_dabf456.bound(atom_k, 0, nij);
+  */
+
   Func pre_rbf("pre_rbf");
   pre_rbf(rbf, atom_j, atom_k) = e2ij(rbf, atom_j) * e2ij(rbf, atom_k);
   pre_rbf.bound(atom_j, 0, nij);
@@ -413,11 +440,28 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   pre_drbf.bound(atom_k, 0, nij);
   pre_drbf.bound(rbf, 0, nrbf);
   pre_drbf.bound(dim, 0, 3);
+  /*
+  Func pre_drbf123("pre_drbf123");
+  Func pre_drbf456("pre_drbf456");
+  pre_drbf123(rbf, atom_j, atom_k, dim) = f2ij(rbf, atom_j, dim) * e2ij(rbf, atom_k);
+  pre_drbf456(rbf, atom_j, atom_k, dim) = f2ij(rbf, atom_k, dim) * e2ij(rbf, atom_j);
+  pre_drbf123.bound(atom_j, 0, nij);
+  pre_drbf123.bound(atom_k, 0, nij);
+  pre_drbf123.bound(rbf, 0, nrbf);
+  pre_drbf123.bound(dim, 0, 3);
+  pre_drbf456.bound(atom_j, 0, nij);
+  pre_drbf456.bound(atom_k, 0, nij);
+  pre_drbf456.bound(rbf, 0, nrbf);
+  pre_drbf456.bound(dim, 0, 3);
+  */
   
  
   Func pre_f("pre_f");
-  pre_f(atom_k, atom_j, atom_i, rbf, abf, dim) =
-    pre_drbf(rbf, atom_j, atom_k, dim) * pre_abf(atom_i, atom_j, atom_k, abf) + pre_rbf(rbf, atom_j, atom_k) * pre_dabf(atom_i, atom_j, atom_k, abf, dim);
+  pre_f(atom_j, atom_k, atom_i, rbf, abf, dim) =
+    // pre_drbf(rbf, atom_k, atom_j, dim) * pre_abf(atom_i, atom_k, atom_j, abf) + pre_rbf(rbf, atom_k, atom_j) * pre_dabf(atom_i, atom_j, atom_k, abf, dim); // kj jk
+    pre_drbf(rbf, atom_k, atom_j, dim) * pre_abf(atom_i, atom_j, atom_k, abf) + pre_rbf(rbf, atom_j, atom_k) * pre_dabf(atom_i, atom_k, atom_j, abf, dim); // kj kj
+    // pre_drbf(rbf, atom_j, atom_k, dim) * pre_abf(atom_i, atom_k, atom_j, abf) + pre_rbf(rbf, atom_k, atom_j) * pre_dabf(atom_i, atom_j, atom_k, abf, dim); // jk jk
+    // pre_drbf(rbf, atom_j, atom_k, dim) * pre_abf(atom_i, atom_k, atom_j, abf) + pre_rbf(rbf, atom_k, atom_j) * pre_dabf(atom_i, atom_k, atom_j, abf, dim); // jk kj
 
   pre_f.bound(atom_j, 0, nij);
   pre_f.bound(atom_k, 0, nij);
@@ -426,6 +470,28 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   pre_f.bound(rbf, 0, nrbf);
   pre_f.bound(abf, 0, nabf);
   pre_f.bound(dim, 0, 3);
+  /*
+  Func pre_fj("pre_fj");
+  Func pre_fk("pre_fk");
+  pre_fj(atom_k, atom_j, atom_i, rbf, abf, dim) = 
+	  pre_drbf123(rbf, atom_j, atom_k, dim) * pre_abf(atom_i, atom_j, atom_k, abf) 
+	  + pre_rbf(rbf, atom_j, atom_k) * pre_dabf123(atom_i, atom_j, atom_k, abf, dim);
+  pre_fk(atom_k, atom_j, atom_i, rbf, abf, dim) =
+	  pre_drbf456(rbf, atom_j, atom_k, dim) * pre_abf(atom_i, atom_j, atom_k, abf)
+	  + pre_rbf(rbf, atom_j, atom_k) + pre_dabf456(atom_i, atom_j, atom_k, abf, dim);
+  pre_fj.bound(atom_i, 0, nl * natom);
+  pre_fj.bound(atom_j, 0, nij);
+  pre_fj.bound(atom_k, 0, nij);
+  pre_fj.bound(rbf, 0, nrbf);
+  pre_fj.bound(abf, 0, nabf);
+  pre_fj.bound(dim, 0, 3);
+  pre_fk.bound(atom_i, 0, nl * natom);
+  pre_fk.bound(atom_j, 0, nij);
+  pre_fk.bound(atom_k, 0, nij);
+  pre_fk.bound(rbf, 0, nrbf);
+  pre_fk.bound(abf, 0, nabf);
+  pre_fk.bound(dim, 0, 3);
+  */
   
 
 
@@ -440,10 +506,9 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   Expr k = clamp(alist(gk), 0, natom - 1);
   Expr typek = clamp(atomtype(k) - 1, 0, nelems - 1);
   Expr interact = clamp(interaction(typek, typej) - 1, 0, nelementCombos - 1);
-  eatom(p, m, typei, interact, i) += pre_rbf(m, ljs, lks) * pre_abf(i, ljs, lks, p);
+  eatom(i, interact, typei, m, p) += pre_rbf(m, ljs, lks) * pre_abf(i, ljs, lks, p);
   // eatom(i, interact, typei, m, p) += print(pre_rbf(m, ljs, lks) * pre_abf(i, ljs, lks, p), "<- eatom params: i: ", i, ", j: ", j, ", k: ", k, ", m: ", m, ", p: ", p, ", gk: ", gk, ", lks: ", lks);
 
-  //  eatom.update(0).reorder(p, m, lk, lj, i);
   // fatom(dim, i, interact, typei, m, p) += print((pre_f(ljs, lks, i, m, p, dim) + pre_f(lks, ljs, i, m, p, dim)), "<- sum of ", ljs, lks);  
   fatom(dim, i, interact, typei, m, p) += pre_f(ljs, lks, i, m, p, dim) + pre_f(lks, ljs, i, m, p, dim);  
   // fatom(dim, i, interact, typei, m, p) = print(fatom(dim, i, interact, typei, m, p), "<-fatom +");
@@ -452,7 +517,11 @@ void buildPodTally3b(Func & eatom, Func & fatom,
   // fatom(dim, j, interact, typei, m, p) = print(fatom(dim, j, interact, typei, m, p), "<- fatom -1");
   fatom(dim, j, interact, typei, m, p) -= pre_f(lks, ljs, i, m, p, dim);
   // fatom(dim, k, interact, typei, m, p) = print(fatom(dim, k, interact, typei, m, p), "<- fatom -2");
-
+  /*
+  fatom(dim, i, interact, typei, m, p) += pre_fj(ljs, lks, i, m, p, dim) + pre_fk(ljs, lks, i, m, p, dim);
+  fatom(dim, j, interact, typei, m, p) -= pre_fj(ljs, lks, i, m, p, dim);
+  fatom(dim, k, interact, typei, m, p) -= pre_fk(ljs, lks, i, m, p, dim);
+ */
   // fatom.trace_stores();
   eatom.compute_root();
 

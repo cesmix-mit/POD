@@ -200,13 +200,14 @@ void linear_descriptors(descriptorstruct &desc, neighborstruct &nb, podstruct po
              tmpmem, rin, rcut, atomtype, nb.alist, nb.pairlist, nb.pairnum, nb.pairnum_cumsum, 
              nb.elemindex, pdegree2, tmpint, nbesselpars, nrbf2, nrbf3, nabf3, 
              nelements, Nij, natom, nl);                    
+    int nelements2 = nelements*(nelements+1)/2;
 
-    print_matrix("eatom1 Halide", 1, natom, eatom1, 1);
-    print_matrix("fatom1 Halide", 1, natom * 3, fatom1, 1);
-    print_matrix("eatom2 Halide", 1, natom, eatom2, 1);
-    print_matrix("fatom2 Halide", 1, natom * 3, fatom2, 1);
-    print_matrix("eatom3 Halide", 1, natom, eatom3, 1);
-    print_matrix("fatom3 Halide", 1, natom * 3, fatom3, 1);
+    print_matrix("eatom1 Halide", 1, natom * nelements, eatom1, 1);
+    print_matrix("fatom1 Halide", 1, natom * nelements *  3, fatom1, 1);
+    print_matrix("eatom2 Halide", 1, nelements2 * natom * nrbf2, eatom2, 1);
+    print_matrix("fatom2 Halide", 1, nelements2 * natom * nrbf2 * 3, fatom2, 1);
+    print_matrix("eatom3 Halide", 1, nelements2 * natom * nelements * (nabf3 + 1) * nrbf3, eatom3, 1);
+    print_matrix("fatom3 Halide", 1, nelements2 * natom * nelements * (nabf3 + 1) * nrbf3 * 3, fatom3, 1);
     // error("stop here");
     // peratom descriptors for four-body snap potential
     if (pod.snaptwojmax>0) {
@@ -468,10 +469,10 @@ void least_squares_fit(descriptorstruct &desc, neighborstruct &nb, podstruct pod
 		linear_descriptors(desc, nb, pod, sna, data, ci);
 		
 		// compute quadratic POD descriptors
-		// quadratic_descriptors(desc, pod, data, ci);        
+		quadratic_descriptors(desc, pod, data, ci);        
 		
 		// compute cubic POD descriptors
-		// cubic_descriptors(desc, pod, data, ci);    
+		cubic_descriptors(desc, pod, data, ci);    
 		
 		// assemble the least-squares linear system
 		least_squares_matrix(desc, pod, data, ci);          
@@ -665,10 +666,10 @@ void error_analsysis(descriptorstruct &desc, neighborstruct &nb, podstruct pod, 
 		    linear_descriptors(desc, nb, pod, sna, data, ci);
 
 	//             // compute quadratic POD descriptors
-	//             quadratic_descriptors(desc, pod, data, ci);        
+	             quadratic_descriptors(desc, pod, data, ci);        
 	//             
 	//             // compute cubic POD descriptors
-	//             cubic_descriptors(desc, pod, data, ci);    
+	             cubic_descriptors(desc, pod, data, ci);    
 	//             
 	//             // calculate energy and force
 	//             energy = calculate_energyforce(force, desc.gd, desc.gdd, coeff, pod.nd, natom);
