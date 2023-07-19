@@ -1,0 +1,4 @@
+file_format extxyz
+file_extension xyz
+path_to_training_data_set training
+compute_pod_descriptors 2
